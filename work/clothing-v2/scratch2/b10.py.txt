@@ -1,0 +1,7 @@
+import importlib, shutil
+import shoe2; importlib.reload(shoe2)
+for hero, des in (('MatchHero_Male', 'male_tennis'), ('MatchHero_Female', 'female_tennis'), ('GolfKitHero_Male', 'male_golf'), ('GolfKitHero_Female', 'female_golf')):
+    for sd in 'LR':
+        shoe2.build(hero, des, sd, 'shoes/%s_shoe_%s.blend' % (hero, sd))
+        shutil.copy('shoes/%s_shoe_%s.blend' % (hero, sd), 'shoes/%s_shoe_%s_export.blend' % (hero, sd))
+print('BUILDALL10 done')

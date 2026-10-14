@@ -100,6 +100,7 @@ namespace GolfArcade.Tennis
                 kitV2Covered[(src, key)] = mesh;
             }
             body.sharedMesh = mesh; kitV2CoverKey = key;
+            { var acc = GetComponent<HeroAccessories>(); if (acc) acc.ReapplyCover(); }   // ACCESSORIES: skin under a glove stays hidden on top of this cover
             if (skinMaterials != null) foreach (var m in skinMaterials) if (m && m.HasProperty("_KitContact")) m.SetFloat("_KitContact", KitContactShadow);
         }
         /// Strength of the garments' contact shadow on the skin (fraction of light removed where a garment blocks the skin's whole sky).
@@ -111,6 +112,7 @@ namespace GolfArcade.Tennis
             if (!golfKit || kit == null) return;
             foreach (var r in kit) if (r && (r.name == "Kit_Glove_L" || r.name == "Kit_Glove_R"))
                 r.enabled = r.name == (leftHanded ? "Kit_Glove_R" : "Kit_Glove_L");
+            var acc = GetComponent<HeroAccessories>(); if (acc) acc.SetGolfHand(leftHanded);   // ACCESSORIES: the accessory glove replaces the old kit glove, on the lead hand
             if (kitV2CoverSource) ApplyKitV2Cover();
         }
         public Animator animator;
@@ -253,6 +255,9 @@ namespace GolfArcade.Tennis
                 case RoleShoe: return new ClothLook(.12f, .024f, .8f, .45f, .35f);
                 case RoleSole: return new ClothLook(.04f, .020f, .25f, 0f, 0f);                          // rubber: its own, rougher, no weave to speak of
                 case RoleSock: return new ClothLook(.08f, .020f, .9f, .55f, .70f);
+                case "Acc_Cap": return new ClothLook(.10f, .024f, .85f, .50f, .40f);       // ACCESSORIES: caps, gloves and the golf bag (HeroAccessories)
+                case "Acc_Glove": return new ClothLook(.16f, .020f, .70f, .40f, .15f);
+                case "Acc_Bag": return new ClothLook(.12f, .030f, .90f, .55f, .30f);
                 default: return new ClothLook(ClothSmoothness, .026f, 1f, .5f, .5f);
             }
         }
@@ -345,6 +350,42 @@ namespace GolfArcade.Tennis
                 m.SetFloat("_Smoothness", GripSmoothness); m.SetFloat("_Wrap", ClothWrap); m.SetFloat("_RimStrength", 0);
                 m.SetFloat("_WeaveNormal", 0); m.SetFloat("_WeaveThread", 0); m.SetFloat("_SheenStrength", .15f);
             }
+            return m;
+        }
+
+        /// ACCESSORIES: a finished accessory piece's cloth material. Same look as a kit V2 garment (TennisCloth, fabric atlas v2, the piece's own N / M maps; B of the
+        /// M map mixes the base and the trim colour). `name` is the role ("Acc_Cap (hero)"); `maps` is the Resources path without the _N / _M suffix.
+        public Material AccessoryCloth(string name, string maps, float metresPerUv, Color baseColour, Color trimColour)
+        {
+            var m = new Material(ClothShader ? ClothShader : Shader.Find("Universal Render Pipeline/Lit")) { name = name };
+            if (m.shader != ClothShader) return m;
+            var cl = ClothFor(name.Replace(" (hero)", ""));
+            m.SetColor("_BaseColor", KitTint(baseColour)); m.SetColor("_TrimColor", KitTint(trimColour));
+            m.SetFloat("_EdgeLines", 0);
+            m.SetFloat("_Smoothness", cl.smooth); m.SetFloat("_Wrap", ClothWrap); m.SetFloat("_RimStrength", ClothRim);
+            m.SetFloat("_WeaveNormal", cl.weaveNormal * .8f); m.SetFloat("_WeaveThread", cl.thread * .85f); m.SetFloat("_SheenStrength", cl.sheen);
+            m.SetFloat("_WeaveTile", metresPerUv > 0 ? metresPerUv / cl.tileMetres : 60f); m.SetFloat("_WeaveAngle", 0);
+            var normal = Resources.Load<Texture2D>(maps + "_N"); var mask = Resources.Load<Texture2D>(maps + "_M");
+            if (normal && mask)
+            {
+                m.SetTexture("_NormalMap", normal); m.SetTexture("_MaskMap", mask);
+                if (KitV2Atlas) m.SetTexture("_WeaveMap", KitV2Atlas);
+                m.SetFloat("_FabricVersion", 2); m.SetFloat("_UseGarmentMaps", 1); m.SetFloat("_NormalStrength", 1);
+                m.SetFloat("_Exposure", golfKit ? 1.05f : .84f);
+            }
+            else if (WeaveMap) m.SetTexture("_WeaveMap", WeaveMap);
+            owned.Add(m);
+            return m;
+        }
+
+        /// ACCESSORIES: the metal / plastic of an accessory (buckles, zip pulls, club shafts): the racket frame's glossy character surface.
+        public Material AccessoryMetal(string name, Color colour)
+        {
+            var src = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Hidden/InternalErrorShader")) { name = name };
+            var m = FrameSurface(OnShader(src, CharacterShader, name));
+            m.SetColor("_BaseColor", colour);
+            Object.DestroyImmediate(src);
+            owned.Add(m);
             return m;
         }
 
@@ -644,6 +685,8 @@ namespace GolfArcade.Tennis
             }
             // Bald-base pass 2: the racket sits deeper in the hand so the fingers and thumb can close round the handle.
             HeroRacketSeat.Apply(this);
+            // ACCESSORIES: cap / glove (and, where the game asks, the golf bag) as their own pieces on sockets (HeroAccessories); never part of the body or the kit.
+            HeroAccessories.Setup(this);
             // The hero rim light (HeroRimLight) sits on its own rendering layer so it lights the heroes and never the court.
             foreach (var r in GetComponentsInChildren<Renderer>(true)) r.renderingLayerMask |= HeroRimLight.Layer;
         }

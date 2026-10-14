@@ -1,0 +1,12 @@
+[
+{"img":"f04_front","kind":"hand in body","side":"R","x":240.777,"y":150.335,"depth":5.469,"n":4},
+{"img":"f04_back","kind":"hand in body","side":"R","x":161.248,"y":153.617,"depth":5.469,"n":4},
+{"img":"f04_left","kind":"hand in body","side":"R","x":175.561,"y":149.105,"depth":5.469,"n":4},
+{"img":"f04_right","kind":"hand in body","side":"R","x":222.411,"y":154.689,"depth":5.469,"n":4},
+{"img":"f04_handR","kind":"hand in body","side":"R","x":87.785,"y":116.98,"depth":5.469,"n":4},
+{"img":"f05_front","kind":"hands overlap","side":"R","x":267.668,"y":217.781,"depth":19.31,"n":76},
+{"img":"f05_back","kind":"hands overlap","side":"R","x":135.983,"y":217.707,"depth":19.31,"n":76},
+{"img":"f05_left","kind":"hands overlap","side":"R","x":172.584,"y":217.847,"depth":19.31,"n":76},
+{"img":"f05_right","kind":"hands overlap","side":"R","x":223.749,"y":217.653,"depth":19.31,"n":76},
+{"img":"f05_handR","kind":"hands overlap","side":"R","x":118.525,"y":80.965,"depth":19.31,"n":76}
+]

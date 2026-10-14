@@ -1,0 +1,22 @@
+[
+{"img":"f03_front","kind":"hand under cloth","side":"R","x":128.75,"y":358.166,"depth":19.21,"n":149},
+{"img":"f03_back","kind":"hand under cloth","side":"R","x":268.311,"y":352.318,"depth":19.21,"n":149},
+{"img":"f03_left","kind":"hand under cloth","side":"R","x":182.031,"y":345.381,"depth":19.21,"n":149},
+{"img":"f03_right","kind":"hand under cloth","side":"R","x":220.924,"y":366.592,"depth":19.21,"n":149},
+{"img":"f03_handR","kind":"hand under cloth","side":"R","x":116.268,"y":161.088,"depth":19.21,"n":149},
+{"img":"f04_front","kind":"hand under cloth","side":"R","x":130.195,"y":359.456,"depth":30.441,"n":247},
+{"img":"f04_back","kind":"hand under cloth","side":"R","x":267.155,"y":354.026,"depth":30.441,"n":247},
+{"img":"f04_left","kind":"hand under cloth","side":"R","x":183.472,"y":346.953,"depth":30.441,"n":247},
+{"img":"f04_right","kind":"hand under cloth","side":"R","x":219.192,"y":367.992,"depth":30.441,"n":247},
+{"img":"f04_handR","kind":"hand under cloth","side":"R","x":113.125,"y":162.739,"depth":30.441,"n":247},
+{"img":"f05_front","kind":"hand under cloth","side":"R","x":131.577,"y":357.685,"depth":37.966,"n":298},
+{"img":"f05_back","kind":"hand under cloth","side":"R","x":264.745,"y":350.091,"depth":37.966,"n":298},
+{"img":"f05_left","kind":"hand under cloth","side":"R","x":176.36,"y":344.499,"depth":37.966,"n":298},
+{"img":"f05_right","kind":"hand under cloth","side":"R","x":227.334,"y":364.517,"depth":37.966,"n":298},
+{"img":"f05_handR","kind":"hand under cloth","side":"R","x":111.694,"y":166.015,"depth":37.966,"n":298},
+{"img":"f06_front","kind":"hand under cloth","side":"R","x":141.468,"y":351.835,"depth":36.609,"n":324},
+{"img":"f06_back","kind":"hand under cloth","side":"R","x":253.838,"y":340.974,"depth":36.609,"n":324},
+{"img":"f06_left","kind":"hand under cloth","side":"R","x":163.862,"y":338.705,"depth":36.609,"n":324},
+{"img":"f06_right","kind":"hand under cloth","side":"R","x":240.841,"y":354.622,"depth":36.609,"n":324},
+{"img":"f06_handR","kind":"hand under cloth","side":"R","x":103.36,"y":180.569,"depth":36.609,"n":324}
+]

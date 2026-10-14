@@ -1,0 +1,10 @@
+body ready 0.1 s
+Kit_Sock_L: v=1638 tris=3160  (0.1s)
+Kit_Sock_R: v=1595 tris=3074  (0.1s)
+Kit_Shoe_L: v=11873 tris=23588  (0.3s)
+Kit_Shoe_R: v=11919 tris=23680  (0.3s)
+Kit_Bottom: v=18264 tris=36358  (1.7s)
+Kit_Top: v=8084 tris=15902  (2.0s)
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

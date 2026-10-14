@@ -1,0 +1,74 @@
+{
+ "Male_L": {
+  "tested_skin_vertices": 1686,
+  "worst": {
+   "clip": "HalfSwing",
+   "frame": 23,
+   "count": 183,
+   "depth_mm": 4.79
+  },
+  "grip_clips_max_poke_verts": 183,
+  "grip_clips_max_depth_mm": 6.26,
+  "calm_clips_max_poke_verts": 55,
+  "calm_clips_max_depth_mm": 4.69,
+  "all_clips_max_poke_verts": 183,
+  "all_clips_max_depth_mm": 9.74,
+  "max_float_p98_body_mm": 5.44,
+  "max_float_body_mm": 6.14,
+  "max_gap_cuff_mm": 7.61
+ },
+ "Male_R": {
+  "tested_skin_vertices": 1680,
+  "worst": {
+   "clip": "Drive",
+   "frame": 22,
+   "count": 158,
+   "depth_mm": 5.26
+  },
+  "grip_clips_max_poke_verts": 158,
+  "grip_clips_max_depth_mm": 7.42,
+  "calm_clips_max_poke_verts": 60,
+  "calm_clips_max_depth_mm": 7.42,
+  "all_clips_max_poke_verts": 158,
+  "all_clips_max_depth_mm": 7.42,
+  "max_float_p98_body_mm": 5.86,
+  "max_float_body_mm": 6.93,
+  "max_gap_cuff_mm": 8.49
+ },
+ "Female_L": {
+  "tested_skin_vertices": 1076,
+  "worst": {
+   "clip": "HalfSwing",
+   "frame": 26,
+   "count": 165,
+   "depth_mm": 5.93
+  },
+  "grip_clips_max_poke_verts": 165,
+  "grip_clips_max_depth_mm": 6.14,
+  "calm_clips_max_poke_verts": 43,
+  "calm_clips_max_depth_mm": 3.61,
+  "all_clips_max_poke_verts": 165,
+  "all_clips_max_depth_mm": 6.31,
+  "max_float_p98_body_mm": 3.23,
+  "max_float_body_mm": 4.17,
+  "max_gap_cuff_mm": 5.5
+ },
+ "Female_R": {
+  "tested_skin_vertices": 1134,
+  "worst": {
+   "clip": "Putt",
+   "frame": 20,
+   "count": 217,
+   "depth_mm": 7.39
+  },
+  "grip_clips_max_poke_verts": 217,
+  "grip_clips_max_depth_mm": 7.51,
+  "calm_clips_max_poke_verts": 75,
+  "calm_clips_max_depth_mm": 4.72,
+  "all_clips_max_poke_verts": 217,
+  "all_clips_max_depth_mm": 7.51,
+  "max_float_p98_body_mm": 3.35,
+  "max_float_body_mm": 4.36,
+  "max_gap_cuff_mm": 7.28
+ }
+}

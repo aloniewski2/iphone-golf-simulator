@@ -1,0 +1,3 @@
+hero,clip,piece,frames,body_in_acc_n,body_in_acc_mm,body_t,cloth_in_acc_n,cloth_in_acc_mm,cloth_t,acc_in_body_n,acc_in_body_mm,acc_t
+MatchHero_Male,Emote_Shock,Acc_Cap,23,336,1.9,0.60,0,0.0,-1.00,2156,10.2,1.10
+MatchHero_Male,Walk,Acc_Cap,12,0,0.0,-1.00,0,0.0,-1.00,0,0.0,-1.00

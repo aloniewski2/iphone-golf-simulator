@@ -1,0 +1,269 @@
+[
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 333.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f00_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.73529411764707,
+"y": 332.0,
+"r": 13.8,
+"area": 34,
+"img": "f01_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 331.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f02_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 331.0,
+"r": 13.8,
+"area": 35,
+"img": "f03_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 331.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.73529411764707,
+"y": 332.0,
+"r": 13.8,
+"area": 34,
+"img": "f05_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 333.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f06_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.97297297297297,
+"y": 334.7837837837838,
+"r": 13.8,
+"area": 37,
+"img": "f07_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.88888888888889,
+"y": 335.6388888888889,
+"r": 13.15,
+"area": 36,
+"img": "f08_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 141.05263157894737,
+"y": 336.1578947368421,
+"r": 13.8,
+"area": 38,
+"img": "f09_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.88888888888889,
+"y": 335.6388888888889,
+"r": 13.15,
+"area": 36,
+"img": "f10_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 141.02777777777777,
+"y": 334.94444444444446,
+"r": 13.8,
+"area": 36,
+"img": "f11_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 333.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f12_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 147.774,
+"y": 345.879,
+"r": 18,
+"depth": 6.086,
+"n": 91,
+"img": "f08_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 250.888,
+"y": 342.563,
+"r": 18,
+"depth": 6.086,
+"n": 91,
+"img": "f08_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 188.723,
+"y": 337.405,
+"r": 18,
+"depth": 6.086,
+"n": 91,
+"img": "f08_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 212.618,
+"y": 351.802,
+"r": 18,
+"depth": 6.086,
+"n": 91,
+"img": "f08_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 152.609,
+"y": 173.497,
+"r": 22,
+"depth": 6.086,
+"n": 91,
+"img": "f08_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 147.8,
+"y": 346.437,
+"r": 18,
+"depth": 7.217,
+"n": 100,
+"img": "f09_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 250.913,
+"y": 343.229,
+"r": 18,
+"depth": 7.217,
+"n": 100,
+"img": "f09_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 189.146,
+"y": 337.986,
+"r": 18,
+"depth": 7.217,
+"n": 100,
+"img": "f09_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 212.146,
+"y": 352.452,
+"r": 18,
+"depth": 7.217,
+"n": 100,
+"img": "f09_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 151.961,
+"y": 173.903,
+"r": 22,
+"depth": 7.217,
+"n": 100,
+"img": "f09_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 147.774,
+"y": 345.882,
+"r": 18,
+"depth": 6.092,
+"n": 91,
+"img": "f10_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 250.888,
+"y": 342.565,
+"r": 18,
+"depth": 6.092,
+"n": 91,
+"img": "f10_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 188.723,
+"y": 337.407,
+"r": 18,
+"depth": 6.092,
+"n": 91,
+"img": "f10_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 212.618,
+"y": 351.805,
+"r": 18,
+"depth": 6.092,
+"n": 91,
+"img": "f10_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 152.609,
+"y": 173.497,
+"r": 22,
+"depth": 6.092,
+"n": 91,
+"img": "f10_handR"
+}
+]

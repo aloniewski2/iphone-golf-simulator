@@ -1,0 +1,569 @@
+{
+    "version": 1,
+    "sex": "Male",
+    "source": "Resources/Tennis/Customization/PlayerMale.prefab (work/match-anim-set/export/HeroBase_Male_MatchAnims.blend)",
+    "baseClip": "Male_ReadyIdle",
+    "swingClip": "Male_Forehand",
+    "baseTime": 0.0,
+    "swingLength": 1.2000000476837159,
+    "swingContact": 0.666670024394989,
+    "parts": [
+        {
+            "name": "Body",
+            "kind": "body",
+            "vertexCount": 33196,
+            "positionOffset": 0,
+            "normalOffset": 398352,
+            "swingPositionOffset": 0,
+            "swingNormalOffset": 398352,
+            "submeshes": [
+                {
+                    "material": "Skin",
+                    "indexOffset": 796704,
+                    "indexCount": 198474
+                }
+            ]
+        },
+        {
+            "name": "Face",
+            "kind": "face",
+            "vertexCount": 3578,
+            "positionOffset": 1590600,
+            "normalOffset": 1633536,
+            "swingPositionOffset": 796704,
+            "swingNormalOffset": 839640,
+            "submeshes": [
+                {
+                    "material": "Face_Pupil",
+                    "indexOffset": 1676472,
+                    "indexCount": 576
+                },
+                {
+                    "material": "Face_Iris",
+                    "indexOffset": 1678776,
+                    "indexCount": 1152
+                },
+                {
+                    "material": "Face_Limbal",
+                    "indexOffset": 1683384,
+                    "indexCount": 384
+                },
+                {
+                    "material": "Face_Sclera",
+                    "indexOffset": 1684920,
+                    "indexCount": 3648
+                },
+                {
+                    "material": "Face_Catch",
+                    "indexOffset": 1699512,
+                    "indexCount": 60
+                },
+                {
+                    "material": "Face_BrowSoft",
+                    "indexOffset": 1699752,
+                    "indexCount": 1488
+                },
+                {
+                    "material": "Face_Brow",
+                    "indexOffset": 1705704,
+                    "indexCount": 2808
+                },
+                {
+                    "material": "Face_LidLine",
+                    "indexOffset": 1716936,
+                    "indexCount": 2580
+                },
+                {
+                    "material": "Face_LidCrease",
+                    "indexOffset": 1727256,
+                    "indexCount": 468
+                },
+                {
+                    "material": "Face_Nostril",
+                    "indexOffset": 1729128,
+                    "indexCount": 360
+                },
+                {
+                    "material": "Face_LipUp",
+                    "indexOffset": 1730568,
+                    "indexCount": 1692
+                },
+                {
+                    "material": "Face_Lip",
+                    "indexOffset": 1737336,
+                    "indexCount": 1692
+                },
+                {
+                    "material": "Face_Seam",
+                    "indexOffset": 1744104,
+                    "indexCount": 756
+                }
+            ]
+        },
+        {
+            "name": "Kit_Bottom",
+            "kind": "kit",
+            "vertexCount": 13420,
+            "positionOffset": 1747128,
+            "normalOffset": 1908168,
+            "swingPositionOffset": 882576,
+            "swingNormalOffset": 1043616,
+            "submeshes": [
+                {
+                    "material": "Kit_Shorts",
+                    "indexOffset": 2069208,
+                    "indexCount": 54456
+                },
+                {
+                    "material": "Kit_ShortsBand",
+                    "indexOffset": 2287032,
+                    "indexCount": 8640
+                }
+            ]
+        },
+        {
+            "name": "Kit_Shoe_L",
+            "kind": "kit",
+            "vertexCount": 12862,
+            "positionOffset": 2321592,
+            "normalOffset": 2475936,
+            "swingPositionOffset": 1204656,
+            "swingNormalOffset": 1359000,
+            "submeshes": [
+                {
+                    "material": "Kit_Shoe",
+                    "indexOffset": 2630280,
+                    "indexCount": 44760
+                },
+                {
+                    "material": "Kit_Sole",
+                    "indexOffset": 2809320,
+                    "indexCount": 8274
+                }
+            ]
+        },
+        {
+            "name": "Kit_Shoe_R",
+            "kind": "kit",
+            "vertexCount": 12862,
+            "positionOffset": 2842416,
+            "normalOffset": 2996760,
+            "swingPositionOffset": 1513344,
+            "swingNormalOffset": 1667688,
+            "submeshes": [
+                {
+                    "material": "Kit_Shoe",
+                    "indexOffset": 3151104,
+                    "indexCount": 44760
+                },
+                {
+                    "material": "Kit_Sole",
+                    "indexOffset": 3330144,
+                    "indexCount": 8274
+                }
+            ]
+        },
+        {
+            "name": "Kit_Sock_L",
+            "kind": "kit",
+            "vertexCount": 4160,
+            "positionOffset": 3363240,
+            "normalOffset": 3413160,
+            "swingPositionOffset": 1822032,
+            "swingNormalOffset": 1871952,
+            "submeshes": [
+                {
+                    "material": "Kit_Sock",
+                    "indexOffset": 3463080,
+                    "indexCount": 18810
+                }
+            ]
+        },
+        {
+            "name": "Kit_Sock_R",
+            "kind": "kit",
+            "vertexCount": 4196,
+            "positionOffset": 3538320,
+            "normalOffset": 3588672,
+            "swingPositionOffset": 1921872,
+            "swingNormalOffset": 1972224,
+            "submeshes": [
+                {
+                    "material": "Kit_Sock",
+                    "indexOffset": 3639024,
+                    "indexCount": 18810
+                }
+            ]
+        },
+        {
+            "name": "Kit_Top",
+            "kind": "kit",
+            "vertexCount": 15272,
+            "positionOffset": 3714264,
+            "normalOffset": 3897528,
+            "swingPositionOffset": 2022576,
+            "swingNormalOffset": 2205840,
+            "submeshes": [
+                {
+                    "material": "Kit_Shirt",
+                    "indexOffset": 4080792,
+                    "indexCount": 61650
+                },
+                {
+                    "material": "Kit_ShirtTrim",
+                    "indexOffset": 4327392,
+                    "indexCount": 5244
+                }
+            ]
+        },
+        {
+            "name": "Racket_Racket_Classic",
+            "kind": "racket",
+            "vertexCount": 2998,
+            "positionOffset": 4348368,
+            "normalOffset": 4384344,
+            "swingPositionOffset": 2389104,
+            "swingNormalOffset": 2425080,
+            "submeshes": [
+                {
+                    "material": "White_Frame",
+                    "indexOffset": 4420320,
+                    "indexCount": 18000
+                }
+            ]
+        },
+        {
+            "name": "Racket_ButtCap",
+            "kind": "racket",
+            "vertexCount": 314,
+            "positionOffset": 4492320,
+            "normalOffset": 4496088,
+            "swingPositionOffset": 2461056,
+            "swingNormalOffset": 2464824,
+            "submeshes": [
+                {
+                    "material": "Black_Grip",
+                    "indexOffset": 4499856,
+                    "indexCount": 1440
+                }
+            ]
+        },
+        {
+            "name": "Racket_Grip",
+            "kind": "racket",
+            "vertexCount": 1442,
+            "positionOffset": 4505616,
+            "normalOffset": 4522920,
+            "swingPositionOffset": 2468592,
+            "swingNormalOffset": 2485896,
+            "submeshes": [
+                {
+                    "material": "Black_Grip",
+                    "indexOffset": 4540224,
+                    "indexCount": 6912
+                }
+            ]
+        },
+        {
+            "name": "Racket_StringBed",
+            "kind": "racket",
+            "vertexCount": 1368,
+            "positionOffset": 4567872,
+            "normalOffset": 4584288,
+            "swingPositionOffset": 2503200,
+            "swingNormalOffset": 2519616,
+            "submeshes": [
+                {
+                    "material": "White_Strings",
+                    "indexOffset": 4600704,
+                    "indexCount": 5928
+                }
+            ]
+        }
+    ],
+    "materials": [
+        {
+            "name": "Black_Grip",
+            "color": [
+                0.10979997366666794,
+                0.10979997366666794,
+                0.12159997969865799,
+                1.0
+            ],
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Face_Brow",
+            "color": [
+                0.16999995708465577,
+                0.13999995589256288,
+                0.11499997228384018,
+                1.0
+            ],
+            "smoothness": 0.3400000035762787
+        },
+        {
+            "name": "Face_BrowSoft",
+            "color": [
+                0.21999996900558473,
+                0.17499995231628419,
+                0.13999995589256288,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Face_Catch",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "smoothness": 0.8999999761581421
+        },
+        {
+            "name": "Face_Iris",
+            "color": [
+                0.29999998211860659,
+                0.16999995708465577,
+                0.08499997109174729,
+                1.0
+            ],
+            "smoothness": 0.20000000298023225
+        },
+        {
+            "name": "Face_LidCrease",
+            "color": [
+                0.3399999737739563,
+                0.19999995827674867,
+                0.13999995589256288,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Face_LidLine",
+            "color": [
+                0.11499997228384018,
+                0.06999997794628144,
+                0.04999998211860657,
+                1.0
+            ],
+            "smoothness": 0.4000000059604645
+        },
+        {
+            "name": "Face_Limbal",
+            "color": [
+                0.08999999612569809,
+                0.044999971985816959,
+                0.02500000037252903,
+                1.0
+            ],
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Face_Lip",
+            "color": [
+                0.9399999976158142,
+                0.6399999260902405,
+                0.47999995946884158,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Face_LipUp",
+            "color": [
+                0.7569999694824219,
+                0.4929999113082886,
+                0.33299997448921206,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Face_Nostril",
+            "color": [
+                0.25999996066093447,
+                0.12999996542930604,
+                0.08999999612569809,
+                1.0
+            ],
+            "smoothness": 0.25
+        },
+        {
+            "name": "Face_Pupil",
+            "color": [
+                0.02500000037252903,
+                0.017999999225139619,
+                0.012000000104308129,
+                1.0
+            ],
+            "smoothness": 0.25
+        },
+        {
+            "name": "Face_Sclera",
+            "color": [
+                0.800000011920929,
+                0.7699999809265137,
+                0.7200000286102295,
+                1.0
+            ],
+            "smoothness": 0.6200000047683716
+        },
+        {
+            "name": "Face_Seam",
+            "color": [
+                0.41999995708465578,
+                0.17999997735023499,
+                0.09999997168779373,
+                1.0
+            ],
+            "smoothness": 0.2800000011920929
+        },
+        {
+            "name": "Kit_Shirt",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_ShirtTrim",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_Shoe",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_Shorts",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_ShortsBand",
+            "color": [
+                0.03500000014901161,
+                0.03500000014901161,
+                0.04010000079870224,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_Sock",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_Sole",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Skin",
+            "color": [
+                0.886274516582489,
+                0.6274510622024536,
+                0.4313724935054779,
+                1.0
+            ],
+            "smoothness": 0.4000000059604645
+        },
+        {
+            "name": "White_Frame",
+            "color": [
+                0.9333000183105469,
+                0.9294000267982483,
+                0.9175999760627747,
+                1.0
+            ],
+            "smoothness": 0.5
+        },
+        {
+            "name": "White_Strings",
+            "color": [
+                0.9097999930381775,
+                0.9059000015258789,
+                0.8901999592781067,
+                1.0
+            ],
+            "smoothness": 0.44999998807907107
+        }
+    ],
+    "swingFrames": [
+        "MatchHero_Male_Swing_00",
+        "MatchHero_Male_Swing_01",
+        "MatchHero_Male_Swing_02",
+        "MatchHero_Male_Swing_03",
+        "MatchHero_Male_Swing_04",
+        "MatchHero_Male_Swing_05",
+        "MatchHero_Male_Swing_06",
+        "MatchHero_Male_Swing_07",
+        "MatchHero_Male_Swing_08",
+        "MatchHero_Male_Swing_09",
+        "MatchHero_Male_Swing_10",
+        "MatchHero_Male_Swing_11"
+    ],
+    "swingTimes": [
+        0.0,
+        0.15000000596046449,
+        0.30000001192092898,
+        0.41999998688697817,
+        0.5,
+        0.5600000023841858,
+        0.6200000047683716,
+        0.6669999957084656,
+        0.7200000286102295,
+        0.7799999713897705,
+        0.8999999761581421,
+        1.2000000476837159
+    ],
+    "boundsMin": [
+        -0.3916662335395813,
+        0.0024482011795043947,
+        -0.49540501832962038
+    ],
+    "boundsMax": [
+        0.39166635274887087,
+        1.6580296754837037,
+        0.10052788257598877
+    ],
+    "height": 1.6555814743041993,
+    "headCentreY": 1.5196024179458619,
+    "headTopY": 1.6580297946929932,
+    "headRadius": 0.12481915950775147,
+    "coordinates": "Unity metres, z negated, winding flipped (hero faces -z)"
+}

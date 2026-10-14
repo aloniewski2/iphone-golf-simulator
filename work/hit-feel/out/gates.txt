@@ -1,0 +1,16 @@
+GATE: SHAPES_VALID                 PASS  25209 shapes: curves <=16 points, in time order, values and parameters 0..1, crack first
+GATE: LADDER_REWARD                PASS  after-crack energy great 0.0137 < excellent 0.0257 < perfect 0.0472
+GATE: PERFECT_SIGNATURE            PASS  PERFECT rings and sparkles, EXCELLENT rings, GREAT is the clean strike alone
+GATE: CRISP_WHEN_CLEAN             PASS  crack sharpness centre 0.91 > off-centre 0.65 > frame 0.41
+GATE: STING_ON_MISHITS             PASS  off-centre 125 ms, frame 137 ms, none on clean balls
+GATE: WEIGHT_BY_STROKE             PASS  smash 0.0584 > drive 0.0366 > touch 0.0199 > putt 0.0102
+GATE: POWER_HITS_HARDER            PASS  crack 0.96 at full power vs 0.77 at a tenth
+GATE: SHORT_HITS                   PASS  ordinary hits end by 150 ms, supercharged 320 ms, streak pips 300 ms
+GATE: TAPS_COUNTABLE               PASS  closest taps 60 ms apart (>= 50)
+GATE: STREAK_PIPS                  PASS  two of three = two pips; the SUPERCHARGED ball replaces them and outweighs a plain PERFECT
+GATE: MOMENT_SHAPES                PASS  point won rises, point lost falls, match > game > point
+GATE: CUES_UNDER_HITS              PASS  swish 0.30 and bounce 0.32 under the lightest racket crack 0.61
+GATE: STRENGTH_SCALES              PASS  full 0.91, half 0.45, floor 0.18
+GATE: KNOCKS                       PASS  lengths 45 ms 140 ms 70 ms 50 ms 40 ms (ting/clunk/tok/tock/click picked by grade and stroke)
+GATE: FEEL_TEST_LIST               PASS  22 entries
+RESULT: PASS

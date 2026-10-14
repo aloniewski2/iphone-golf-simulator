@@ -1,0 +1,12 @@
+Male tennis default scale=0.83776 headCentre=1.2731 skin= shirt= shorts= shoes=
+Male tennis s1 scale=0.83776 headCentre=1.2731 skin=FFE0C4 shirt= shorts= shoes=
+Male tennis s2 scale=0.83776 headCentre=1.2731 skin=E6AE7E shirt=FF6B4A shorts=1E2A6E shoes=9EE63A
+Male tennis s3 scale=0.83776 headCentre=1.2731 skin=B7744A shirt=2F6FD6 shorts=F4F0E6 shoes=FFFFFF
+Male tennis s4 scale=0.83776 headCentre=1.2731 skin=74432C shirt=7BC043 shorts=23344D shoes=E04F3A
+Male tennis s5 scale=0.83776 headCentre=1.2731 skin=3E2317 shirt=F5C542 shorts=FFFFFF shoes=2A2A2A
+Female tennis default scale=0.83978 headCentre=1.2632 skin= shirt= shorts= shoes=
+Female tennis s1 scale=0.83978 headCentre=1.2632 skin=FFE0C4 shirt= shorts= shoes=
+Female tennis s2 scale=0.83978 headCentre=1.2632 skin=E6AE7E shirt=FF6B4A shorts=1E2A6E shoes=9EE63A
+Female tennis s3 scale=0.83978 headCentre=1.2632 skin=B7744A shirt=2F6FD6 shorts=F4F0E6 shoes=FFFFFF
+Female tennis s4 scale=0.83978 headCentre=1.2632 skin=74432C shirt=7BC043 shorts=23344D shoes=E04F3A
+Female tennis s5 scale=0.83978 headCentre=1.2632 skin=3E2317 shirt=F5C542 shorts=FFFFFF shoes=2A2A2A

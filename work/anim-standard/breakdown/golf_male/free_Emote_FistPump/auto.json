@@ -1,0 +1,142 @@
+[
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 231.1631205673759,
+"y": 287.7730496453901,
+"r": 14.450000000000001,
+"area": 141,
+"frac": 1.0,
+"img": "f02_back"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 197.1,
+"y": 286.5,
+"r": 10.0,
+"area": 10,
+"frac": 1.0,
+"img": "f02_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 186.23214285714286,
+"y": 289.94642857142856,
+"r": 15.75,
+"area": 112,
+"frac": 0.9,
+"img": "f02_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 229.76530612244898,
+"y": 286.51020408163265,
+"r": 13.15,
+"area": 98,
+"frac": 1.0,
+"img": "f03_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 186.1547619047619,
+"y": 288.51190476190476,
+"r": 13.8,
+"area": 84,
+"frac": 1.0,
+"img": "f03_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 229.86111111111111,
+"y": 286.0138888888889,
+"r": 12.5,
+"area": 72,
+"frac": 1.0,
+"img": "f04_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 185.73015873015873,
+"y": 287.8253968253968,
+"r": 13.15,
+"area": 63,
+"frac": 1.0,
+"img": "f04_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 230.8,
+"y": 287.8,
+"r": 10.0,
+"area": 20,
+"frac": 1.0,
+"img": "f05_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 185.0,
+"y": 289.5652173913044,
+"r": 10.0,
+"area": 23,
+"frac": 1.0,
+"img": "f05_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 141.359,
+"y": 343.024,
+"r": 18,
+"depth": 10.122,
+"n": 24,
+"img": "f06_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 254.699,
+"y": 334.511,
+"r": 18,
+"depth": 10.122,
+"n": 24,
+"img": "f06_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 169.921,
+"y": 331.522,
+"r": 18,
+"depth": 10.122,
+"n": 24,
+"img": "f06_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 234.032,
+"y": 346.65,
+"r": 18,
+"depth": 10.122,
+"n": 24,
+"img": "f06_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 97.148,
+"y": 160.588,
+"r": 22,
+"depth": 10.122,
+"n": 24,
+"img": "f06_handR"
+}
+]

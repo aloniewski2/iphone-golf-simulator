@@ -1,0 +1,1790 @@
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 26.6.2 (Build 25G83)
+Darwin version:          25.6.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        16384 MB
+Date:                    2026-10-13T22:08:47Z
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan" at "2026-10-13T22:08:47.52079Z"
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-nographics
+-quit
+-projectPath
+/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T//cv2-UnityClone
+-executeMethod
+GolfArcade.EditorTools.ClothingV2Install.Run
+-logFile
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/logs/install.log
+Successfully changed project path to: /var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T//cv2-UnityClone
+/private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [8471536000]  Target information:
+
+Player connection [8471536000]  * "[IP] 172.31.252.186 [Port] 55504 [Flags] 2 [Guid] 735157923 [EditorId] 735157923 [Version] 1048832 [Id] OSXEditor(0,Adnans-MacBook-Air.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+
+Player connection [8471536000] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [8471536000] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-46088" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              d01248169c294cc8b1281be7b3a664cc
+  Correlation Id:          04038a8f9e6fdd7d7004b1842956964d
+  External correlation Id: 4492354296292908626
+  Machine Id:              TX4XIvHnvxbItvrLF5vWHS2MyBM=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-adnanyonathan" (connect: 0.00s, validation: 0.00s, handshake: 0.38s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan-notifications" at "2026-10-13T22:08:47.899009Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2476051264668-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.38s
+[Licensing::Module] Licensing is initialized (took 0.04s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 3.21 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.24f1 (4e7b9b5b6244)
+[Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/Managed'
+Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
+Mono config path = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56088
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
+Registered in 0.001296 seconds.
+- Loaded All Assemblies, in  0.289 seconds
+[usbmuxd] Start listen thread
+[usbmuxd] Listen thread started
+[usbmuxd] Send listen message
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.322 seconds
+Domain Reload Profiling: 612ms
+	BeginReloadAssembly (96ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (6ms)
+	RebuildCommonClasses (28ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (29ms)
+	LoadAllAssembliesAndSetupDomain (126ms)
+		LoadAssemblies (90ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (123ms)
+			TypeCache.Refresh (122ms)
+				TypeCache.ScanAssembly (109ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (323ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (295ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (89ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (49ms)
+			ProcessInitializeOnLoadAttributes (94ms)
+			ProcessInitializeOnLoadMethodAttributes (59ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 63 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.analytics@3.8.2 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.analytics@c9d14a6bdec6)
+    com.unity.collab-proxy@2.13.6 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.40 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.timeline@1.8.13 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.timeline@3a22918286f5)
+    com.unity.xr.legacyinputhelpers@2.1.13 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.xr.legacyinputhelpers@9535ff2c27ac)
+    com.unity.services.analytics@6.3.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.services.analytics@cde4e6cf92f9)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.searcher@4.9.5 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.searcher@a463122f2c00)
+    com.unity.burst@1.8.30 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.3 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.8 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.collections@84e8eb3fc12e)
+    com.unity.services.core@1.18.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.services.core@3464cb68d709)
+    com.unity.nuget.mono-cecil@1.11.6 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.2d.sprite@5b922524bd83)
+    com.unity.2d.tilemap@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.2d.tilemap@f666889fd587)
+    com.unity.multiplayer.center@1.0.1 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.test-framework@1.6.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.ugui@b996e7548785)
+    com.unity.modules.accessibility@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.xr)
+    com.unity.render-pipelines.universal@17.3.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.render-pipelines.universal@a8b4b2fc3560)
+    com.unity.render-pipelines.core@17.3.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.render-pipelines.core@0bb36005e9ba)
+    com.unity.shadergraph@17.3.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.shadergraph@30c2e3926b79)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+    com.unity.modules.subsystems@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.unity.ext.nunit@d8c07649098d)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.2.0 (location: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+Assets/Editor/PostcardV3Scratch/staged/hole_08.fbx is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+Assets/Editor/PostcardV3Scratch/staged/hole_10.fbx is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+Assets/Editor/PostcardV3Scratch is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+Assets/Editor/PostcardV3Scratch/fixtures is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+Assets/Editor/PostcardV3Scratch.meta is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+Assets/Editor/PostcardV3Scratch/staged/hole_09.fbx is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://unix:/tmp/ilpp.sock-9bfdab29e32aafc84cb0bd45cd729493
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Content root path: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone/
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 37.5300ms
+Starting: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/BuildPipeline/bee_backend --ipc --defer-dag-verification --dagfile="Library/Bee/900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: /private/var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T/cv2-UnityClone
+DisplayProgressbar: Compiling Scripts
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly unityeditor.ios.extensions.xcode has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.iOS.Extensions.Xcode.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/Extensions/2.0.0/System.Runtime.InteropServices.WindowsRuntime.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/System.ComponentModel.Composition.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/compat/2.1.0/shims/netfx/System.ComponentModel.Composition.dll"
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.burst@2f3d916873ea/Unity.Burst.CodeGen/Unity.Burst.Cecil.dll
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 22.0737ms
+ExitCode: 0 Duration: 0s391ms
+[722/957    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra build success (0.37 seconds), 1 items updated, 957 evaluated
+AssetDatabase: script compilation time: 0.959114s
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  0.590 seconds
+Refreshing native plugins compatible for Editor in 3.06 ms, found 2 plugins.
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+Refreshing native plugins compatible for Editor in 1.09 ms, found 2 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.998 seconds
+Domain Reload Profiling: 2588ms
+	BeginReloadAssembly (196ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (20ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (119ms)
+	RebuildCommonClasses (21ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (14ms)
+	LoadAllAssembliesAndSetupDomain (350ms)
+		LoadAssemblies (238ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (149ms)
+			TypeCache.Refresh (109ms)
+				TypeCache.ScanAssembly (97ms)
+			BuildScriptInfoCaches (32ms)
+			ResolveRequiredComponents (6ms)
+	FinalizeReload (1998ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (1795ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (17ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (80ms)
+			ProcessInitializeOnLoadAttributes (1637ms)
+			ProcessInitializeOnLoadMethodAttributes (57ms)
+			AfterProcessingInitializeOnLoad (1ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (23ms)
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRays.urtshader using Guid(1142bbad8b9e8c44c83a9775ff120d37) (ScriptedImporter)Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Helpers/UnityShaderCompiler
+Launched and connected shader compiler UnityShaderCompiler after 0.05 seconds
+ -> (artifact id: '1f0ef48d4d011f17a56adf52a568c380') in 0.073654708 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RisEstimation.urtshader using Guid(713f6141bd66a134383b787f2eaa7c11) (ScriptedImporter) -> (artifact id: 'c90390af8b0052324d3c564ddd597127') in 0.008802875 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/RenderingLayerMask/TraceRenderingLayerMask.urtshader using Guid(94a070d33e408384bafc1dea4a565df9) (ScriptedImporter) -> (artifact id: 'cb8ee39916308a4a3c66791b05c70d10') in 0.007821917 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/UniformEstimation.urtshader using Guid(94a39d12848d8d64ca962a72b74e7c50) (ScriptedImporter) -> (artifact id: '1ce30138ca7a49b72c126b3b564948ba') in 0.003573292 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceTransparentRays.urtshader using Guid(6513c3b892e933c4f8d00c19d5c47532) (ScriptedImporter) -> (artifact id: '057ee2316f08ec32b7002bb6f3be3ee2') in 0.002337833 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/DynamicGI/DynamicGISkyOcclusion.urtshader using Guid(5a2a534753fbdb44e96c3c78b5a6999d) (ScriptedImporter) -> (artifact id: '499bf0218402488e51f3547cba0c23d2') in 0.002943667 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRaysAndFetchAttributes.urtshader using Guid(fbc59f55df2416344b008dc23753cae2) (ScriptedImporter) -> (artifact id: '7d1210b94ddee5a1096984d45829d87b') in 0.002703292 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RestirCandidateTemporal.urtshader using Guid(ad3a9f9982f8c4f4a839a78955e78458) (ScriptedImporter) -> (artifact id: '2919266c8e5e0255503c9c7fdb0e8eb5') in 0.003626667 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/VirtualOffset/TraceVirtualOffset.urtshader using Guid(ff2cbab5da58bf04d82c5f34037ed123) (ScriptedImporter) -> (artifact id: '84969aba615fcfabfe6202834f57973b') in 0.004575292 seconds
+Refreshing native plugins compatible for Editor in 1.65 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=4ed3c72556dd3428e8124d5384996dde): Total: 4.791 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=9 (actual=9, local cache=0, cache server=0)
+		Asset DB Process Time: managed=1 ms, native=2923 ms
+		Asset DB Callback time: managed=254 ms, native=29 ms
+		Scripting: domain reloads=1, domain reload time=590 ms, compile time=960 ms, other=30 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 1
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 8.823ms
+	ApplyChangesToAssetFolders: 0.315ms
+	Scan: 554.916ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 46.113ms
+	ProcessAssetsWithTransientArtifactChanges: 33.816ms
+	CategorizeAssets: 59.588ms
+	ImportOutOfDateAssets: 2124.008ms (1044.808ms without children)
+		ImportManagerImport: 116.665ms (2.362ms without children)
+			ImportInProcess: 113.875ms
+			UpdateCategorizedAssets: 0.429ms
+		CompileScripts: 960.013ms
+		ReloadNativeAssets: 0.024ms
+		UnloadImportedAssets: 0.551ms
+		ReloadImportedAssets: 0.964ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.604ms
+		InitializingProgressBar: 0.003ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.375ms
+	PostProcessAllAssets: 273.483ms
+	Hotreload: 3.306ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 2.089ms
+	PersistCurrentRevisions: 0.224ms
+	UnloadStreamsEnd: 0.000ms
+	GenerateScriptTypeHashes: 1.951ms
+	Untracked: 1684.531ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 0.144ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Golf Arcade
+Unloading 28 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6142 unused Assets / (2.3 MB). Loaded Objects now: 7018.
+Memory consumption went from 222.9 MB to 220.6 MB.
+Total: 7.279000 ms (FindLiveObjects: 0.245416 ms CreateObjectMapping: 0.138959 ms MarkObjects: 5.462250 ms  DeleteObjects: 1.432208 ms)
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeL_M.png using Guid(0025dcb1e6ff341279d5002cae0cbef2) (TextureImporter) -> (artifact id: 'f9c71191d47ad6904d4cc252a2cba463') in 0.23032925 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeL_M.png using Guid(63e2098e1b471464480713c2e8d85161) (TextureImporter) -> (artifact id: 'b3abc2c61898b0ab3884ff0a0661a08b') in 0.283493916 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeR_M.png using Guid(a36a557e7ee764930970f9c4c12bdf3a) (TextureImporter) -> (artifact id: '95b266370cb46bf0099f3364d59cf339') in 0.418182792 seconds
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeL_M.png using Guid(640b93e6baedb41ec823c0f1fa4a350a) (TextureImporter) -> (artifact id: 'f429762d40567f969511393effbc0f3b') in 0.308090709 seconds
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeR_N.png using Guid(f44f7a97b5b244b7187538d968f6fa18) (TextureImporter) -> (artifact id: 'f421169be52fa9c3235fdc444de5e37f') in 0.25955525 seconds
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeR_M.png using Guid(56992a6807f11423ba69922a39fd1937) (TextureImporter) -> (artifact id: 'b98201e3dd8ecfc344c1f34189062ed1') in 0.292381291 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeR_N.png using Guid(877877b60ea7c49439a672e8f3b9ac02) (TextureImporter) -> (artifact id: '4be845ab215e2a3f6cfcea4bec96a7b5') in 0.184456792 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeR_M.png using Guid(b7dbe7436660d4d1a867941fe5011943) (TextureImporter) -> (artifact id: 'f1a46e61fbd4a710ebb6b830e9a64f71') in 0.275734708 seconds
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeL_N.png using Guid(e8532f1ad943340d29fcea16e1c20c35) (TextureImporter) -> (artifact id: '0a45e5fca5e472c093410e4fc01ee329') in 0.25764425 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeR_N.png using Guid(1c0cf2af9ad7546fdb320f4ad87e0af8) (TextureImporter) -> (artifact id: '0f0ce476dac43c5f18811ff2ffffd72f') in 0.210720667 seconds
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeR_M.png using Guid(5cea298c7a1094df58c2a5f465da737d) (TextureImporter) -> (artifact id: 'd692ab08785053ba2af8bee8e04e17ef') in 0.23415375 seconds
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeR_N.png using Guid(ecc215f0a0d8c4e6bbfe899ac1df34c2) (TextureImporter) -> (artifact id: '080f4f32011494598adf35e3dc4879cb') in 0.2458565 seconds
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeL_N.png using Guid(1e407765c6e0545d187eb8e854864e6c) (TextureImporter) -> (artifact id: '7a6bd101de00cf00e4a4062623fdbdbd') in 0.269609542 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeL_N.png using Guid(2efa9c3753fc44e3cb0e0681272923bf) (TextureImporter) -> (artifact id: 'd95034eec2d0fdcb8103a8084d03a4db') in 0.219854125 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeL_M.png using Guid(cfbc26e4889cd43c280babb5fdd0e2a5) (TextureImporter) -> (artifact id: '4900e07b49a07534dd3836ed357fe2fc') in 0.295399334 seconds
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeL_N.png using Guid(ffa7ab33e97f1403692120d74054f6a2) (TextureImporter) -> (artifact id: 'bcb3142377b6e138b048440134b5e9b5') in 0.181344167 seconds
+Refreshing native plugins compatible for Editor in 1.39 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=13b2a0a487e5e47d99e7205f5a61269e): Total: 4.425 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=16 (actual=16, local cache=0, cache server=0)
+		Asset DB Process Time: managed=61 ms, native=4352 ms
+		Asset DB Callback time: managed=6 ms, native=4 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=16, moved=0, deleted=0
+		Scan Filter Count: 1
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.128ms
+	Scan: 189.394ms
+	OnSourceAssetsModified: 0.525ms
+	CategorizeAssetsWithTransientArtifact: 0.019ms
+	ProcessAssetsWithTransientArtifactChanges: 0.041ms
+	CategorizeAssets: 37.509ms
+	ImportOutOfDateAssets: 4182.949ms (0.251ms without children)
+		ImportManagerImport: 4181.800ms (1.059ms without children)
+			ImportInProcess: 4180.572ms
+			UpdateCategorizedAssets: 0.170ms
+		ReloadNativeAssets: 0.026ms
+		UnloadImportedAssets: 0.067ms
+		ReloadImportedAssets: 0.002ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.493ms
+		InitializingProgressBar: 0.003ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 0.306ms
+	PostProcessAllAssets: 8.204ms
+	Hotreload: 1.990ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.160ms
+	UnloadStreamsBegin: 0.015ms
+	PersistCurrentRevisions: 0.303ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 4.221ms
+
+Start importing Assets/Resources/Tennis/KitsV2/KitV2_FabricAtlas.png using Guid(d437d49b1a2be4c2b8a74f0352ec529d) (TextureImporter) -> (artifact id: '0741530cd568aa50404fe72ab13694fe') in 0.276710625 seconds
+Refreshing native plugins compatible for Editor in 2.01 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=87130abc39073492aa3b2f085eba0bd6): Total: 0.289 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Bottom_N.png using Guid(73cb0f7e9ec784d6c96aa32b8bc31adc) (TextureImporter) -> (artifact id: 'a19f166d1d497a88b76118dbb18d1fc6') in 0.334931334 seconds
+Refreshing native plugins compatible for Editor in 2.06 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=f07bdac8762c04732bc71b7f383d213e): Total: 0.348 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=344 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.101ms
+	Scan: 3.944ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.022ms
+	CategorizeAssets: 0.828ms
+	ImportOutOfDateAssets: 338.210ms (-0.010ms without children)
+		ImportManagerImport: 337.100ms (0.480ms without children)
+			ImportInProcess: 336.599ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.029ms
+		UnloadImportedAssets: 0.080ms
+		ReloadImportedAssets: 0.203ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.509ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.297ms
+	PostProcessAllAssets: 0.681ms
+	Hotreload: 2.137ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.243ms
+	UnloadStreamsBegin: 0.007ms
+	PersistCurrentRevisions: 0.171ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.449ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Bottom_M.png using Guid(4d8089e425e7241a89608f8fc47baa7f) (TextureImporter) -> (artifact id: 'f671a426fc3858c7f278f19dff8b2914') in 0.38708125 seconds
+Refreshing native plugins compatible for Editor in 1.84 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=425f253020fe943aa81e1af0a36443f7): Total: 0.401 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=397 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.088ms
+	Scan: 4.572ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.022ms
+	CategorizeAssets: 0.961ms
+	ImportOutOfDateAssets: 390.452ms (0.040ms without children)
+		ImportManagerImport: 389.298ms (0.453ms without children)
+			ImportInProcess: 388.826ms
+			UpdateCategorizedAssets: 0.020ms
+		ReloadNativeAssets: 0.036ms
+		UnloadImportedAssets: 0.097ms
+		ReloadImportedAssets: 0.162ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.502ms
+		InitializingProgressBar: 0.002ms
+		OnDemandSchedulerStart: 0.315ms
+	PostProcessAllAssets: 0.907ms
+	Hotreload: 1.944ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.123ms
+	UnloadStreamsBegin: 0.010ms
+	PersistCurrentRevisions: 0.174ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.582ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_N.png using Guid(7cd5675607e4346d594bab71995fd63e) (TextureImporter) -> (artifact id: '5900fb7fbed8a68eae33febcda29b2e8') in 0.411168875 seconds
+Refreshing native plugins compatible for Editor in 2.09 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=4942b2e45b2f541fba7838a4e99583a3): Total: 0.424 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=421 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.100ms
+	Scan: 4.887ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.099ms
+	CategorizeAssets: 0.949ms
+	ImportOutOfDateAssets: 413.364ms (0.028ms without children)
+		ImportManagerImport: 412.124ms (0.472ms without children)
+			ImportInProcess: 411.631ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.032ms
+		UnloadImportedAssets: 0.092ms
+		ReloadImportedAssets: 0.181ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.529ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.375ms
+	PostProcessAllAssets: 0.697ms
+	Hotreload: 2.162ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.122ms
+	UnloadStreamsBegin: 0.009ms
+	PersistCurrentRevisions: 0.199ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.700ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_M.png using Guid(1663c63a346c944bebbff6baf8def8c7) (TextureImporter) -> (artifact id: '700600ec34d3691202836586d9443563') in 0.500719792 seconds
+Refreshing native plugins compatible for Editor in 2.21 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c85a314e4cc044a00b22a91763508ef3): Total: 0.514 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=510 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.100ms
+	Scan: 4.625ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.023ms
+	CategorizeAssets: 0.850ms
+	ImportOutOfDateAssets: 503.338ms (0.012ms without children)
+		ImportManagerImport: 502.149ms (0.509ms without children)
+			ImportInProcess: 501.616ms
+			UpdateCategorizedAssets: 0.025ms
+		ReloadNativeAssets: 0.030ms
+		UnloadImportedAssets: 0.097ms
+		ReloadImportedAssets: 0.200ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.526ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.322ms
+	PostProcessAllAssets: 1.139ms
+	Hotreload: 2.292ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.142ms
+	UnloadStreamsBegin: 0.011ms
+	PersistCurrentRevisions: 0.232ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.617ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_SockL_N.png using Guid(0199ad03fbbec42239dbeac5f7f288ad) (TextureImporter) -> (artifact id: 'ea1d097e1f2d37e6cc5a64f56e6d39dc') in 0.078273625 seconds
+Refreshing native plugins compatible for Editor in 2.00 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=7b56ea0f7c69e46e9aef8856dc2ac793): Total: 0.091 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_SockL_M.png using Guid(2974a101bd5804cb9a66bea97ad2a69c) (TextureImporter) -> (artifact id: 'c6510d0fcf6f64b366b92d75cf27cd1e') in 0.0989945 seconds
+Refreshing native plugins compatible for Editor in 3.03 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c86a6313acb514653b3df75e04972627): Total: 0.115 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_SockR_N.png using Guid(52ce8f29e91cd439ab8bdc00100c6e29) (TextureImporter) -> (artifact id: 'd0cec91c85807ef9d9c96682938e3703') in 0.077180125 seconds
+Refreshing native plugins compatible for Editor in 1.77 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=26f6ff72318dd45ebabeb854c895ea77): Total: 0.094 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_SockR_M.png using Guid(8a08cc90830b749869183e6a97f12ae0) (TextureImporter) -> (artifact id: 'e5e2f87c6325537ce29020fbbdd22f5a') in 0.093640541 seconds
+Refreshing native plugins compatible for Editor in 1.73 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=35d0b860033b645e18cc03572baab24f): Total: 0.105 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeL_N.png using Guid(2efa9c3753fc44e3cb0e0681272923bf) (TextureImporter) -> (artifact id: 'd95034eec2d0fdcb8103a8084d03a4db') in 0.182440667 seconds
+Refreshing native plugins compatible for Editor in 2.03 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=13eb886f544284da480dbd17d6425147): Total: 0.194 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeL_M.png using Guid(cfbc26e4889cd43c280babb5fdd0e2a5) (TextureImporter) -> (artifact id: '4900e07b49a07534dd3836ed357fe2fc') in 0.275942334 seconds
+Refreshing native plugins compatible for Editor in 1.78 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=377622f6ad4d64e72bbea7692f16cfe5): Total: 0.287 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeR_N.png using Guid(1c0cf2af9ad7546fdb320f4ad87e0af8) (TextureImporter) -> (artifact id: '0f0ce476dac43c5f18811ff2ffffd72f') in 0.18066325 seconds
+Refreshing native plugins compatible for Editor in 1.80 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=d2e6a2edf449941e491580f0527acfbc): Total: 0.191 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_ShoeR_M.png using Guid(a36a557e7ee764930970f9c4c12bdf3a) (TextureImporter) -> (artifact id: '95b266370cb46bf0099f3364d59cf339') in 0.25720775 seconds
+Refreshing native plugins compatible for Editor in 1.80 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=e57eb786723204d81809a33429a2a66d): Total: 0.268 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_Bottom_N.png using Guid(9fb6df8af2a5049e48b15de3bc8bea9b) (TextureImporter) -> (artifact id: 'c0fe2e32a22a19999d872ddb03bbc54b') in 0.575285375 seconds
+Refreshing native plugins compatible for Editor in 2.10 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=76b9f61c90b174a80ac2facacfffd39c): Total: 0.589 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=585 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.084ms
+	Scan: 3.955ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.022ms
+	CategorizeAssets: 0.817ms
+	ImportOutOfDateAssets: 579.203ms (0.004ms without children)
+		ImportManagerImport: 578.030ms (0.485ms without children)
+			ImportInProcess: 577.520ms
+			UpdateCategorizedAssets: 0.025ms
+		ReloadNativeAssets: 0.027ms
+		UnloadImportedAssets: 0.068ms
+		ReloadImportedAssets: 0.197ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.525ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.350ms
+	PostProcessAllAssets: 0.673ms
+	Hotreload: 2.181ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.126ms
+	UnloadStreamsBegin: 0.009ms
+	PersistCurrentRevisions: 0.198ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.530ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_Bottom_M.png using Guid(42e77b7e6ed05481ca6de65d87a295b2) (TextureImporter) -> (artifact id: '0951eca6521d3c1f463b91d6911bf533') in 1.178188209 seconds
+Refreshing native plugins compatible for Editor in 2.05 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=56e196c20561345da84a76318f4094c5): Total: 1.191 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=1188 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.095ms
+	Scan: 5.054ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.026ms
+	CategorizeAssets: 0.999ms
+	ImportOutOfDateAssets: 1180.265ms (0.067ms without children)
+		ImportManagerImport: 1178.970ms (0.453ms without children)
+			ImportInProcess: 1178.495ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.033ms
+		UnloadImportedAssets: 0.090ms
+		ReloadImportedAssets: 0.167ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.573ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.364ms
+	PostProcessAllAssets: 0.752ms
+	Hotreload: 2.127ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.141ms
+	UnloadStreamsBegin: 0.010ms
+	PersistCurrentRevisions: 0.194ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.725ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_Top_N.png using Guid(704317464b7c44ae489da0a95e0ef723) (TextureImporter) -> (artifact id: '44441deb7282fd5d96a51f971d112183') in 0.464685375 seconds
+Refreshing native plugins compatible for Editor in 2.59 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=8d70849c53f7245f59e0e1ed61e94a3f): Total: 0.479 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=475 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.101ms
+	Scan: 4.515ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 1.090ms
+	ImportOutOfDateAssets: 467.379ms (0.119ms without children)
+		ImportManagerImport: 465.965ms (0.540ms without children)
+			ImportInProcess: 465.400ms
+			UpdateCategorizedAssets: 0.025ms
+		ReloadNativeAssets: 0.033ms
+		UnloadImportedAssets: 0.097ms
+		ReloadImportedAssets: 0.200ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.556ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.406ms
+	PostProcessAllAssets: 0.811ms
+	Hotreload: 2.676ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.142ms
+	UnloadStreamsBegin: 0.010ms
+	PersistCurrentRevisions: 0.199ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.956ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_Top_M.png using Guid(ec7338d2e68ea481cb55bca8db4997a0) (TextureImporter) -> (artifact id: 'b57ee8a3d9ea8adaa35a5691db6b0b56') in 0.585408334 seconds
+Refreshing native plugins compatible for Editor in 2.22 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=594d0ba7fd2c648eb9db7f9a2e9589a3): Total: 0.601 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=597 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.122ms
+	Scan: 5.498ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 1.063ms
+	ImportOutOfDateAssets: 588.976ms (0.067ms without children)
+		ImportManagerImport: 587.566ms (0.506ms without children)
+			ImportInProcess: 587.035ms
+			UpdateCategorizedAssets: 0.024ms
+		ReloadNativeAssets: 0.039ms
+		UnloadImportedAssets: 0.113ms
+		ReloadImportedAssets: 0.193ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.578ms
+		InitializingProgressBar: 0.003ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.416ms
+	PostProcessAllAssets: 0.868ms
+	Hotreload: 2.331ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.148ms
+	UnloadStreamsBegin: 0.019ms
+	PersistCurrentRevisions: 0.193ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 2.131ms
+
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_SockL_N.png using Guid(eac9c3b73743f412382a1c74416561aa) (TextureImporter) -> (artifact id: '11361a306f88161ae1e5d5bddbce1a32') in 0.064618792 seconds
+Refreshing native plugins compatible for Editor in 1.98 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=3649a445715e946de8cbd66218779647): Total: 0.078 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_SockL_M.png using Guid(99d4e9c68133b48d28c7fe0e913db54d) (TextureImporter) -> (artifact id: 'ff3e7876464e10175d2197c689405832') in 0.074991584 seconds
+Refreshing native plugins compatible for Editor in 1.77 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=41c6b7ec7c1814871b4524ce409ddc6f): Total: 0.086 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_SockR_N.png using Guid(0efb4d0801e1446fbb89c23eed0a254a) (TextureImporter) -> (artifact id: '7d84acd5453ec9f69d07ada439a3c6df') in 0.057220458 seconds
+Refreshing native plugins compatible for Editor in 1.77 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=b00454a1ebe974c97bde67a0f05291c1): Total: 0.068 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_SockR_M.png using Guid(b449b00ace0c74712af911230ef75ce9) (TextureImporter) -> (artifact id: '19e212b459d38b20653252893e17bff9') in 0.085737125 seconds
+Refreshing native plugins compatible for Editor in 1.81 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c7f1c183a85324af890829222736668a): Total: 0.098 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeL_N.png using Guid(ffa7ab33e97f1403692120d74054f6a2) (TextureImporter) -> (artifact id: 'bcb3142377b6e138b048440134b5e9b5') in 0.185792291 seconds
+Refreshing native plugins compatible for Editor in 1.85 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=2101efd05397a4ac1a550bdc6ba65033): Total: 0.197 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeL_M.png using Guid(63e2098e1b471464480713c2e8d85161) (TextureImporter) -> (artifact id: 'b3abc2c61898b0ab3884ff0a0661a08b') in 0.261014708 seconds
+Refreshing native plugins compatible for Editor in 1.87 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=437e6946477744b149c84ae812519f72): Total: 0.272 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeR_N.png using Guid(877877b60ea7c49439a672e8f3b9ac02) (TextureImporter) -> (artifact id: '4be845ab215e2a3f6cfcea4bec96a7b5') in 0.16719275 seconds
+Refreshing native plugins compatible for Editor in 1.75 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=dff3dc91550014001b2170b3c5991c9c): Total: 0.178 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Tennis/KitsV2/Female/KitV2_Tennis_Female_ShoeR_M.png using Guid(b7dbe7436660d4d1a867941fe5011943) (TextureImporter) -> (artifact id: 'f1a46e61fbd4a710ebb6b830e9a64f71') in 0.253761667 seconds
+Refreshing native plugins compatible for Editor in 1.82 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=3fd9aec88b1fa49ef8d0462333967933): Total: 0.265 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Belt_N.png using Guid(f81407b2f07464f61b55cc49e2f447a0) (TextureImporter) -> (artifact id: '564a43d573f5c9b30d52172e8724ed8a') in 0.02845625 seconds
+Refreshing native plugins compatible for Editor in 1.87 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=e156f60879fe4462788b5f69f2cfad0b): Total: 0.040 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Belt_M.png using Guid(f4e186f70f7444619b922aaeadda8b70) (TextureImporter) -> (artifact id: '56da97b34ff8de8472c179ab538e28e1') in 0.079177125 seconds
+Refreshing native plugins compatible for Editor in 1.75 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=68f79b45ffc0344bca48b62158f72131): Total: 0.090 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Top_N.png using Guid(d3e091f43be8f4b6f9e9d404410f3b1e) (TextureImporter) -> (artifact id: '3b1ed110820efb9a1985c8b0c9e16d2e') in 0.302415 seconds
+Refreshing native plugins compatible for Editor in 2.00 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=3aa5c5633be5b490f9c6c9e528afefb2): Total: 0.315 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=311 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.095ms
+	Scan: 4.204ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.024ms
+	CategorizeAssets: 1.041ms
+	ImportOutOfDateAssets: 304.726ms (0.042ms without children)
+		ImportManagerImport: 303.524ms (0.469ms without children)
+			ImportInProcess: 303.035ms
+			UpdateCategorizedAssets: 0.020ms
+		ReloadNativeAssets: 0.034ms
+		UnloadImportedAssets: 0.093ms
+		ReloadImportedAssets: 0.174ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.530ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.328ms
+	PostProcessAllAssets: 0.652ms
+	Hotreload: 2.066ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.148ms
+	UnloadStreamsBegin: 0.009ms
+	PersistCurrentRevisions: 0.199ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.576ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Top_M.png using Guid(16958ec82ecd34d22b193de1e004a63a) (TextureImporter) -> (artifact id: '461eb0b9ef2666ec2c8cd933c4738283') in 0.461049083 seconds
+Refreshing native plugins compatible for Editor in 2.21 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=23d1742fb7902416d927a7c1c7acbebb): Total: 0.476 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=473 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.104ms
+	Scan: 4.604ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.023ms
+	CategorizeAssets: 0.943ms
+	ImportOutOfDateAssets: 465.597ms (0.021ms without children)
+		ImportManagerImport: 464.361ms (0.539ms without children)
+			ImportInProcess: 463.792ms
+			UpdateCategorizedAssets: 0.030ms
+		ReloadNativeAssets: 0.032ms
+		UnloadImportedAssets: 0.093ms
+		ReloadImportedAssets: 0.192ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.552ms
+		InitializingProgressBar: 0.003ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.344ms
+	PostProcessAllAssets: 0.741ms
+	Hotreload: 2.280ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.137ms
+	UnloadStreamsBegin: 0.007ms
+	PersistCurrentRevisions: 0.198ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.582ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_GloveL_N.png using Guid(1f61b314107d147b2afb925ef7acb521) (TextureImporter) -> (artifact id: '35a159f3f06898ac9eb5bc49cc3e39f0') in 0.820259542 seconds
+Refreshing native plugins compatible for Editor in 2.11 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=1cab2754b1ee74fd3b73c0a5ed04a52c): Total: 0.833 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=830 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.143ms
+	Scan: 4.504ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.026ms
+	CategorizeAssets: 0.975ms
+	ImportOutOfDateAssets: 822.550ms (0.060ms without children)
+		ImportManagerImport: 821.289ms (0.457ms without children)
+			ImportInProcess: 820.811ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.031ms
+		UnloadImportedAssets: 0.082ms
+		ReloadImportedAssets: 0.176ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.579ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.332ms
+	PostProcessAllAssets: 0.839ms
+	Hotreload: 2.200ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.150ms
+	UnloadStreamsBegin: 0.013ms
+	PersistCurrentRevisions: 0.202ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.770ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_GloveL_M.png using Guid(32af31bfe35864ae79fc49133ca4e521) (TextureImporter) -> (artifact id: 'c5d32b1ae37d9baec8c705d46eecbad1') in 0.355072417 seconds
+Refreshing native plugins compatible for Editor in 2.14 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=4b15a2b987ac04cefb078589b142f1eb): Total: 0.369 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=365 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.133ms
+	Scan: 4.576ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.026ms
+	CategorizeAssets: 1.079ms
+	ImportOutOfDateAssets: 357.481ms (0.059ms without children)
+		ImportManagerImport: 356.188ms (0.475ms without children)
+			ImportInProcess: 355.692ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.041ms
+		UnloadImportedAssets: 0.105ms
+		ReloadImportedAssets: 0.179ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.581ms
+		InitializingProgressBar: 0.003ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.324ms
+	PostProcessAllAssets: 0.851ms
+	Hotreload: 2.517ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.139ms
+	UnloadStreamsBegin: 0.013ms
+	PersistCurrentRevisions: 0.201ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.643ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_GloveR_N.png using Guid(83c9b1b7934c24ea5aa1ab758c304905) (TextureImporter) -> (artifact id: '68e273140a2da783522564d416decd2f') in 0.851206709 seconds
+Refreshing native plugins compatible for Editor in 1.99 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=03e6d55fc8dff4bffbb4eb13d4fc0ee3): Total: 0.870 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=866 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.144ms
+	Scan: 8.394ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 0.950ms
+	ImportOutOfDateAssets: 855.558ms (0.031ms without children)
+		ImportManagerImport: 854.339ms (0.475ms without children)
+			ImportInProcess: 853.841ms
+			UpdateCategorizedAssets: 0.023ms
+		ReloadNativeAssets: 0.032ms
+		UnloadImportedAssets: 0.080ms
+		ReloadImportedAssets: 0.189ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.564ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.320ms
+	PostProcessAllAssets: 0.676ms
+	Hotreload: 2.062ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.161ms
+	UnloadStreamsBegin: 0.020ms
+	PersistCurrentRevisions: 0.197ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.639ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_GloveR_M.png using Guid(64fac931f33814db9b7777a1bd45989c) (TextureImporter) -> (artifact id: '52f9e6d04f79b08fec8a1762e8b01ede') in 0.359368167 seconds
+Refreshing native plugins compatible for Editor in 2.04 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=43c8c23cf95194aaba29b62bc7157875): Total: 0.375 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=371 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.115ms
+	Scan: 4.742ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 0.998ms
+	ImportOutOfDateAssets: 363.719ms (0.053ms without children)
+		ImportManagerImport: 362.453ms (0.450ms without children)
+			ImportInProcess: 361.984ms
+			UpdateCategorizedAssets: 0.019ms
+		ReloadNativeAssets: 0.032ms
+		UnloadImportedAssets: 0.091ms
+		ReloadImportedAssets: 0.173ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.578ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.337ms
+	PostProcessAllAssets: 0.671ms
+	Hotreload: 2.108ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.220ms
+	UnloadStreamsBegin: 0.013ms
+	PersistCurrentRevisions: 0.220ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.724ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Bottom_N.png using Guid(3959519bab2494f119f9c47e1159e474) (TextureImporter) -> (artifact id: '4b45ab1de4715a3eb2098765817d98f6') in 0.269435333 seconds
+Refreshing native plugins compatible for Editor in 1.97 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=dd2197d285e04465e983b7a37887784d): Total: 0.284 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_Bottom_M.png using Guid(f509f467956ee40379f6ad52dbbc13f0) (TextureImporter) -> (artifact id: '32ed322f5ed555bcae4994a7cd3b5eb3') in 0.362062958 seconds
+Refreshing native plugins compatible for Editor in 2.20 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=ff4e144d4fd8d4212be64a9e4dec0c0f): Total: 0.374 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=371 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.103ms
+	Scan: 3.940ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.022ms
+	CategorizeAssets: 0.936ms
+	ImportOutOfDateAssets: 364.326ms (0.046ms without children)
+		ImportManagerImport: 363.147ms (0.467ms without children)
+			ImportInProcess: 362.658ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.028ms
+		UnloadImportedAssets: 0.074ms
+		ReloadImportedAssets: 0.168ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.525ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.337ms
+	PostProcessAllAssets: 0.693ms
+	Hotreload: 2.271ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.124ms
+	UnloadStreamsBegin: 0.009ms
+	PersistCurrentRevisions: 0.196ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.672ms
+
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeL_N.png using Guid(1e407765c6e0545d187eb8e854864e6c) (TextureImporter) -> (artifact id: '7a6bd101de00cf00e4a4062623fdbdbd') in 0.243519459 seconds
+Refreshing native plugins compatible for Editor in 2.16 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=795290e3517754e39bec4502fd70d693): Total: 0.256 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeL_M.png using Guid(640b93e6baedb41ec823c0f1fa4a350a) (TextureImporter) -> (artifact id: 'f429762d40567f969511393effbc0f3b') in 0.279887209 seconds
+Refreshing native plugins compatible for Editor in 2.17 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=0dcba9d9a4b8147559933a0de42020b4): Total: 0.293 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeR_N.png using Guid(f44f7a97b5b244b7187538d968f6fa18) (TextureImporter) -> (artifact id: 'f421169be52fa9c3235fdc444de5e37f') in 0.235142875 seconds
+Refreshing native plugins compatible for Editor in 2.04 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=d7efa19d1b44e4401b85c3a5daadb061): Total: 0.247 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Male/KitV2_Golf_Male_ShoeR_M.png using Guid(56992a6807f11423ba69922a39fd1937) (TextureImporter) -> (artifact id: 'b98201e3dd8ecfc344c1f34189062ed1') in 0.240806083 seconds
+Refreshing native plugins compatible for Editor in 1.81 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=34a8160bd73a6407f8154a9649991882): Total: 0.253 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_GloveL_N.png using Guid(7eae7abe1178f4498a3e248eb7f52eb9) (TextureImporter) -> (artifact id: '3dfb6ac1dcf1efbd8d2b1d584d0e3115') in 0.788469958 seconds
+Refreshing native plugins compatible for Editor in 2.05 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c1ce7da4f76614b21ae7211b69cceaf5): Total: 0.803 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=799 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.097ms
+	Scan: 4.097ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.005ms
+	ProcessAssetsWithTransientArtifactChanges: 0.023ms
+	CategorizeAssets: 0.818ms
+	ImportOutOfDateAssets: 792.993ms (0.034ms without children)
+		ImportManagerImport: 791.865ms (0.445ms without children)
+			ImportInProcess: 791.400ms
+			UpdateCategorizedAssets: 0.019ms
+		ReloadNativeAssets: 0.029ms
+		UnloadImportedAssets: 0.072ms
+		ReloadImportedAssets: 0.168ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.519ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.305ms
+	PostProcessAllAssets: 0.709ms
+	Hotreload: 2.109ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.123ms
+	UnloadStreamsBegin: 0.007ms
+	PersistCurrentRevisions: 0.193ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.547ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_GloveL_M.png using Guid(560aed78cdf11415f926af4d158b286a) (TextureImporter) -> (artifact id: '5f4f2fc8b06acaf3cbc0f6a703103f09') in 0.343740042 seconds
+Refreshing native plugins compatible for Editor in 2.04 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=1f8487a6a35d0487b9a4f3b6a7b09373): Total: 0.357 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=353 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.090ms
+	Scan: 4.613ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.003ms
+	ProcessAssetsWithTransientArtifactChanges: 0.026ms
+	CategorizeAssets: 1.134ms
+	ImportOutOfDateAssets: 346.018ms (0.050ms without children)
+		ImportManagerImport: 344.776ms (0.463ms without children)
+			ImportInProcess: 344.293ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.034ms
+		UnloadImportedAssets: 0.089ms
+		ReloadImportedAssets: 0.171ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.579ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.317ms
+	PostProcessAllAssets: 0.662ms
+	Hotreload: 2.102ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.142ms
+	UnloadStreamsBegin: 0.008ms
+	PersistCurrentRevisions: 0.206ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.770ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_GloveR_N.png using Guid(178213d27651f4aa9a900b6c2004da1b) (TextureImporter) -> (artifact id: 'dedfcf16f0404d0527a7c0cdfceff8d6') in 0.798425125 seconds
+Refreshing native plugins compatible for Editor in 2.12 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=e4a0d4ae0fe5e4401b35b94839111764): Total: 0.811 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=808 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.092ms
+	Scan: 4.668ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 0.929ms
+	ImportOutOfDateAssets: 800.820ms (0.048ms without children)
+		ImportManagerImport: 799.539ms (0.470ms without children)
+			ImportInProcess: 799.048ms
+			UpdateCategorizedAssets: 0.021ms
+		ReloadNativeAssets: 0.031ms
+		UnloadImportedAssets: 0.076ms
+		ReloadImportedAssets: 0.173ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.567ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.384ms
+	PostProcessAllAssets: 0.669ms
+	Hotreload: 2.198ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.141ms
+	UnloadStreamsBegin: 0.011ms
+	PersistCurrentRevisions: 0.197ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.639ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_GloveR_M.png using Guid(37756bf7c4dcf4a8e89f42eb6cfd493e) (TextureImporter) -> (artifact id: 'bf050ff7b66fb9aa5e330182c41530f7') in 0.392664917 seconds
+Refreshing native plugins compatible for Editor in 3.12 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=2eabafbd8b0b847b3bc04371500820ec): Total: 0.409 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=404 ms
+		Asset DB Callback time: managed=0 ms, native=3 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.099ms
+	Scan: 4.688ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.006ms
+	ProcessAssetsWithTransientArtifactChanges: 0.025ms
+	CategorizeAssets: 0.985ms
+	ImportOutOfDateAssets: 396.786ms (0.026ms without children)
+		ImportManagerImport: 395.499ms (0.508ms without children)
+			ImportInProcess: 394.966ms
+			UpdateCategorizedAssets: 0.025ms
+		ReloadNativeAssets: 0.035ms
+		UnloadImportedAssets: 0.090ms
+		ReloadImportedAssets: 0.205ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.577ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.352ms
+	PostProcessAllAssets: 0.700ms
+	Hotreload: 3.210ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.137ms
+	UnloadStreamsBegin: 0.008ms
+	PersistCurrentRevisions: 0.201ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.671ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Belt_N.png using Guid(a2b22cf2087cb4798a11bce791b29c55) (TextureImporter) -> (artifact id: '301ac12e50e6697e3c0ab2f77e72a7db') in 0.120116958 seconds
+Refreshing native plugins compatible for Editor in 2.03 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=8dcd69c0cbc6942e49d9778263b35224): Total: 0.135 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Belt_M.png using Guid(1cba325e5c81d420b937a49f23f75960) (TextureImporter) -> (artifact id: '705627c30129373a7b15ac417b094fa3') in 0.178805083 seconds
+Refreshing native plugins compatible for Editor in 2.04 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=5e150d01578fa46269aafa157578bb4c): Total: 0.192 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Bottom_N.png using Guid(07230f9f8ce6b4352a3949330864f7f4) (TextureImporter) -> (artifact id: 'f77d1fe26ae20f1074b99d17d1d019a7') in 0.498101166 seconds
+Refreshing native plugins compatible for Editor in 2.11 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=6b98d4f9da78a404186377be0a8cdb58): Total: 0.511 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=508 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.111ms
+	Scan: 4.551ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.023ms
+	CategorizeAssets: 0.870ms
+	ImportOutOfDateAssets: 500.901ms (0.020ms without children)
+		ImportManagerImport: 499.477ms (0.490ms without children)
+			ImportInProcess: 498.963ms
+			UpdateCategorizedAssets: 0.024ms
+		ReloadNativeAssets: 0.030ms
+		UnloadImportedAssets: 0.078ms
+		ReloadImportedAssets: 0.193ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.530ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.572ms
+	PostProcessAllAssets: 0.723ms
+	Hotreload: 2.196ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.144ms
+	UnloadStreamsBegin: 0.011ms
+	PersistCurrentRevisions: 0.205ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.650ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Bottom_M.png using Guid(82e6ab503e63c410cb0b100519e1443c) (TextureImporter) -> (artifact id: 'f099fe49ba1b787b0421bcbfcd61ddc0') in 0.944287708 seconds
+Refreshing native plugins compatible for Editor in 2.24 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=84f2b91ab86c842ba8397377b82d0cd7): Total: 0.960 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=957 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.114ms
+	Scan: 4.814ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.026ms
+	CategorizeAssets: 1.070ms
+	ImportOutOfDateAssets: 949.392ms (0.052ms without children)
+		ImportManagerImport: 948.129ms (0.475ms without children)
+			ImportInProcess: 947.633ms
+			UpdateCategorizedAssets: 0.020ms
+		ReloadNativeAssets: 0.031ms
+		UnloadImportedAssets: 0.087ms
+		ReloadImportedAssets: 0.196ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.566ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.328ms
+	PostProcessAllAssets: 0.662ms
+	Hotreload: 2.321ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.140ms
+	UnloadStreamsBegin: 0.012ms
+	PersistCurrentRevisions: 0.201ms
+	UnloadStreamsEnd: 0.001ms
+	Untracked: 1.688ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Top_N.png using Guid(eecb3c903affa4bb2b938ba0c9139b1a) (TextureImporter) -> (artifact id: '986c4d8b7be67cb71689533320f9018b') in 0.267178459 seconds
+Refreshing native plugins compatible for Editor in 2.03 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=0bf33d00a70d74430938113b9781873f): Total: 0.282 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_Top_M.png using Guid(53e681cd1fddc41e78155f2ad09e7b4d) (TextureImporter) -> (artifact id: 'd0f6bc99ee032b2947d7b8f6fcb255a7') in 0.507615125 seconds
+Refreshing native plugins compatible for Editor in 2.01 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=63c3cc06e5dd84f14aba84fd244cf70e): Total: 0.520 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=1 (actual=1, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=516 ms
+		Asset DB Callback time: managed=0 ms, native=2 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1423, non-scripts=3464
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 6
+	InvokeCustomDependenciesCallbacks: 0.000ms
+	InvokePackagesCallback: 0.000ms
+	ApplyChangesToAssetFolders: 0.104ms
+	Scan: 4.131ms
+	OnSourceAssetsModified: 0.000ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 0.022ms
+	CategorizeAssets: 0.867ms
+	ImportOutOfDateAssets: 509.585ms (0.042ms without children)
+		ImportManagerImport: 508.370ms (0.451ms without children)
+			ImportInProcess: 507.898ms
+			UpdateCategorizedAssets: 0.020ms
+		ReloadNativeAssets: 0.031ms
+		UnloadImportedAssets: 0.092ms
+		ReloadImportedAssets: 0.173ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.556ms
+		InitializingProgressBar: 0.002ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.319ms
+	PostProcessAllAssets: 0.641ms
+	Hotreload: 2.070ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.143ms
+	UnloadStreamsBegin: 0.012ms
+	PersistCurrentRevisions: 0.193ms
+	UnloadStreamsEnd: 0.000ms
+	Untracked: 1.757ms
+
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeL_N.png using Guid(e8532f1ad943340d29fcea16e1c20c35) (TextureImporter) -> (artifact id: '0a45e5fca5e472c093410e4fc01ee329') in 0.243399041 seconds
+Refreshing native plugins compatible for Editor in 2.02 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=c223ec592241e466db69577271180aa4): Total: 0.256 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeL_M.png using Guid(0025dcb1e6ff341279d5002cae0cbef2) (TextureImporter) -> (artifact id: 'f9c71191d47ad6904d4cc252a2cba463') in 0.219095291 seconds
+Refreshing native plugins compatible for Editor in 1.80 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=3377e3d928e9a4c5ca13c7d42781a1d3): Total: 0.231 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeR_N.png using Guid(ecc215f0a0d8c4e6bbfe899ac1df34c2) (TextureImporter) -> (artifact id: '080f4f32011494598adf35e3dc4879cb') in 0.210903375 seconds
+Refreshing native plugins compatible for Editor in 1.87 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=da874ea8eb4234aaca3f829c9099affe): Total: 0.222 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Resources/Golf/KitsV2/Female/KitV2_Golf_Female_ShoeR_M.png using Guid(5cea298c7a1094df58c2a5f465da737d) (TextureImporter) -> (artifact id: 'd692ab08785053ba2af8bee8e04e17ef') in 0.214097667 seconds
+Refreshing native plugins compatible for Editor in 1.76 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=51176a025a16f43408c061ddbeb2e74d): Total: 0.225 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Sock_R.asset using Guid(312e71c066ddc465ab032d71a4aa2b78) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Sock_R' does not match filename 'Kit_Sock_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '885e9f166c35d15083161c80de45d3f6') in 0.003756334 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Shoe_L.asset using Guid(8450aed3e53314600a3c81bc3754ef37) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_L' does not match filename 'Kit_Shoe_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '5584e746a95515a357186560c4bd502b') in 0.0050545 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Sock_L.asset using Guid(07d6d3ed5fb444aa9a2d6adc780a3c31) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Sock_L' does not match filename 'Kit_Sock_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'e36cfc9bd84aa8fdbd9085dee39f0c22') in 0.001679291 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Bottom.asset using Guid(b7ca66803d88f41ec8fae928cd0ee942) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Bottom' does not match filename 'Kit_Bottom'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '16f512778431e6ba10a47fdd3918e7c7') in 0.006596583 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Shoe_R.asset using Guid(39a93f1ef16fa491998ee7e742071932) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_R' does not match filename 'Kit_Shoe_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'e9715d1fbadb37bbc9a259b175da4db2') in 0.004938375 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Male/Kit_Top.asset using Guid(bac0eb1d5bdb64baf9471aa82e6c7706) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Top' does not match filename 'Kit_Top'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '7857ffb7d56457c625cb118960c935ea') in 0.051544542 seconds
+Refreshing native plugins compatible for Editor in 1.33 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=094ccec1a14484230bc2d6d8d7fc465a): Total: 0.105 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Loaded scene 'Library/Unused/bb8798c0523d04f598672b932fffde2c'
+	Deserialize:            57.848 ms
+	Integration:            1.930 ms
+	Integration of assets:  40.140 ms
+	Thread Wait Time:       0.008 ms
+	Total Operation Time:   99.927 ms
+Start importing Assets/Resources/Tennis/Customization/PlayerMale.prefab using Guid(b82995f4e4da741cb8cca782ee80a24b) (PrefabImporter) -> (artifact id: '8d9ff1c22a89a2d7fe697c8ff81acaff') in 0.006408708 seconds
+Refreshing native plugins compatible for Editor in 1.33 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=98ef063447dc54976b9ff18cb079cdb5): Total: 0.033 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Shoe_R.asset using Guid(b071bac9d7ba34c6f89a3a876b866c8c) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_R' does not match filename 'Kit_Shoe_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'ae7432dc4849c382069b2b3def7947de') in 0.007554709 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Shoe_L.asset using Guid(32739d22160964e11bf3c09c8e26ecb8) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_L' does not match filename 'Kit_Shoe_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '3e8199c4a5b233d68013fa4e4dee1e9c') in 0.006207625 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Top.asset using Guid(13ac9830210e94b5494b53e5e30c8f55) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Top' does not match filename 'Kit_Top'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'd2091e6beaeff5dd4b8ea329299b0641') in 0.090650459 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Bottom.asset using Guid(9722802563b064434b4363cebf293073) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Bottom' does not match filename 'Kit_Bottom'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '090e8dc6426ffddc5ad39a95380ec510') in 0.006512833 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Sock_L.asset using Guid(388e555d9ac77481fa369677e89ec2e6) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Sock_L' does not match filename 'Kit_Sock_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '97fb89067fcac8925dc17cc35868b348') in 0.001848792 seconds
+Start importing Assets/Characters/KitsV2/MatchHero_Female/Kit_Sock_R.asset using Guid(0ca69e74ea63045bbbdb49a17233d781) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Sock_R' does not match filename 'Kit_Sock_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '5afef9c0ab226b4044a390fdde1b7a6d') in 0.001624 seconds
+Refreshing native plugins compatible for Editor in 1.61 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=33ad72e01b8f94623bf2590eac6b8ee7): Total: 0.154 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Loaded scene 'Library/Unused/74272c7fe63484171af47e9689331341'
+	Deserialize:            56.109 ms
+	Integration:            1.764 ms
+	Integration of assets:  75.315 ms
+	Thread Wait Time:       0.006 ms
+	Total Operation Time:   133.194 ms
+Start importing Assets/Resources/Tennis/Customization/PlayerFemale.prefab using Guid(d7a0ddc5a39c14d899ba7d723189eb44) (PrefabImporter) -> (artifact id: 'dd235b6b512dd41dff014b3469b0428f') in 0.00343775 seconds
+Refreshing native plugins compatible for Editor in 1.46 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=35b42f2dfd8214ebf8a138782648cf80): Total: 0.034 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Bottom.asset using Guid(61d7d9a1f605440c8a4ce30afb672db5) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Bottom' does not match filename 'Kit_Bottom'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'ee7723978661f7e0753b5b73226cb2d2') in 0.006706667 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Glove_L.asset using Guid(34ad9a2a0cbe74d16a45b3c449401ff6) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Glove_L' does not match filename 'Kit_Glove_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'dc5d4e5fd8ac18fecc9a9056c169ede8') in 0.002753291 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Top.asset using Guid(84acfca0e8f3d497594feb0d15b87c31) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Top' does not match filename 'Kit_Top'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '1436530506944751ce52b20755e2ba98') in 0.008263042 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Shoe_L.asset using Guid(0a62bcfea5f804649ac77cdb7b3dcf42) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_L' does not match filename 'Kit_Shoe_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '38bcbd755f0266ef96f26c3918c16f98') in 0.005960166 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Glove_R.asset using Guid(4a575178eeac943e1af67281909b376f) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Glove_R' does not match filename 'Kit_Glove_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '3140857c4d23a6cffac443f1e71732f4') in 0.0023955 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Belt.asset using Guid(ba768db2c0ab64528828c4bc34c99167) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Belt' does not match filename 'Kit_Belt'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '29dea3032dbeeea635bcff91261854c2') in 0.001992875 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Male/Kit_Shoe_R.asset using Guid(be325002862514e11b377870d357b1fc) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_R' does not match filename 'Kit_Shoe_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'd0b3d6f9ec6ad1f4ace85bee9919a55e') in 0.005939125 seconds
+Refreshing native plugins compatible for Editor in 1.46 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=8c437acffd58e47f182ea335527b003b): Total: 0.063 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Loaded scene 'Library/Unused/f29914aa70888451892e851d75f1a915'
+	Deserialize:            2.054 ms
+	Integration:            15.052 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.004 ms
+	Total Operation Time:   17.111 ms
+Start importing Assets/Resources/Tennis/Customization/PlayerMaleGolfKit.prefab using Guid(6b34403dd872142e2b295d2da4d63384) (PrefabImporter) -> (artifact id: 'ab2d38adb85eb3b5b86fbb23080f25ec') in 0.003316792 seconds
+Refreshing native plugins compatible for Editor in 1.40 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=302096273456a4e47a333c1373c25cff): Total: 0.031 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Shoe_L.asset using Guid(150920164e5324a7fa013fbdf878a856) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_L' does not match filename 'Kit_Shoe_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'ea96e4254f27acfcb8bcf5512e377a1a') in 0.006260083 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Bottom.asset using Guid(15fe054a2a5f441bdb42ef7e4aa501be) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Bottom' does not match filename 'Kit_Bottom'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'a888eb805ad1eaa72f3d010857548520') in 0.005506333 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Belt.asset using Guid(85b7c5d88d4c04154b802d7006b3b382) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Belt' does not match filename 'Kit_Belt'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'e3753224606fba6c9a8ffcaaf82bef42') in 0.002157125 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Shoe_R.asset using Guid(b9570cc6453044463aacb5d1358d5865) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Shoe_R' does not match filename 'Kit_Shoe_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '50d9c768626407e48cc46612f1002a47') in 0.005936208 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Top.asset using Guid(5b421efb056be4845a9a2d56797c0356) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Top' does not match filename 'Kit_Top'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: 'e88e8662b90e23980fdc3405a09f3b1c') in 0.062507875 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Glove_R.asset using Guid(0fdab161049fa459897989f3e23dbc7b) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Glove_R' does not match filename 'Kit_Glove_R'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '365c3967a19bbf832df8caf3a19e1bc9') in 0.002268541 seconds
+Start importing Assets/Characters/KitsV2/GolfKitHero_Female/Kit_Glove_L.asset using Guid(6f01519d695024ca49273de82a360b9c) (NativeFormatImporter)Main Object Name 'KitV2 Kit_Glove_L' does not match filename 'Kit_Glove_L'
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+GolfArcade.EditorTools.ClothingV2Install:Install (string,string,string) (at Assets/Editor/ClothingV2Install.cs:178)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:44)
+
+[Assets/Editor/ClothingV2Install.cs line 178]
+
+ -> (artifact id: '4bb2806edfc37a4f44c1c6c9b68628cb') in 0.001930583 seconds
+Refreshing native plugins compatible for Editor in 1.53 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=52acbc7580cb3416582f49cc43f737c6): Total: 0.118 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Loaded scene 'Library/Unused/371fa0b8f5c514ecda058eb75c62ba7e'
+	Deserialize:            0.984 ms
+	Integration:            12.390 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.005 ms
+	Total Operation Time:   13.381 ms
+Start importing Assets/Resources/Tennis/Customization/PlayerFemaleGolfKit.prefab using Guid(9cf16d48c2e494ea6ad1eba95cd9310a) (PrefabImporter) -> (artifact id: 'c87f80c5c2aeaaa40df4f075ea59851a') in 0.002816292 seconds
+Refreshing native plugins compatible for Editor in 1.40 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=500b9bf1abb9842e0bc99bde24645cd3): Total: 0.029 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[ClothingV2]   maps: 53 textures
+  MatchHero_Male Kit_Bottom: v=18642 tris=36658 bones=6 roles=Kit_Shorts,Kit_ShortsBand,Kit_Buckle (new piece)
+  MatchHero_Male Kit_Top: v=19644 tris=37876 bones=70 roles=Kit_Shirt (new piece)
+  MatchHero_Male Kit_Sock_L: v=3634 tris=7116 bones=3 roles=Kit_Sock (new piece)
+  MatchHero_Male Kit_Sock_R: v=3636 tris=7124 bones=3 roles=Kit_Sock (new piece)
+  MatchHero_Male Kit_Shoe_L: v=13800 tris=27262 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  MatchHero_Male Kit_Shoe_R: v=13755 tris=27170 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  MatchHero_Female Kit_Bottom: v=14328 tris=28100 bones=4 roles=Kit_Shorts,Kit_ShortsBand (new piece)
+  MatchHero_Female Kit_Top: v=26430 tris=51770 bones=83 roles=Kit_Shirt (new piece)
+  MatchHero_Female Kit_Sock_L: v=1958 tris=3836 bones=2 roles=Kit_Sock (new piece)
+  MatchHero_Female Kit_Sock_R: v=1958 tris=3836 bones=3 roles=Kit_Sock (new piece)
+  MatchHero_Female Kit_Shoe_L: v=14054 tris=27800 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  MatchHero_Female Kit_Shoe_R: v=13924 tris=27540 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  GolfKitHero_Male Kit_Belt: v=4016 tris=7100 bones=2 roles=Kit_Belt,Kit_Buckle (new piece)
+  GolfKitHero_Male Kit_Top: v=20270 tris=39144 bones=9 roles=Kit_Shirt (new piece)
+  GolfKitHero_Male Kit_Glove_L: v=5466 tris=8040 bones=17 roles=Kit_Glove (new piece)
+  GolfKitHero_Male Kit_Glove_R: v=5318 tris=8020 bones=17 roles=Kit_Glove (new piece)
+  GolfKitHero_Male Kit_Bottom: v=7790 tris=15200 bones=6 roles=Kit_Shorts (new piece)
+  GolfKitHero_Male Kit_Shoe_L: v=13995 tris=27664 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  GolfKitHero_Male Kit_Shoe_R: v=13992 tris=27658 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  GolfKitHero_Female Kit_Glove_L: v=3614 tris=4940 bones=17 roles=Kit_Glove (new piece)
+  GolfKitHero_Female Kit_Glove_R: v=3802 tris=5244 bones=17 roles=Kit_Glove (new piece)
+  GolfKitHero_Female Kit_Belt: v=3524 tris=6176 bones=2 roles=Kit_Belt,Kit_Buckle (new piece)
+  GolfKitHero_Female Kit_Bottom: v=12992 tris=25360 bones=4 roles=Kit_Shorts (new piece)
+  GolfKitHero_Female Kit_Top: v=21171 tris=41126 bones=9 roles=Kit_Shirt (new piece)
+  GolfKitHero_Female Kit_Shoe_L: v=14175 tris=28022 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+  GolfKitHero_Female Kit_Shoe_R: v=14177 tris=28020 bones=3 roles=Kit_Shoe,Kit_Buckle (new piece)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.EditorTools.ClothingV2Install:Run () (at Assets/Editor/ClothingV2Install.cs:47)
+
+(Filename: Assets/Editor/ClothingV2Install.cs Line: 47)
+
+Thread 0x16d19f000 may have been prematurely finalized
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET application:
+      The application 'build-server' does not exist.
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+Download a .NET SDK:
+https://aka.ms/dotnet-download
+
+Learn about SDK resolution:
+https://aka.ms/dotnet/sdk-not-found
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+[Licensing::IpcConnector] LicenseClient-adnanyonathan-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-adnanyonathan channel disconnected successfully.
+Thread 0x16debf000 may have been prematurely finalized
+Thread 0x16df4b000 may have been prematurely finalized
+Thread 0x16dfd7000 may have been prematurely finalized
+Thread 0x16e0ef000 may have been prematurely finalized
+Thread 0x16e17b000 may have been prematurely finalized
+Thread 0x16e293000 may have been prematurely finalized
+Thread 0x16e31f000 may have been prematurely finalized
+Thread 0x16e063000 may have been prematurely finalized
+Thread 0x16e207000 may have been prematurely finalized
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+Cleanup mono
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+debugger-agent: Unable to listen on 43
+[usbmuxd] Stop listen thread
+[usbmuxd] Error: 
+[usbmuxd] Listen thread exiting

@@ -1,0 +1,125 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project GolfArcade.xcodeproj -scheme GolfArcade -destination id=88A5F840-AF09-4E3F-AF23-089D85AF4F25 -derivedDataPath /private/tmp/claude-501/-Users-adnanyonathan-Documents-Codex-2026-09-20-wh-outputs-iphone-golf-simulator/b8c5974c-0658-48af-9507-14588d72a05b/scratchpad/DerivedData "-only-testing:GolfArcadeTests/LockerMirrorProofTests"
+
+2026-10-04 11:12:06.656005-0400 GolfArcade[88550:9877203] [Core] {"msg":"file does not exist... clearing", "file":/Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, "error":Error Domain=NSCocoaErrorDomain Code=260 "The file “com.apple.CoreMotion.plist” couldn’t be opened because there is no such file." UserInfo={NSFilePath=/Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, NSURL=file:///Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS%2026.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed%20Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, NSUnderlyingError=0x107998030 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}}}
+2026-10-04 11:12:06.760992-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:06.828081-0400 GolfArcade[88550:9876998] [framework] CoreUI: CUIThemeStore: No theme registered with id=0
+2026-10-04 11:12:06.828973-0400 GolfArcade[88550:9876998] [framework] CoreUI: CUIThemeStore: No theme registered with id=0
+2026-10-04 11:12:06.931754-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:07.128028-0400 GolfArcade[88550:9876998] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:12:07.129524-0400 GolfArcade[88550:9876998] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:12:07.257310-0400 GolfArcade[88550:9876998] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:12:07.267148-0400 GolfArcade[88550:9876998] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+Test Suite 'Selected tests' started at 2026-10-04 11:12:07.319.
+Test Suite 'GolfArcadeTests.xctest' started at 2026-10-04 11:12:07.320.
+Test Suite 'LockerMirrorProofTests' started at 2026-10-04 11:12:07.321.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testMeasureTileFrameRateAndPoseCost]' started.
+2026-10-04 11:12:07.343344-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:07.638851-0400 GolfArcade[88550:9876998] [SceneKit] Warning: C3DBaseTypeFromDescription - signed/unsigned ambiguity
+objc[88550]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x11bc30398) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x11c3e8310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-10-04 11:12:11.671193-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.LockerMirrorProofTests testMeasureTileFrameRateAndPoseCost] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:12:16.888353-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:22.573071-0400 GolfArcade[88550:9876998] [LockerMirror] LOCKER_MIRROR frame rate and pose cost (iOS Simulator on this Mac)
+club locker tile: 60.0 fps rendered over 3 s (view asks for 60)
+club play tile: 60.0 fps rendered over 3 s (view asks for 60)
+tennis idle view: 60.0 fps rendered over 3 s (view asks for 60)
+pose(at:) on the main thread: 0.221 ms per frame (58 tracks)
+
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testMeasureTileFrameRateAndPoseCost]' passed (15.247 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLoadingIdleAndPracticeSwing]' started.
+2026-10-04 11:12:22.602132-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:22.647763-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:22.874644-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:22.877295-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcadeTests/LockerMirrorProofTests.swift:313: warning: -[GolfArcadeTests.LockerMirrorProofTests testRecordLoadingIdleAndPracticeSwing] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:12:23.681651-0400 GolfArcade[88550:9876998] [] (Fig) signalled err=0 at <>:85
+2026-10-04 11:12:36.617337-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:36.653459-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLoadingIdleAndPracticeSwing]' passed (14.121 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLockerAndPlayTileFilms]' started.
+2026-10-04 11:12:36.782428-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:48.968244-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:12:59.210301-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:11.492566-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLockerAndPlayTileFilms]' passed (44.870 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLockerCloseUps]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordLockerCloseUps]' passed (1.118 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealClubHomeFocusTour]' started.
+2026-10-04 11:13:22.707825-0400 GolfArcade[88550:9879852] [general] __CFRunLoopModeFindSourceForMachPort returned NULL for mode 'kCFRunLoopDefaultMode' livePort: 70087
+2026-10-04 11:13:22.736143-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:22.776920-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:22.983762-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:22.985795-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:47.495906-0400 GolfArcade[88550:9876998] [LockerMirror] real club Home recorded: 109 frames; distinct hero-root yaw values seen (milli-degrees): [200054]
+2026-10-04 11:13:47.678651-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:47.714911-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealClubHomeFocusTour]' passed (25.068 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealLockerScreens]' started.
+2026-10-04 11:13:47.853904-0400 GolfArcade[88550:9876998] [plugin] AddInstanceForFactory: No factory registered for id <CFUUID 0x12af16580> F8BB1C28-BAE8-11D6-9C31-00039315CD46
+2026-10-04 11:13:48.078177-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1755  ReadPListFile: unable to open stream for LoudnessManager plist
+2026-10-04 11:13:48.078416-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1261  GetHardwarePlatformKey: cannot get acoustic ID
+2026-10-04 11:13:48.078567-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:48.078709-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:48.137213-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:48.848444-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:49.032491-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:49.038278-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.LockerMirrorProofTests testRecordRealLockerScreens] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:13:50.680048-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:51.284894-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:53.784068-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:53.784248-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:53.803303-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:53.806412-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:55.604602-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:56.214762-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:58.963168-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:58.963457-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:13:58.982508-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:13:58.986956-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:00.738526-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:00.738709-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:00.756695-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:00.862073-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:02.609665-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:02.609909-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:02.627592-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:02.733315-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:04.499101-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:04.604115-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:07.202046-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:07.202200-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:07.223347-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:07.226470-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:08.987165-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:09.090493-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:11.703996-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:11.704231-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:11.717419-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:11.721504-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:13.487255-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:13.487474-0400 GolfArcade[88550:9876998] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:14:13.506162-0400 GolfArcade[88550:9876998] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:13.615243-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:15.566877-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:15.603723-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealLockerScreens]' passed (27.923 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealPhoneHome]' started.
+2026-10-04 11:14:15.742300-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:15.746075-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:16.674253-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:16.707855-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:16.891678-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:16.894361-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.LockerMirrorProofTests testRecordRealPhoneHome] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:14:24.943777-0400 GolfArcade[88550:9876998] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:14:24.960650-0400 GolfArcade[88550:9876998] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorProofTests testRecordRealPhoneHome]' passed (9.319 seconds).
+Test Suite 'LockerMirrorProofTests' passed at 2026-10-04 11:14:25.000.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 137.666 (137.680) seconds
+Test Suite 'GolfArcadeTests.xctest' passed at 2026-10-04 11:14:25.001.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 137.666 (137.680) seconds
+Test Suite 'Selected tests' passed at 2026-10-04 11:14:25.001.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 137.666 (137.682) seconds
+** BUILD INTERRUPTED **

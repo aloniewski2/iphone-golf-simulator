@@ -1,0 +1,14 @@
+[
+{"img":"f05_front","kind":"Top intersects Bottom","side":"-","x":233.121,"y":311.18,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f05_back","kind":"Top intersects Bottom","side":"-","x":168.444,"y":306.702,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f05_left","kind":"Top intersects Bottom","side":"-","x":176.978,"y":312.262,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f05_right","kind":"Top intersects Bottom","side":"-","x":221.456,"y":305.742,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f05_handL","kind":"Top intersects Bottom","side":"-","x":137.278,"y":151.995,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f05_handR","kind":"Top intersects Bottom","side":"-","x":270.459,"y":52.825,"depth":9.523,"n":47,"wx":-0.094,"wy":0.866,"wz":0.068},
+{"img":"f06_front","kind":"Top intersects Bottom","side":"-","x":233.926,"y":305.852,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066},
+{"img":"f06_back","kind":"Top intersects Bottom","side":"-","x":167.535,"y":302,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066},
+{"img":"f06_left","kind":"Top intersects Bottom","side":"-","x":179.041,"y":307.164,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066},
+{"img":"f06_right","kind":"Top intersects Bottom","side":"-","x":219.497,"y":300.833,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066},
+{"img":"f06_handL","kind":"Top intersects Bottom","side":"-","x":141.203,"y":115.49,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066},
+{"img":"f06_handR","kind":"Top intersects Bottom","side":"-","x":277.542,"y":63.606,"depth":7.213,"n":50,"wx":-0.104,"wy":0.885,"wz":0.066}
+]

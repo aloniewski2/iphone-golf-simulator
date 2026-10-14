@@ -1,0 +1,58 @@
+{
+ "Kit_Belt": {
+  "res": 1024,
+  "coverage": 0.029,
+  "metres_per_uv": 1.080730774534374,
+  "px_per_cm": 9.48,
+  "ao_min": 0.149,
+  "ao_mean": 0.935
+ },
+ "Kit_Bottom": {
+  "res": 2048,
+  "coverage": 0.491,
+  "metres_per_uv": 1.3009019890844065,
+  "px_per_cm": 15.74,
+  "ao_min": 0.053,
+  "ao_mean": 0.84
+ },
+ "Kit_Glove_L": {
+  "res": 512,
+  "coverage": 0.197,
+  "metres_per_uv": 0.4144548916421002,
+  "px_per_cm": 12.35,
+  "ao_min": 0.082,
+  "ao_mean": 0.891
+ },
+ "Kit_Glove_R": {
+  "res": 512,
+  "coverage": 0.206,
+  "metres_per_uv": 0.3990271530835384,
+  "px_per_cm": 12.83,
+  "ao_min": 0.05,
+  "ao_mean": 0.865
+ },
+ "Kit_Shoe_L": {
+  "res": 1024,
+  "coverage": 0.216,
+  "metres_per_uv": 0.6323848460956072,
+  "px_per_cm": 16.19,
+  "ao_min": 0.019,
+  "ao_mean": 0.876
+ },
+ "Kit_Shoe_R": {
+  "res": 1024,
+  "coverage": 0.215,
+  "metres_per_uv": 0.6386322556314079,
+  "px_per_cm": 16.03,
+  "ao_min": 0.034,
+  "ao_mean": 0.867
+ },
+ "Kit_Top": {
+  "res": 2048,
+  "coverage": 0.463,
+  "metres_per_uv": 1.0483770433703725,
+  "px_per_cm": 19.53,
+  "ao_min": 0.032,
+  "ao_mean": 0.872
+ }
+}

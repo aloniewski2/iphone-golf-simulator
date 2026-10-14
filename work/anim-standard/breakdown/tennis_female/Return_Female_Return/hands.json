@@ -1,0 +1,22 @@
+[
+{"img":"f01_front","kind":"hand in body","side":"R","x":236.735,"y":322.393,"depth":14.619,"n":98},
+{"img":"f01_front","kind":"hand under cloth","side":"R","x":239.267,"y":321.132,"depth":23.343,"n":249},
+{"img":"f01_back","kind":"hand in body","side":"R","x":163.617,"y":321.376,"depth":14.619,"n":98},
+{"img":"f01_back","kind":"hand under cloth","side":"R","x":161.019,"y":320.37,"depth":23.343,"n":249},
+{"img":"f01_left","kind":"hand in body","side":"R","x":195.39,"y":326.257,"depth":14.619,"n":98},
+{"img":"f01_left","kind":"hand under cloth","side":"R","x":196.5,"y":325.395,"depth":23.343,"n":249},
+{"img":"f01_right","kind":"hand in body","side":"R","x":204.257,"y":317.843,"depth":14.619,"n":98},
+{"img":"f01_right","kind":"hand under cloth","side":"R","x":203.214,"y":316.484,"depth":23.343,"n":249},
+{"img":"f01_handR","kind":"hand in body","side":"R","x":113.984,"y":155.69,"depth":14.619,"n":98},
+{"img":"f01_handR","kind":"hand under cloth","side":"R","x":120.104,"y":154.11,"depth":23.343,"n":249},
+{"img":"f02_front","kind":"hands overlap","side":"R","x":263.517,"y":315.546,"depth":32.048,"n":340},
+{"img":"f02_back","kind":"hands overlap","side":"R","x":146.098,"y":300.537,"depth":32.048,"n":340},
+{"img":"f02_left","kind":"hands overlap","side":"R","x":119.723,"y":313.601,"depth":32.048,"n":340},
+{"img":"f02_right","kind":"hands overlap","side":"R","x":270.688,"y":301.99,"depth":32.048,"n":340},
+{"img":"f02_handR","kind":"hands overlap","side":"R","x":156.083,"y":177.422,"depth":32.048,"n":340},
+{"img":"f03_front","kind":"hands overlap","side":"R","x":121.28,"y":176.176,"depth":18.933,"n":117},
+{"img":"f03_back","kind":"hands overlap","side":"R","x":271.349,"y":179.942,"depth":18.933,"n":117},
+{"img":"f03_left","kind":"hands overlap","side":"R","x":158.308,"y":181.035,"depth":18.933,"n":117},
+{"img":"f03_right","kind":"hands overlap","side":"R","x":249.095,"y":174.756,"depth":18.933,"n":117},
+{"img":"f03_handR","kind":"hands overlap","side":"R","x":68.419,"y":149.188,"depth":18.933,"n":117}
+]

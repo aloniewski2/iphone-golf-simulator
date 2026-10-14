@@ -1,0 +1,2 @@
+Male golf default scale=0.81484 headCentre=1.2731 skin= shirt= shorts= shoes=
+Female golf default scale=0.81368 headCentre=1.2632 skin= shirt= shorts= shoes=

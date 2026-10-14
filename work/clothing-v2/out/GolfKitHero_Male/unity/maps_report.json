@@ -1,0 +1,18 @@
+{
+ "Kit_Shoe_L": {
+  "res": 1024,
+  "coverage": 0.306,
+  "metres_per_uv": 0.723015335387818,
+  "px_per_cm": 14.16,
+  "ao_min": 0.165,
+  "ao_mean": 0.884
+ },
+ "Kit_Shoe_R": {
+  "res": 1024,
+  "coverage": 0.305,
+  "metres_per_uv": 0.7218095815478954,
+  "px_per_cm": 14.19,
+  "ao_min": 0.172,
+  "ao_mean": 0.886
+ }
+}

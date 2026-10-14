@@ -94,6 +94,12 @@ final class TennisMenu {
     private(set) var launch: MenuLaunch?
     /// A match waiting on the court or course picker.
     private var pendingPick: (launch: MenuLaunch, onPhone: Bool)?
+    /// Local golf (pass the phone): the number of golfers, held while the course is chosen on the map screen.
+    private var pendingPassPhone: Int?
+    func chooseCourseForPassThePhone(_ players: Int) {
+        launch = MenuLaunch(sport: .golf, mode: .round); launchOrigin = screen
+        pendingPassPhone = players; show(.map)
+    }
     /// The XP screen after a match. Its buttons only work once the show is over (or skipped).
     private(set) var postMatch: PostMatchSummary?
     private(set) var postMatchDone = false
@@ -403,6 +409,11 @@ final class TennisMenu {
             // The court is chosen: remember it and go on to the match that was waiting.
             if mapSport == .golf { session.golfCourse = String(m.dropFirst(4)) }
             else { session.tennisVenue = String(m.dropFirst(4)) }
+            if let players = pendingPassPhone {
+                pendingPassPhone = nil; launch = nil
+                do { try online.startPassThePhone(players, menu: self) } catch { show(.localPlayers); notice = error.localizedDescription }
+                return
+            }
             if let pick = pendingPick { pendingPick = nil; begin(pick.launch, onPhone: pick.onPhone, skipMap: true) }
         case "continue":
             if let result, !campaign.champion, result.won { play(round: campaign.nextRound) } else { show(.campaign) }
@@ -447,7 +458,7 @@ final class TennisMenu {
             case .results: show(.results)
             case .hub(let sport): show(.hub(sport))
             }
-        case .map: pendingPick = nil; show(launchOrigin ?? .main)
+        case .map: pendingPick = nil; if pendingPassPhone != nil { pendingPassPhone = nil; launch = nil }; show(launchOrigin ?? .main)
         case .postMatch: if postMatchDone { if Date().timeIntervalSince(postMatchDoneAt) > 0.7 { leavePostMatch(.menu) } } else { postMatchSkips += 1 }
         }
     }
@@ -1061,7 +1072,7 @@ struct OnlineAppleSheet: Identifiable {
     }
     /// Pass the phone (golf): the course last picked, the guests already in and ready, and straight into loading. The only press the
     /// players made after choosing Local is how many of them there are.
-    private func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
+    func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
         // one phone, no network: a lobby only this phone is in
         identity(menu); try service.host(using: SharedPhoneTransport(), sharedPhone: true)
         let course = SportsSession.shared.golfCourse
@@ -1114,7 +1125,7 @@ struct OnlineAppleSheet: Identifiable {
                 identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends", quick: .tennis); menu.showOnline(.lobby)
             case let count where count.hasPrefix("localPlayers"):
                 guard let players = Int(count.dropFirst("localPlayers".count)), (2...4).contains(players) else { return }
-                try startPassThePhone(players, menu: menu)
+                menu.chooseCourseForPassThePhone(players)
             case "net-add-guest": try service.addLocalGuest()
             case "net-remove-guest": try service.removeLocalGuest()
             case "net-join-code":

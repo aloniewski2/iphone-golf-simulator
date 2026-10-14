@@ -1,0 +1,50 @@
+{
+ "Kit_Bottom": {
+  "res": 2048,
+  "coverage": 0.21,
+  "metres_per_uv": 1.3294368094590185,
+  "px_per_cm": 15.41,
+  "ao_min": 0.085,
+  "ao_mean": 0.88
+ },
+ "Kit_Shoe_L": {
+  "res": 1024,
+  "coverage": 0.249,
+  "metres_per_uv": 0.6530882785203606,
+  "px_per_cm": 15.68,
+  "ao_min": 0.04,
+  "ao_mean": 0.874
+ },
+ "Kit_Shoe_R": {
+  "res": 1024,
+  "coverage": 0.253,
+  "metres_per_uv": 0.6529228822330402,
+  "px_per_cm": 15.68,
+  "ao_min": 0.032,
+  "ao_mean": 0.866
+ },
+ "Kit_Sock_L": {
+  "res": 512,
+  "coverage": 0.417,
+  "metres_per_uv": 0.3874501253187682,
+  "px_per_cm": 13.21,
+  "ao_min": 0.095,
+  "ao_mean": 0.895
+ },
+ "Kit_Sock_R": {
+  "res": 512,
+  "coverage": 0.419,
+  "metres_per_uv": 0.38637143580821875,
+  "px_per_cm": 13.25,
+  "ao_min": 0.162,
+  "ao_mean": 0.898
+ },
+ "Kit_Top": {
+  "res": 2048,
+  "coverage": 0.545,
+  "metres_per_uv": 1.0448199835554997,
+  "px_per_cm": 19.6,
+  "ao_min": 0.026,
+  "ao_mean": 0.961
+ }
+}

@@ -1,0 +1,32 @@
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:356: RuntimeWarning: divide by zero encountered in power
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:356: RuntimeWarning: invalid value encountered in multiply
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:357: RuntimeWarning: divide by zero encountered in power
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:357: RuntimeWarning: invalid value encountered in multiply
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_canvas.py:141: RuntimeWarning: invalid value encountered in divide
+  dx = (np.roll(Hd, -1, 1) - np.roll(Hd, 1, 1)) / (2 * Tm)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_canvas.py:142: RuntimeWarning: invalid value encountered in divide
+  dy = (np.roll(Hd, -1, 0) - np.roll(Hd, 1, 0)) / (2 * Tm)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_canvas.py:153: RuntimeWarning: invalid value encountered in cast
+  n8 = np.clip((Nf.reshape(res, res, 3)[::-1] * .5 + .5) * 255 + .5, 0, 255).astype(np.uint8)
+Traceback (most recent call last):
+  File "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_export.py", line 115, in <module>
+    main()
+    ~~~~^^
+  File "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_export.py", line 110, in main
+    entry = write_product(piece, out_dir, res, maps='--skip-maps' not in a)
+  File "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_export.py", line 96, in write_product
+    CV.bake(os.path.join(out_dir, 'Kit_Bag_final.npz'), out_dir, 'Bag', BM.details_bag, ao=ao)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag_canvas.py", line 158, in bake
+    rep = dict(res=res, coverage=round(cv.n / (res * res), 3), metres_per_uv=float(g['S']), px_per_mm=round(res / float(g['S']) / 1000, 2), px_per_mm_min=round(1 / float(cv.texel.max()) / 1000, 2), px_per_mm_max=round(1 / float(cv.texel.min()) / 1000, 2),
+                                                                                                                                                                                                                          ~~^~~~~~~~~~~~~~~~~~~~~~~
+ZeroDivisionError: float division by zero
+piece 23739 verts 37028 tris, S=1.6021 m/uv, 2.56 px/mm
+ao 17.7 s
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

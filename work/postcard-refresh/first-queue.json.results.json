@@ -1,0 +1,13 @@
+[
+  {
+    "name": "postcard-refresh-first",
+    "exit": 2,
+    "seconds": 179.05,
+    "shaderErrors": [],
+    "compileErrors": [
+      "Assets/Editor/MatchHeroLockerExport.cs(228,161): error CS0103: The name 'TailoredPoloDeformation' does not exist in the current context",
+      "Assets/Editor/MatchHeroLockerExport.cs(251,31): error CS0246: The type or namespace name 'TailoredPoloDeformation' could not be found (are you missing a using directive or an assembly reference?)",
+      "Assets/Editor/MatchHeroLockerExport.cs(460,31): error CS0246: The type or namespace name 'TailoredPoloDeformation' could not be found (are you missing a using directive or an assembly reference?)"
+    ]
+  }
+]

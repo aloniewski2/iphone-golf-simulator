@@ -1274,6 +1274,7 @@ namespace GolfArcade.Game
             }
             if (s != State.Result && holeOutCard && holeOutCard.Showing) { holeOutCard.Hide(); leavingResult = true; }
             Current = s; stateTime = 0;
+            golfer?.SetBagCarried(s is State.Result or State.HoleDone or State.RoundDone);   // ACCESSORIES: the bag rides along between shots, never through a swing
             if (leavingResult) RefreshControls();
             if (s is not (State.Menu or State.Golfer)) stage?.Hide();
             ShowControllerForState();
@@ -2213,9 +2214,9 @@ namespace GolfArcade.Game
                         break;
                     }
                     // the same wait in a multiplayer round: the phone that swung moves play on when it is over (NetworkResultDone)
-                    float resultWait = Mathf.Max(3f, ResultReactionSeconds, resultHold);
+                    float resultWait = ResultWaitSeconds;
                     shotResultPanel?.SetCountdown(Mathf.Max(0, resultWait - stateTime), networkConfigured ? "NEXT PLAYER" : "NEXT SHOT");
-                    if (HoleOutShowing) holeOutCard.SetCountdown(Mathf.Max(0, HoleOutSeconds - stateTime), HoleOutSeconds);
+                    if (HoleOutShowing) holeOutCard.SetCountdown(Mathf.Max(0, resultWait - stateTime), resultWait);
                     if (holeOutShown) rig.FrameHoleOut(golfer.transform);
                     else if(resultHeroCamera) rig.FrameCharacterResult(golfer.transform); else rig.FrameShotResult();
                     if (stateTime >= resultWait) { if (networkConfigured) NetworkResultDone(); else ContinueShotResult(); }
@@ -2892,7 +2893,7 @@ namespace GolfArcade.Game
             Enter(State.Result);
             // A full swing is shown again from the tee box once the ball is down (a beat to see where
             // it finished first); the result card follows the replay.
-            replayFirst = InstantReplays && !Demo && ReplaysShot(club);
+            replayFirst = networkConfigured && InstantReplays && !Demo && ReplaysShot(club);   // (local play: no replay between swings, only the 3 s result window)
             if (!replayFirst) ShowShotResult();
         }
 

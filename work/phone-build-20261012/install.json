@@ -1,0 +1,37 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "install",
+      "app",
+      "--device",
+      "00008150-00041CD92287801C",
+      "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/phone-build-20261012/DerivedData/Build/Products/Release-iphoneos/GolfArcade.app",
+      "--json-output",
+      "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/phone-build-20261012/install.json"
+    ],
+    "commandType" : "devicectl.device.install.app",
+    "environment" : {
+
+    },
+    "jsonVersion" : 5,
+    "outcome" : "success",
+    "version" : "642.16"
+  },
+  "result" : {
+    "deviceIdentifier" : "5724AA4B-8FB9-5224-8EBC-EBF2A5071B3B",
+    "installedApplications" : [
+      {
+        "bundleID" : "com.aloniewski.GolfArcade",
+        "databaseSequenceNumber" : 6804,
+        "databaseUUID" : "67E12DBE-F28F-414C-9ED9-164F3798AAA1",
+        "installationURL" : "file:///private/var/containers/Bundle/Application/0DE53140-6182-4183-A179-56E6DC521931/GolfArcade.app/",
+        "launchServicesIdentifier" : "unknown",
+        "options" : {
+
+        }
+      }
+    ]
+  }
+}

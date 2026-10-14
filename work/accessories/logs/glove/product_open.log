@@ -1,0 +1,5 @@
+open piece verts 6648 tris 12183 S=0.3493 time 0.3
+Glove {'res': 2048, 'coverage': 0.641, 'metres_per_uv': 0.3492584543899875, 'px_per_mm': 5.86, 'ao_min': 0.118, 'ao_mean': 0.943}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

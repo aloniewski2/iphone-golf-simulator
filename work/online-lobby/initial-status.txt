@@ -1,0 +1,135 @@
+ M GolfArcade.xcodeproj/project.pbxproj
+ M GolfArcade/App/GolfArcadeApp.swift
+ M GolfArcade/Unity/SportsInfo.plist
+ M GolfArcade/Unity/SportsRuntime.h
+ M GolfArcade/Unity/SportsRuntime.mm
+ M GolfArcade/Unity/SportsSession.swift
+ M GolfArcadeUnity.xcodeproj/project.pbxproj
+ M SportsLibrary/TENNIS-GAMEPLAY.md
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Scuba.fbx
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Scuba.fbx.meta
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Spike.fbx
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Spike.fbx.meta
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Thrust.fbx
+ M Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Thrust.fbx.meta
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Scuba.fbx
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Scuba.fbx.meta
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Spike.fbx
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Spike.fbx.meta
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Thrust.fbx
+ M Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Thrust.fbx.meta
+ M Unity/Assets/Plugins/iOS/SportsBridge.mm
+ M Unity/Assets/Resources/Tennis/KitsV3/Materials/KitV3_016.mat
+ M Unity/Assets/Scripts/Course/Hole.cs
+ M Unity/Assets/Scripts/Course/HoleView.cs
+ M Unity/Assets/Scripts/Game/GolfGame.cs
+ M Unity/Assets/Scripts/Game/NativeSportsSession.cs
+ M Unity/Assets/Scripts/Tennis/HeroTennisDriver.cs
+ M Unity/Assets/Scripts/Tennis/TennisGame.cs
+ M Unity/Assets/Scripts/Tennis/TennisRules.cs
+ M Unity/Assets/Scripts/Tennis/TennisTossMeter.cs
+ M Unity/Assets/Tests/EditMode/TennisGameplayImprovementTests.cs
+ M Unity/Assets/Tests/PlayMode/TennisGameplayTests.cs
+ M project.yml
+?? .agents/
+?? .claude/
+?? ArtDir/environments/
+?? ArtDir/hero/base_lock/parallel_prompts/25_EMOTE_SCUBA_THRUST_FIX.txt
+?? ArtDir/hero/base_lock/parallel_prompts/26_SERVE_TOSS_THEN_JUMP.txt
+?? ArtDir/hero/base_lock/parallel_prompts/27_ONLINE_LOBBY_UI.txt
+?? ArtDir/screenshots/golf_flyover/
+?? ArtDir/screenshots/golf_postcards/
+?? GolfArcade/Multiplayer/
+?? GolfArcadeTests/MultiplayerTests.swift
+?? SportsLibrary/MULTIPLAYER.md
+?? Tools/PostcardCheck/
+?? Unity/Assets/Editor/EmoteHoldCheck.cs
+?? Unity/Assets/Editor/EmoteHoldCheck.cs.meta
+?? Unity/Assets/Editor/GolfFlyoverCapture.cs
+?? Unity/Assets/Editor/GolfFlyoverCapture.cs.meta
+?? Unity/Assets/Editor/GolfLookGrassCheck.cs
+?? Unity/Assets/Editor/GolfLookGrassCheck.cs.meta
+?? Unity/Assets/Editor/GolfLookSmoke.cs
+?? Unity/Assets/Editor/GolfLookSmoke.cs.meta
+?? Unity/Assets/Editor/GolfLookTextureImporter.cs
+?? Unity/Assets/Editor/GolfLookTextureImporter.cs.meta
+?? Unity/Assets/Editor/GolfPlantSwayCheck.cs
+?? Unity/Assets/Editor/GolfPlantSwayCheck.cs.meta
+?? Unity/Assets/Editor/GolfPlantSwayFixture.meta
+?? Unity/Assets/Editor/GolfPlantSwayFixture/
+?? Unity/Assets/Editor/PostcardCameraStills.cs
+?? Unity/Assets/Editor/PostcardCameraStills.cs.meta
+?? Unity/Assets/Editor/PostcardImportCheck.cs
+?? Unity/Assets/Editor/PostcardImportCheck.cs.meta
+?? Unity/Assets/Editor/PostcardLookStills.cs
+?? Unity/Assets/Editor/PostcardLookStills.cs.meta
+?? Unity/Assets/Editor/PostcardPlayVideo.cs
+?? Unity/Assets/Editor/PostcardPlayVideo.cs.meta
+?? Unity/Assets/Editor/PostcardProofMasks.cs
+?? Unity/Assets/Editor/PostcardProofMasks.cs.meta
+?? Unity/Assets/Resources/Course/GolfLookVariants.mat
+?? Unity/Assets/Resources/Course/GolfLookVariants.mat.meta
+?? Unity/Assets/Resources/Course/Look.meta
+?? Unity/Assets/Resources/Course/Look/
+?? Unity/Assets/Resources/Course/Shaders.meta
+?? Unity/Assets/Resources/Course/Shaders/
+?? Unity/Assets/Resources/Course/hole_08.fbx
+?? Unity/Assets/Resources/Course/hole_08.fbx.meta
+?? Unity/Assets/Resources/Course/hole_09.fbx
+?? Unity/Assets/Resources/Course/hole_09.fbx.meta
+?? Unity/Assets/Resources/Course/hole_10.fbx
+?? Unity/Assets/Resources/Course/hole_10.fbx.meta
+?? Unity/Assets/Scripts/Course/GolfAtmosphere.cs
+?? Unity/Assets/Scripts/Course/GolfAtmosphere.cs.meta
+?? Unity/Assets/Scripts/Course/GolfFigureExposure.cs
+?? Unity/Assets/Scripts/Course/GolfFigureExposure.cs.meta
+?? Unity/Assets/Scripts/Course/GolfLook.cs
+?? Unity/Assets/Scripts/Course/GolfLook.cs.meta
+?? Unity/Assets/Scripts/Course/GolfWindSway.cs
+?? Unity/Assets/Scripts/Course/GolfWindSway.cs.meta
+?? Unity/Assets/Scripts/Game/GolfGame.Network.cs
+?? Unity/Assets/Scripts/Game/GolfGame.Network.cs.meta
+?? Unity/Assets/Scripts/Multiplayer.meta
+?? Unity/Assets/Scripts/Multiplayer/
+?? Unity/Assets/Scripts/Tennis/TennisGame.Network.cs
+?? Unity/Assets/Scripts/Tennis/TennisGame.Network.cs.meta
+?? Unity/Assets/Tests/EditMode/GolfWindSwayTests.cs
+?? Unity/Assets/Tests/EditMode/GolfWindSwayTests.cs.meta
+?? Unity/Assets/Tests/EditMode/MultiplayerRulesTests.cs
+?? Unity/Assets/Tests/EditMode/MultiplayerRulesTests.cs.meta
+?? Unity/Assets/Tests/EditMode/PostcardHoleTests.cs
+?? Unity/Assets/Tests/EditMode/PostcardHoleTests.cs.meta
+?? Unity/Assets/Tests/PlayMode/MultiplayerRuntimeTests.cs
+?? Unity/Assets/Tests/PlayMode/MultiplayerRuntimeTests.cs.meta
+?? Unity/work/
+?? blender/hole_08.blend
+?? blender/hole_09.blend
+?? blender/hole_10.blend
+?? blender/scripts/POSTCARDS_README.md
+?? blender/scripts/golf_look_textures.py
+?? blender/scripts/hole08_build.py
+?? blender/scripts/hole08_design.py
+?? blender/scripts/hole08_look.py
+?? blender/scripts/hole09_build.py
+?? blender/scripts/hole09_design.py
+?? blender/scripts/hole09_look.py
+?? blender/scripts/hole09_masonry.py
+?? blender/scripts/hole09_qa.py
+?? blender/scripts/hole09_stone.py
+?? blender/scripts/hole10_build.py
+?? blender/scripts/hole10_design.py
+?? blender/scripts/hole10_look.py
+?? blender/scripts/postcard_check.py
+?? blender/scripts/postcard_emit_cs.py
+?? blender/scripts/postcard_lib.py
+?? blender/scripts/postcard_lib_smoke.py
+?? blender/scripts/postcard_look_lib.py
+?? blender/scripts/postcard_look_smoke.py
+?? blender/scripts/postcard_look_verify.py
+?? blender/scripts/postcard_plan_png.py
+?? blender/scripts/postcard_props_lib.py
+?? blender/scripts/postcard_props_smoke.py
+?? blender/scripts/postcard_smoke_design.py
+?? blender/scripts/postcard_verify.py
+?? skills-lock.json
+?? work/

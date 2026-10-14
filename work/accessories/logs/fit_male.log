@@ -1,0 +1,18 @@
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:356: RuntimeWarning: divide by zero encountered in power
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:356: RuntimeWarning: invalid value encountered in multiply
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:357: RuntimeWarning: divide by zero encountered in power
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:357: RuntimeWarning: invalid value encountered in multiply
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+Male {'lean': -6.0, 'roll': 3.0, 'ty': 0.1567, 'tz': np.float64(1.0695), 'ty_motion': 0.155, 'ty_band': 0.1567, 'motion_min_mm': 19.7, 'motion_worst': 'RunForward:1', 'head_min_mm': 69.5, 'band_gap_mm': 20.0}
+Male hang placement {'lean': -6.0, 'roll': 3.0, 'ty': 0.1567, 'tz': np.float64(1.0695), 'ty_motion': 0.155, 'ty_band': 0.1567, 'motion_min_mm': 19.7, 'motion_worst': 'RunForward:1', 'head_min_mm': 69.5, 'band_gap_mm': 20.0}
+Male placement lean -6.0 t [0.012  0.1567 1.0695] 67.3 s
+piece 19437 verts 29656 tris, px/mm 2.50 strap len 1.317 join 1.136 68.6 s
+Male {"min_clear_bag_mm": 20.03, "min_clear_strap_mm": 8.29, "min_clear_strap_inner_mm": 8.29, "strap_on_body_rows": 78, "strap_on_body_min_mm": 8.29, "strap_on_body_mean_mm": 9.52, "strap_on_body_max_mm": 15.18, "bag_back_panel_gap_mm": {"min": 24.6, "median": 79.2, "max": 162.5}, "tris": 29656, "verts": 19437, "px_per_mm": 2.5, "px_per_mm_by_kind": {"SHELL": 2.02, "LINING": 0.98, "BASE": 1.34, "RIM": 2.44, "PIPING": 2.43, "POCKET": 3.91, "ZIP": 3.66, "DIVIDER": 0.98, "STRAP": 3.28, "BUCKLE": 2.19, "LEG": 0.85, "BRACKET": 0.85, "SHAFT": 0.85, "IRON": 1.45, "GRIP": 2.93, "COVER": 4.26, "HANDLE": 2.43, "FOOT": 0.85, "STUD": 1.7, "PULL": 1.95, "FLOOR": 0.73, "HINGE": 0.85, "POCKET2": 3.42}, "texture": 4096, "metres_per_uv": 1.639653159232913, "strap_length_m": 1.317, "strap_second": "omitted from the exported mesh (it would lie between the bag and the hero)", "dropped_hidden_parts": ["BackPocket", "Hub", "second strap", "base bottom cap"], "legs": "folded", "bag_top_z": 1.4, "bag_bottom_z": 0.623, "lean_deg": -6.0, "roll_deg": 3.0, "head_min_mm_rest": 72.7}
+Bag {'res': 4096, 'coverage': 0.5, 'metres_per_uv': 1.639653159232913, 'px_per_mm': 2.5, 'px_per_mm_min': 0.68, 'px_per_mm_max': 14.05, 'ao_min': 0.011, 'ao_mean': 0.873}
+wrote /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/out/Male/golf_bag 101.1 s
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

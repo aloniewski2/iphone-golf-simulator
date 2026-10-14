@@ -83,11 +83,13 @@ namespace GolfArcade.Game
             holeOutShown = true;
             var data = HoleOutData(shot);
             holeOutCard.Show(data, ContinueShotResult, PlayResultEmote);
-            holeOutCard.SetCountdown(HoleOutSeconds, HoleOutSeconds);
+            holeOutCard.SetCountdown(ResultWaitSeconds, ResultWaitSeconds);
         }
 
         /// How long the result holds before the game goes on by itself (an emote played extends it).
-        public float ResultWaitSeconds => HoleOutSeconds;
+        public float ResultWaitSeconds => networkConfigured ? HoleOutSeconds : LocalResultSeconds;
+        /// Local play: the result / emote window between swings is exactly this long, whatever the shot, score or emote.
+        public const float LocalResultSeconds = 3f;
         /// For the offscreen captures after the camera's shape was changed: the view of the golfer for that shape, at once.
         public void ReframeResultForTests() { if (holeOutShown) { rig.FrameHoleOut(golfer.transform); rig.SnapNext(); rig.ApplyFrame(); } }
         public float ResultSeconds => stateTime;

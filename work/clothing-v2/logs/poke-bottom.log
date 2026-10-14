@@ -1,0 +1,11 @@
+Kit_Bottom: covered body vertices 649
+Kit_Bottom clips with poke-through > 0.5 mm: 9 / 33  worst 29.9 mm, most points 74
+    Male_Serve {'max_mm': 29.9, 'verts': 34, 'frame': 4, 'vertex': 12384}
+    Male_ForehandOpen {'max_mm': 27.2, 'verts': 6, 'frame': 9, 'vertex': 13624}
+    Male_RunLeft {'max_mm': 26.2, 'verts': 19, 'frame': 0, 'vertex': 11612}
+    Male_RunRight {'max_mm': 15.0, 'verts': 7, 'frame': 4, 'vertex': 13011}
+    Male_ForehandArmCorrected {'max_mm': 13.4, 'verts': 2, 'frame': 5, 'vertex': 10145}
+    Male_Emote_Scuba {'max_mm': 5.5, 'verts': 31, 'frame': 50, 'vertex': 12141}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

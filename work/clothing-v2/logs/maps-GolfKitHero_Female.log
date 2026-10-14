@@ -1,0 +1,5 @@
+Kit_Shoe_L {'res': 1024, 'coverage': 0.255, 'metres_per_uv': 0.6281191132713709, 'px_per_cm': 16.3, 'ao_min': 0.215, 'ao_mean': 0.888}
+Kit_Shoe_R {'res': 1024, 'coverage': 0.256, 'metres_per_uv': 0.6242573427931548, 'px_per_cm': 16.4, 'ao_min': 0.217, 'ao_mean': 0.888}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

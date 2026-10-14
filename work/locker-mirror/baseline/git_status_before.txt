@@ -1,0 +1,372 @@
+ M ArtDir/hero/HERO.md
+ M ArtDir/hero/v5/Hero_01_V5.blend
+ M ArtDir/review/post-match/map-phone.png
+ M ArtDir/review/post-match/map-tv.png
+ M ArtDir/review/post-match/phone-finish-actions.png
+ M ArtDir/review/post-match/rep-phone-final.png
+ M ArtDir/review/post-match/rep-tv-00.png
+ M ArtDir/review/post-match/rep-tv-01.png
+ M ArtDir/review/post-match/rep-tv-02.png
+ M ArtDir/review/post-match/rep-tv-03.png
+ M ArtDir/review/post-match/rep-tv-04.png
+ M ArtDir/review/post-match/rep-tv-05.png
+ M ArtDir/review/post-match/rep-tv-06.png
+ M ArtDir/review/post-match/rep-tv-07.png
+ M ArtDir/review/post-match/rep-tv-08.png
+ M ArtDir/review/post-match/rep-tv-09.png
+ M ArtDir/review/post-match/rep-tv-10.png
+ M ArtDir/review/post-match/rep-tv-11.png
+ M ArtDir/review/post-match/rep-tv-12.png
+ M ArtDir/review/post-match/rep-tv-13.png
+ M ArtDir/review/post-match/rep-tv-final.png
+ M ArtDir/score80/lineup/00_player.png
+ M ArtDir/score80/lineup/01_Milo.png
+ M ArtDir/score80/lineup/02_Tama.png
+ M ArtDir/score80/lineup/03_Suki.png
+ M ArtDir/score80/lineup/04_Dex.png
+ M ArtDir/score80/lineup/05_Lina.png
+ M ArtDir/score80/lineup/06_Bruno.png
+ M ArtDir/score80/lineup/07_Rosa.png
+ M ArtDir/score80/lineup/08_Jax.png
+ M ArtDir/score80/lineup/09_Nadia.png
+ M ArtDir/score80/lineup/10_Viktor.png
+ M ArtDir/score80/lineup/11_standard_rival.png
+ M ArtDir/screenshots/venues/skyscraper_1_gameplay.png
+ M ArtDir/screenshots/venues/skyscraper_2_postcard.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone0.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone1.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone2.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone3.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone4.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone5.png
+ M ArtDir/screenshots/venues/skyscraper_4_side.png
+ M ArtDir/screenshots/venues/skyscraper_5_below.png
+ M ArtDir/screenshots/venues/skyscraper_6_edge.png
+ M ArtDir/ui/toybox-simple-v6/runtime/campaign.png
+ M ArtDir/ui/toybox-simple-v6/runtime/connect.png
+ M ArtDir/ui/toybox-simple-v6/runtime/courts.png
+ M ArtDir/ui/toybox-simple-v6/runtime/guide.png
+ M ArtDir/ui/toybox-simple-v6/runtime/home.png
+ M ArtDir/ui/toybox-simple-v6/runtime/intro.png
+ M ArtDir/ui/toybox-simple-v6/runtime/loading-repeat.png
+ M ArtDir/ui/toybox-simple-v6/runtime/loading-swing.png
+ M ArtDir/ui/toybox-simple-v6/runtime/loading.png
+ M ArtDir/ui/toybox-simple-v6/runtime/locker.png
+ M ArtDir/ui/toybox-simple-v6/runtime/pause.png
+ M ArtDir/ui/toybox-simple-v6/runtime/quick-match.png
+ M ArtDir/ui/toybox-simple-v6/runtime/results.png
+ M ArtDir/ui/toybox-simple-v6/runtime/settings.png
+ M ArtDir/ui/toybox-simple-v6/runtime/sports.png
+ M ArtDir/ui/toybox-simple-v6/runtime/tennis.png
+ M ArtDir/ui/toybox-simple-v6/runtime/training.png
+ M CLAUDE_KICKOFF.md
+ M GolfArcade.xcodeproj/project.pbxproj
+ M GolfArcade/Domain/Player.swift
+ M GolfArcade/Unity/ArcadeScreens.swift
+ M GolfArcade/Unity/CharacterAssets/HeroMenu.json
+ M GolfArcade/Unity/CharacterModelPreview.swift
+ M GolfArcade/Unity/ClubDesign.swift
+ M GolfArcade/Unity/ClubScreens.swift
+ M GolfArcade/Unity/HowToCards.swift
+ M GolfArcade/Unity/LockerColors.swift
+ M GolfArcade/Unity/LockerStudio.swift
+ M GolfArcade/Unity/PlayfulGraphics.swift
+ D GolfArcade/Unity/PostMatchScreen.swift
+ M GolfArcade/Unity/SportProgress.swift
+ M GolfArcade/Unity/SportsDisplays.swift
+ M GolfArcade/Unity/SportsHome.swift
+ M GolfArcade/Unity/SportsInfo.plist
+ M GolfArcade/Unity/SportsSession.swift
+ M GolfArcade/Unity/TennisMapScreen.swift
+ M GolfArcade/Unity/TennisMenu.swift
+ M GolfArcade/Unity/TennisMenuViews.swift
+ M GolfArcade/Unity/TennisPlayViews.swift
+ M GolfArcadeTests/TennisCampaignTests.swift
+ M GolfArcadeTests/TennisMenuSnapshotTests.swift
+ M GolfArcadeUnity.xcodeproj/project.pbxproj
+ M Unity/Assets/Editor/HeroGameplayBuild.cs
+ M Unity/Assets/Editor/HeroLockerExport.cs
+ M Unity/Assets/Editor/TennisVenueCapture.cs
+ M Unity/Assets/Plugins/iOS/SportsUnityAppController.mm
+ D Unity/Assets/Resources/Tennis/Customization/PlayerFemale.fbx
+ D Unity/Assets/Resources/Tennis/Customization/PlayerFemale.fbx.meta
+ D Unity/Assets/Resources/Tennis/Customization/PlayerMale.fbx
+ D Unity/Assets/Resources/Tennis/Customization/PlayerMale.fbx.meta
+ M Unity/Assets/Resources/Tennis/Rendering/TennisURP.asset
+ M Unity/Assets/Resources/Tennis/Shaders/TennisCharacter.shader
+ M Unity/Assets/Resources/Tennis/TropicalV3/Materials/TropicalV3_008.mat
+ M Unity/Assets/Scripts/Course/Hole.cs
+ M Unity/Assets/Scripts/Course/HoleView.cs
+ M Unity/Assets/Scripts/Game/CameraRig.cs
+ M Unity/Assets/Scripts/Game/GolfGame.cs
+ M Unity/Assets/Scripts/Game/GolferStyle.cs
+ M Unity/Assets/Scripts/Game/NativeSportsSession.cs
+ M Unity/Assets/Scripts/Tennis/HeroKit.cs
+ M Unity/Assets/Scripts/Tennis/HeroTennisDriver.cs
+ M Unity/Assets/Scripts/Tennis/ModularHeroLook.cs
+ M Unity/Assets/Scripts/Tennis/TennisActor.cs
+ M Unity/Assets/Scripts/Tennis/TennisCustomization.cs
+ M Unity/Assets/Scripts/Tennis/TennisGame.cs
+ M Unity/Assets/Scripts/Tennis/TennisHeroSetup.cs
+ M Unity/Assets/Scripts/Tennis/TennisHud.cs
+ M Unity/Assets/Scripts/Tennis/TennisLook.cs
+ M Unity/Assets/Scripts/Tennis/TennisRoster.cs
+ M Unity/Assets/Scripts/Tennis/TennisVenue.cs
+ M Unity/Assets/Scripts/Tennis/TennisVenueBuilder.cs
+ M Unity/Assets/Scripts/Tennis/TennisVenueFx.cs
+ M Unity/Assets/Tests/PlayMode/HeroV6RetargetTests.cs
+ M Unity/Assets/Tests/PlayMode/NativeLaunchHeroTests.cs
+ M Unity/Assets/Tests/PlayMode/TennisSinglePointCaptureTests.cs
+ M Unity/ProjectSettings/QualitySettings.asset
+ M Unity/ProjectSettings/TagManager.asset
+ M project.yml
+?? .agents/
+?? .claude/
+?? AGENTS.md
+?? ArtDir/environments/
+?? ArtDir/hero/HERO_ARCHIVE_Hero01.md
+?? ArtDir/hero/base_lock/
+?? ArtDir/hero/integrity_v1/
+?? ArtDir/hero/kits/
+?? ArtDir/hero/v5/RESTORE_V5.md
+?? ArtDir/hero/v5/restore-lounge.log
+?? ArtDir/hero/v5/restore-menu.log
+?? ArtDir/hero/v5/restore-v5-hashes.json
+?? ArtDir/hero/v5/viewer/
+?? ArtDir/hero/v5_astra/
+?? ArtDir/hero/v6_polish/
+?? ArtDir/hero/v6_proof/
+?? ArtDir/hero/v6_target/
+?? ArtDir/review/point-clips/
+?? ArtDir/review/unimate-tennis/
+?? ArtDir/screenshots/golf_flyover/
+?? ArtDir/screenshots/golf_postcards/
+?? ArtDir/ui/motion-club-gameplay-hud-v1/
+?? ArtDir/ui/motion-club-radial-v1/
+?? ArtDir/ui/motion-club-resort-v1/
+?? CONCEPTS_HeroV6_FiveDirections.md
+?? GOAL_HeroBase_MaleFemale.md
+?? GOAL_HeroBase_Micro1_MaleSilhouette.md
+?? GOAL_HeroBase_Micro1b_MaleSilhouette_BaldOnly.md
+?? GOAL_HeroBase_Micro1c_MaleFormFix.md
+?? GOAL_HeroBase_Micro1d_MaleFormHuman.md
+?? GOAL_HeroBase_Micro1e_ChinFingers.md
+?? GOAL_HeroBase_Micro1f_HandFormUnitySkin.md
+?? GOAL_HeroBase_Micro1g_MaleFaceLock.md
+?? GOAL_HeroBase_Micro1h_MaleFaceDensify.md
+?? GOAL_HeroBase_Micro1i_ChinEarAttach.md
+?? GOAL_HeroBase_Micro1k_JawCheekFix.md
+?? GOAL_HeroBase_Micro2_FemaleSilhouette.md
+?? GOAL_HeroBase_Micro3_MaleHead.md
+?? GOAL_HeroBase_Micro4_FemaleHead.md
+?? GOAL_HeroBase_Micro5_UnityLook.md
+?? GolfArcade/Unity/CharacterAssets/HeroLounge.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female.json
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_00.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_01.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_02.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_03.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_04.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_05.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_06.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_07.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_08.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_09.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_10.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_11.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male.json
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_00.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_01.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_02.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_03.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_04.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_05.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_06.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_07.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_08.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_09.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_10.lzfse
+?? GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_11.lzfse
+?? GolfArcade/Unity/ClubEnvironmentView.swift
+?? GolfArcade/Unity/ClubEnvironments/
+?? GolfArcade/Unity/IslandKit.swift
+?? GolfArcade/Unity/IslandScreens.swift
+?? GolfArcade/Unity/LockerCatalog.swift
+?? GolfArcade/Unity/MenuArt/club-entrance.png
+?? GolfArcade/Unity/MenuArt/club-loading.png
+?? GolfArcade/Unity/MenuArt/club-locker.png
+?? GolfArcade/Unity/MenuArt/club-terrace.png
+?? GolfArcade/Unity/MotionClubMenus.swift
+?? GolfArcade/Unity/PointClips.swift
+?? GolfArcade/Unity/RivalLooks.swift
+?? GolfArcadeTests/ClubEnvironmentTests.swift
+?? GolfArcadeTests/DressedHeroSnapshotTests.swift
+?? GolfArcadeTests/LockerTests.swift
+?? GolfArcadeTests/MatchHeroLockerTests.swift
+?? GolfArcadeTests/MotionClubReviewTests.swift
+?? GolfArcadeTests/NewMenuSnapshotTests.swift
+?? GolfArcadeTests/PointClipsTests.swift
+?? HANDOFF_Sonnet_MaleHero_ChinFingers.md
+?? PLAN_HeroBase_MaleFemale_Lock.md
+?? PLAN_HeroV5_AstraTextureSidePass.md
+?? PLAN_HeroV6_ZeroDeficiency.md
+?? PROCESS_Blender_Claude.md
+?? Tools/
+?? Unity/Assets/ArtDirection/Hero01/Materials/Hero_NeckSkin.mat
+?? Unity/Assets/ArtDirection/Hero01/Materials/Hero_NeckSkin.mat.meta
+?? Unity/Assets/ArtDirection/HeroV5AstraTex.meta
+?? Unity/Assets/ArtDirection/HeroV5AstraTex/
+?? Unity/Assets/ArtDirection/HeroV6Polish.meta
+?? Unity/Assets/ArtDirection/HeroV6Polish/
+?? Unity/Assets/Characters.meta
+?? Unity/Assets/Characters/
+?? Unity/Assets/Editor/CharacterShaderStill.cs
+?? Unity/Assets/Editor/CharacterShaderStill.cs.meta
+?? Unity/Assets/Editor/GolfFlyoverCapture.cs
+?? Unity/Assets/Editor/GolfFlyoverCapture.cs.meta
+?? Unity/Assets/Editor/GolfLookSmoke.cs
+?? Unity/Assets/Editor/GolfLookSmoke.cs.meta
+?? Unity/Assets/Editor/GolfLookTextureImporter.cs
+?? Unity/Assets/Editor/GolfLookTextureImporter.cs.meta
+?? Unity/Assets/Editor/HeroBaseFemaleHeadProof.cs
+?? Unity/Assets/Editor/HeroBaseFemaleHeadProof.cs.meta
+?? Unity/Assets/Editor/HeroBaseMaleFormProof.cs
+?? Unity/Assets/Editor/HeroBaseMaleFormProof.cs.meta
+?? Unity/Assets/Editor/HeroBaseSkinProof.cs
+?? Unity/Assets/Editor/HeroBaseSkinProof.cs.meta
+?? Unity/Assets/Editor/HeroBaseStaticImport.cs
+?? Unity/Assets/Editor/HeroBaseStaticImport.cs.meta
+?? Unity/Assets/Editor/HeroDetailStill.cs
+?? Unity/Assets/Editor/HeroDetailStill.cs.meta
+?? Unity/Assets/Editor/HeroDetailTextures.cs
+?? Unity/Assets/Editor/HeroDetailTextures.cs.meta
+?? Unity/Assets/Editor/HeroIntegrityAudit.cs
+?? Unity/Assets/Editor/HeroIntegrityAudit.cs.meta
+?? Unity/Assets/Editor/HeroIntegrityReview.cs
+?? Unity/Assets/Editor/HeroIntegrityReview.cs.meta
+?? Unity/Assets/Editor/HeroV6PolishBeforeReview.cs
+?? Unity/Assets/Editor/HeroV6PolishBeforeReview.cs.meta
+?? Unity/Assets/Editor/HeroV6PolishImport.cs
+?? Unity/Assets/Editor/HeroV6PolishImport.cs.meta
+?? Unity/Assets/Editor/HeroV6PolishReview.cs
+?? Unity/Assets/Editor/HeroV6PolishReview.cs.meta
+?? Unity/Assets/Editor/LegacyHero01.cs
+?? Unity/Assets/Editor/LegacyHero01.cs.meta
+?? Unity/Assets/Editor/MatchHeroAB.cs
+?? Unity/Assets/Editor/MatchHeroAB.cs.meta
+?? Unity/Assets/Editor/MatchHeroBuild.cs
+?? Unity/Assets/Editor/MatchHeroBuild.cs.meta
+?? Unity/Assets/Editor/MatchHeroFilm.cs
+?? Unity/Assets/Editor/MatchHeroFilm.cs.meta
+?? Unity/Assets/Editor/MatchHeroImport.cs
+?? Unity/Assets/Editor/MatchHeroImport.cs.meta
+?? Unity/Assets/Editor/MatchHeroKit.cs
+?? Unity/Assets/Editor/MatchHeroKit.cs.meta
+?? Unity/Assets/Editor/MatchHeroKitBaseline.cs
+?? Unity/Assets/Editor/MatchHeroKitBaseline.cs.meta
+?? Unity/Assets/Editor/MatchHeroKitProbe.cs
+?? Unity/Assets/Editor/MatchHeroKitProbe.cs.meta
+?? Unity/Assets/Editor/MatchHeroKitProof.cs
+?? Unity/Assets/Editor/MatchHeroKitProof.cs.meta
+?? Unity/Assets/Editor/MatchHeroKitTests.cs
+?? Unity/Assets/Editor/MatchHeroKitTests.cs.meta
+?? Unity/Assets/Editor/MatchHeroLockerExport.cs
+?? Unity/Assets/Editor/MatchHeroLockerExport.cs.meta
+?? Unity/Assets/Editor/MatchHeroProbe.cs
+?? Unity/Assets/Editor/MatchHeroProbe.cs.meta
+?? Unity/Assets/Editor/MatchHeroProof.cs
+?? Unity/Assets/Editor/MatchHeroProof.cs.meta
+?? Unity/Assets/Editor/PointClipAudioProbe.cs
+?? Unity/Assets/Editor/PointClipAudioProbe.cs.meta
+?? Unity/Assets/Editor/PostcardCameraStills.cs
+?? Unity/Assets/Editor/PostcardCameraStills.cs.meta
+?? Unity/Assets/Editor/PostcardImportCheck.cs
+?? Unity/Assets/Editor/PostcardImportCheck.cs.meta
+?? Unity/Assets/Editor/PostcardPlayVideo.cs
+?? Unity/Assets/Editor/PostcardPlayVideo.cs.meta
+?? Unity/Assets/Editor/RallyPopHudCapture.cs
+?? Unity/Assets/Editor/RallyPopHudCapture.cs.meta
+?? Unity/Assets/Editor/ServeAndFeetProof.cs
+?? Unity/Assets/Editor/ServeAndFeetProof.cs.meta
+?? Unity/Assets/Editor/ServeAndFeetWire.cs
+?? Unity/Assets/Editor/ServeAndFeetWire.cs.meta
+?? Unity/Assets/Editor/ServeTossFilm.cs
+?? Unity/Assets/Editor/ServeTossFilm.cs.meta
+?? Unity/Assets/Plugins/iOS/SportsPointCapture.mm
+?? Unity/Assets/Plugins/iOS/SportsPointCapture.mm.meta
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.h
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.h.meta
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.mm
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.mm.meta
+?? Unity/Assets/Resources/Course/Look.meta
+?? Unity/Assets/Resources/Course/Look/
+?? Unity/Assets/Resources/Course/Shaders.meta
+?? Unity/Assets/Resources/Course/Shaders/
+?? Unity/Assets/Resources/Course/hole_08.fbx
+?? Unity/Assets/Resources/Course/hole_08.fbx.meta
+?? Unity/Assets/Resources/Course/hole_09.fbx
+?? Unity/Assets/Resources/Course/hole_09.fbx.meta
+?? Unity/Assets/Resources/Course/hole_10.fbx
+?? Unity/Assets/Resources/Course/hole_10.fbx.meta
+?? Unity/Assets/Resources/Tennis/Customization/PlayerFemale.prefab
+?? Unity/Assets/Resources/Tennis/Customization/PlayerFemale.prefab.meta
+?? Unity/Assets/Resources/Tennis/Customization/PlayerMale.prefab
+?? Unity/Assets/Resources/Tennis/Customization/PlayerMale.prefab.meta
+?? Unity/Assets/Resources/Tennis/HeroDetail.meta
+?? Unity/Assets/Resources/Tennis/HeroDetail/
+?? Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader
+?? Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader.meta
+?? Unity/Assets/Scripts/Course/GolfAtmosphere.cs
+?? Unity/Assets/Scripts/Course/GolfAtmosphere.cs.meta
+?? Unity/Assets/Scripts/Course/GolfLook.cs
+?? Unity/Assets/Scripts/Course/GolfLook.cs.meta
+?? Unity/Assets/Scripts/Game/PointClipAudioTap.cs
+?? Unity/Assets/Scripts/Game/PointClipAudioTap.cs.meta
+?? Unity/Assets/Scripts/Tennis/HeroRimLight.cs
+?? Unity/Assets/Scripts/Tennis/HeroRimLight.cs.meta
+?? Unity/Assets/Scripts/Tennis/HeroV6KneeCorrectives.cs
+?? Unity/Assets/Scripts/Tennis/HeroV6KneeCorrectives.cs.meta
+?? Unity/Assets/Scripts/Tennis/HeroV6PolishContract.cs
+?? Unity/Assets/Scripts/Tennis/HeroV6PolishContract.cs.meta
+?? Unity/Assets/Scripts/Tennis/HeroV6PolishHairLOD.cs
+?? Unity/Assets/Scripts/Tennis/HeroV6PolishHairLOD.cs.meta
+?? Unity/Assets/Scripts/Tennis/MatchHeroLook.cs
+?? Unity/Assets/Scripts/Tennis/MatchHeroLook.cs.meta
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Mesh.cs
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Mesh.cs.meta
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Skyscraper.cs
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Skyscraper.cs.meta
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Volcano.cs
+?? Unity/Assets/Scripts/Tennis/TennisVenueBuilder.Volcano.cs.meta
+?? Unity/Assets/Tests/EditMode/PostcardHoleTests.cs
+?? Unity/Assets/Tests/EditMode/PostcardHoleTests.cs.meta
+?? Unity/Assets/Tests/PlayMode/MatchHeroClipMapTests.cs
+?? Unity/Assets/Tests/PlayMode/MatchHeroClipMapTests.cs.meta
+?? art-bible.md
+?? blender/hole_08.blend
+?? blender/hole_09.blend
+?? blender/hole_10.blend
+?? blender/scripts/POSTCARDS_README.md
+?? blender/scripts/golf_look_textures.py
+?? blender/scripts/hole08_build.py
+?? blender/scripts/hole08_design.py
+?? blender/scripts/hole09_build.py
+?? blender/scripts/hole09_design.py
+?? blender/scripts/hole10_build.py
+?? blender/scripts/hole10_design.py
+?? blender/scripts/postcard_check.py
+?? blender/scripts/postcard_emit_cs.py
+?? blender/scripts/postcard_lib.py
+?? blender/scripts/postcard_lib_smoke.py
+?? blender/scripts/postcard_look_lib.py
+?? blender/scripts/postcard_look_smoke.py
+?? blender/scripts/postcard_look_verify.py
+?? blender/scripts/postcard_plan_png.py
+?? blender/scripts/postcard_props_lib.py
+?? blender/scripts/postcard_props_smoke.py
+?? blender/scripts/postcard_smoke_design.py
+?? blender/scripts/postcard_verify.py
+?? skills-lock.json
+?? work/

@@ -1,0 +1,1 @@
+== MatchHero_Male: accessories Headwear=tennis_cap, Glove=- (hidden), BackCarry=- (hidden); 2 clips: Emote_Shock, Walk

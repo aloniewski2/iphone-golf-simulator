@@ -1,0 +1,23 @@
+[
+  {
+    "name": "postcard-refresh-render-gates-budget",
+    "exit": 1,
+    "seconds": 47.41,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-second-budget",
+    "exit": 0,
+    "seconds": 31.42,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-tennis-budget",
+    "exit": 0,
+    "seconds": 44.0,
+    "shaderErrors": [],
+    "compileErrors": []
+  }
+]

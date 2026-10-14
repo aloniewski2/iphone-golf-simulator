@@ -1,0 +1,20 @@
+Kit_Bottom: covered 4701 vertices, hidden 3640 vertices / 6952 triangles
+Kit_Shoe_L: covered 818 vertices, hidden 1664 vertices / 3150 triangles
+Kit_Shoe_R: covered 795 vertices, hidden 1660 vertices / 3146 triangles
+Kit_Sock_L: covered 1481 vertices, hidden 895 vertices / 1647 triangles
+Kit_Sock_R: covered 1466 vertices, hidden 896 vertices / 1666 triangles
+Kit_Top: covered 7154 vertices, hidden 5059 vertices / 9661 triangles
+skin a garment uncovers in some pose: 2156 of 10483 hidden candidates
+Kit_Bottom: hidden 3640 -> 2610 vertices after the pose test
+Kit_Sock_L: hidden 895 -> 891 vertices after the pose test
+Kit_Sock_R: hidden 896 -> 872 vertices after the pose test
+Kit_Top: hidden 5059 -> 2981 vertices after the pose test
+Kit_Bottom: contact on 1723 skin vertices, max 0.63
+Kit_Shoe_L: contact on 268 skin vertices, max 0.66
+Kit_Shoe_R: contact on 260 skin vertices, max 0.61
+Kit_Sock_L: contact on 408 skin vertices, max 0.76
+Kit_Sock_R: contact on 445 skin vertices, max 0.85
+Kit_Top: contact on 5678 skin vertices, max 0.75
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

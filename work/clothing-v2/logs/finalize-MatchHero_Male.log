@@ -1,0 +1,9 @@
+Kit_Bottom: v=10787 (from 10084) tris=19902 bones=6 metres/uv=1.329 subs=['Kit_Shorts', 'Kit_ShortsBand']
+Kit_Shoe_L: v=12794 (from 11991) tris=23816 bones=3 metres/uv=0.653 subs=['Kit_Shoe', 'Kit_Sole']
+Kit_Shoe_R: v=12764 (from 11948) tris=23730 bones=3 metres/uv=0.653 subs=['Kit_Shoe', 'Kit_Sole']
+Kit_Sock_L: v=2183 (from 2141) tris=4177 bones=2 metres/uv=0.387 subs=['Kit_Sock']
+Kit_Sock_R: v=2189 (from 2152) tris=4201 bones=2 metres/uv=0.386 subs=['Kit_Sock']
+Kit_Top: v=18292 (from 17819) tris=35187 bones=72 metres/uv=1.045 subs=['Kit_Shirt']
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

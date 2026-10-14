@@ -75,6 +75,7 @@ namespace GolfArcade.Hub
             var prefab = TennisCustomization.HeroBase(s.female); if (!prefab) return;
             var go = Instantiate(prefab, r.root.transform, false); go.name = "Friend hero";
             r.look = go.GetComponent<MatchHeroLook>();
+            if (r.look) HeroAccessories.For(r.look).SetCarry(true);   // ACCESSORIES: friends in the plaza carry the golf bag too
             if (r.look && r.look.racketGrip) foreach (var rend in r.look.racketGrip.GetComponentsInChildren<Renderer>(true)) rend.enabled = false;
             r.hero = HubHeroAnimator.Attach(go);
             r.root.transform.position = new Vector3(s.x, s.y, s.z); r.shown = r.root.transform.position;

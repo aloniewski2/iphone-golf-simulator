@@ -1,0 +1,34 @@
+[
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Scuba.fbx",
+    "sha256": "78fa4f5cfd31ec41b1d3d0e14829abe6407c33154dddc74908bd78220a021743"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Scuba.fbx.meta",
+    "sha256": "2b38e7759dfea03774fe34150e435f57b26ff383355a6cd40540369510820711"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Thrust.fbx",
+    "sha256": "a2348c8b03ee1211029c2b5f76cf4586810f3855f6a977406f2e9a9a8f7d7ba1"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Thrust.fbx.meta",
+    "sha256": "7a8cd40b4a5c766ceafee2737f3c3eabffc47aaedc69f3d6b746c57b93c64ce3"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Scuba.fbx",
+    "sha256": "8afc24522d93c8aee6268d31bd1fafec190902d9c7b57608d16c133bbd762909"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Scuba.fbx.meta",
+    "sha256": "909ff3b63b26f81faae6e6b9e45fa36364e3e46489e78a19cf15ac691eb862e3"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Thrust.fbx",
+    "sha256": "fd146cdebd547868476c7442cf5b5a63a50e9fc26707c4ad543773716c986b3b"
+  },
+  {
+    "path": "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Thrust.fbx.meta",
+    "sha256": "d68e438408914c099a9e9df89dc2120bba3a171b4cb03360bc28a2909dfa7b62"
+  }
+]

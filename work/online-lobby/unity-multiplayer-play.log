@@ -1,0 +1,2204 @@
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 26.6.2 (Build 25G83)
+Darwin version:          25.6.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        16384 MB
+Date:                    2026-10-05T19:41:04Z
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan" at "2026-10-05T19:41:04.148997Z"
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-projectPath
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+-runTests
+-testPlatform
+PlayMode
+-testFilter
+GolfArcade.Tests.MultiplayerRuntimeTests
+-testResults
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/unity-multiplayer-play.xml
+-logFile
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/unity-multiplayer-play.log
+Successfully changed project path to: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [8471536000]  Target information:
+
+Player connection [8471536000]  * "[IP] 172.31.249.188 [Port] 55504 [Flags] 2 [Guid] 3436694601 [EditorId] 3436694601 [Version] 1048832 [Id] OSXEditor(0,Adnans-MacBook-Air.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+
+Player connection [8471536000] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [8471536000] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              a83776ff1a4940889e9af7b17238d6ef
+  Correlation Id:          04038a8f9e6fdd7d7004b1842956964d
+  External correlation Id: 9113679799253444697
+  Machine Id:              TX4XIvHnvxbItvrLF5vWHS2MyBM=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-adnanyonathan" (connect: 0.00s, validation: 0.00s, handshake: 1.11s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan-notifications" at "2026-10-05T19:41:05.265797Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2476051264668-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Module] Licensing Background thread has ended after 1.12s
+[Package Manager] Connected to IPC stream "Upm-86721" after 1.1 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 3.56 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.24f1 (4e7b9b5b6244)
+[Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+ preferred device: Apple M5 (high power)
+Metal devices available: 1
+0: Apple M5 (high power)
+Using device Apple M5 (high power)
+Initializing Metal device caps: Apple M5
+Mac GPU Family: 2
+Apple GPU Family: 9
+MSL Version: 3.0
+Has Float MSAA: 1
+Has Float Filtering: 1
+ReadWrite Texture Tier: 2
+Initialize mono
+Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/Managed'
+Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
+Mono config path = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56721
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
+Registered in 0.003997 seconds.
+- Loaded All Assemblies, in  0.496 seconds
+[usbmuxd] Start listen thread
+Native extension for iOS target not found
+[usbmuxd] Listen thread started
+[usbmuxd] Send listen message
+Native extension for OSXStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.644 seconds
+Domain Reload Profiling: 1140ms
+	BeginReloadAssembly (175ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (21ms)
+	RebuildCommonClasses (47ms)
+	RebuildNativeTypeToScriptingClass (15ms)
+	initialDomainReloadingComplete (51ms)
+	LoadAllAssembliesAndSetupDomain (208ms)
+		LoadAssemblies (157ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (200ms)
+			TypeCache.Refresh (196ms)
+				TypeCache.ScanAssembly (177ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (2ms)
+	FinalizeReload (644ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (601ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (290ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (85ms)
+			ProcessInitializeOnLoadAttributes (133ms)
+			ProcessInitializeOnLoadMethodAttributes (88ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 63 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.analytics@3.8.2 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.analytics@c9d14a6bdec6)
+    com.unity.collab-proxy@2.13.6 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.40 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.timeline@1.8.13 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.timeline@3a22918286f5)
+    com.unity.xr.legacyinputhelpers@2.1.13 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.xr.legacyinputhelpers@9535ff2c27ac)
+    com.unity.services.analytics@6.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.services.analytics@cde4e6cf92f9)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.searcher@4.9.5 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.searcher@a463122f2c00)
+    com.unity.burst@1.8.30 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.3 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.8 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.collections@84e8eb3fc12e)
+    com.unity.services.core@1.18.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.services.core@3464cb68d709)
+    com.unity.nuget.mono-cecil@1.11.6 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.2d.sprite@5b922524bd83)
+    com.unity.2d.tilemap@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.2d.tilemap@f666889fd587)
+    com.unity.multiplayer.center@1.0.1 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.test-framework@1.6.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ugui@b996e7548785)
+    com.unity.modules.accessibility@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.xr)
+    com.unity.render-pipelines.universal@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.universal@a8b4b2fc3560)
+    com.unity.render-pipelines.core@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.core@0bb36005e9ba)
+    com.unity.shadergraph@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.shadergraph@30c2e3926b79)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+    com.unity.modules.subsystems@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ext.nunit@d8c07649098d)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.2.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02 seconds
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://unix:/tmp/ilpp.sock-dfa510fc74c0655bd1610e65cf680718
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 66.9684ms
+Starting: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/BuildPipeline/bee_backend --ipc --defer-dag-verification --dagfile="Library/Bee/900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+DisplayProgressbar: Compiling Scripts
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly unityeditor.ios.extensions.xcode has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.iOS.Extensions.Xcode.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/Extensions/2.0.0/System.Runtime.InteropServices.WindowsRuntime.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/System.ComponentModel.Composition.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/compat/2.1.0/shims/netfx/System.ComponentModel.Composition.dll"
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.burst@2f3d916873ea/Unity.Burst.CodeGen/Unity.Burst.Cecil.dll
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 43.6262ms
+ExitCode: 0 Duration: 0s577ms
+[722/957    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra build success (0.55 seconds), 1 items updated, 957 evaluated
+AssetDatabase: script compilation time: 1.452764s
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  1.118 seconds
+Refreshing native plugins compatible for Editor in 16.92 ms, found 2 plugins.
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+Refreshing native plugins compatible for Editor in 1.74 ms, found 2 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  4.080 seconds
+Domain Reload Profiling: 5198ms
+	BeginReloadAssembly (322ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (31ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (148ms)
+	RebuildCommonClasses (37ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (25ms)
+	LoadAllAssembliesAndSetupDomain (721ms)
+		LoadAssemblies (510ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (322ms)
+			TypeCache.Refresh (222ms)
+				TypeCache.ScanAssembly (191ms)
+			BuildScriptInfoCaches (78ms)
+			ResolveRequiredComponents (12ms)
+	FinalizeReload (4080ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (3766ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (179ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (147ms)
+			ProcessInitializeOnLoadAttributes (3061ms)
+			ProcessInitializeOnLoadMethodAttributes (372ms)
+			AfterProcessingInitializeOnLoad (2ms)
+			EditorAssembliesLoaded (1ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (82ms)
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRays.urtshader using Guid(1142bbad8b9e8c44c83a9775ff120d37) (ScriptedImporter)Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Helpers/UnityShaderCompiler
+Launched and connected shader compiler UnityShaderCompiler after 0.18 seconds
+ -> (artifact id: 'cda283c2847b9d74adb051b508eb865c') in 0.247206917 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RisEstimation.urtshader using Guid(713f6141bd66a134383b787f2eaa7c11) (ScriptedImporter) -> (artifact id: '828910a0f4475f7b29f01624238b87cf') in 0.02306775 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/RenderingLayerMask/TraceRenderingLayerMask.urtshader using Guid(94a070d33e408384bafc1dea4a565df9) (ScriptedImporter) -> (artifact id: '6f6f35f20c7aeb3b347963a9ca95200c') in 0.014483125 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/UniformEstimation.urtshader using Guid(94a39d12848d8d64ca962a72b74e7c50) (ScriptedImporter) -> (artifact id: '707d0f2b70db481e04dc7b29d7b2cb81') in 0.058691625 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceTransparentRays.urtshader using Guid(6513c3b892e933c4f8d00c19d5c47532) (ScriptedImporter) -> (artifact id: '89b626a4196227418dcd4a57a8042842') in 0.005939625 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/DynamicGI/DynamicGISkyOcclusion.urtshader using Guid(5a2a534753fbdb44e96c3c78b5a6999d) (ScriptedImporter) -> (artifact id: '2bb36b4f84b992657f3a150fa9653b01') in 0.020843833 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRaysAndFetchAttributes.urtshader using Guid(fbc59f55df2416344b008dc23753cae2) (ScriptedImporter) -> (artifact id: '5c7cf60a682d40545a3ff97dd84ccf15') in 0.175201 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RestirCandidateTemporal.urtshader using Guid(ad3a9f9982f8c4f4a839a78955e78458) (ScriptedImporter) -> (artifact id: 'cb9164fb40e729d5159097e7d8c549b3') in 0.00845375 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/VirtualOffset/TraceVirtualOffset.urtshader using Guid(ff2cbab5da58bf04d82c5f34037ed123) (ScriptedImporter) -> (artifact id: '4d2f6daa9258f27025116c21228b6c1b') in 0.031569208 seconds
+Refreshing native plugins compatible for Editor in 1.78 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=6bbf7343f342b4473828d988dcafc862): Total: 9.906 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=9 (actual=9, local cache=0, cache server=0)
+		Asset DB Process Time: managed=43 ms, native=6575 ms
+		Asset DB Callback time: managed=603 ms, native=64 ms
+		Scripting: domain reloads=1, domain reload time=1119 ms, compile time=1455 ms, other=42 ms
+		Project Asset Count: scripts=1374, non-scripts=3115
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 1
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 21.375ms
+	ApplyChangesToAssetFolders: 1.718ms
+	Scan: 1434.370ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 58.228ms
+	ProcessAssetsWithTransientArtifactChanges: 73.638ms
+	CategorizeAssets: 168.820ms
+	ImportOutOfDateAssets: 4713.506ms (2646.602ms without children)
+		ImportManagerImport: 606.045ms (8.947ms without children)
+			ImportInProcess: 596.481ms
+			UpdateCategorizedAssets: 0.617ms
+		CompileScripts: 1455.154ms
+		ReloadNativeAssets: 0.036ms
+		UnloadImportedAssets: 1.541ms
+		ReloadImportedAssets: 2.280ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 1.019ms
+		InitializingProgressBar: 0.007ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.820ms
+	PostProcessAllAssets: 642.621ms
+	Hotreload: 6.312ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.001ms
+	UnloadStreamsBegin: 13.414ms
+	PersistCurrentRevisions: 0.559ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 4.197ms
+	Untracked: 2771.355ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 0.399ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Golf Arcade
+2026-10-05 15:41:18.652 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9015eec60 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+Unloading 27 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 5849 unused Assets / (6.6 MB). Loaded Objects now: 6685.
+Memory consumption went from 213.6 MB to 207.0 MB.
+Total: 19.019875 ms (FindLiveObjects: 0.375584 ms CreateObjectMapping: 0.209958 ms MarkObjects: 13.779000 ms  DeleteObjects: 4.654625 ms)
+
+2026-10-05 15:41:18.774 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9013e6d00 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+[Project] Loading completed in 14.688 seconds
+	Project init time: 				13.653 seconds
+		Template init time: 		0.000 seconds
+		Package Manager init time: 		1.121 seconds
+		Asset Database init time: 		0.764 seconds
+		Global illumination init time: 	0.002 seconds
+		Assemblies load time: 			1.154 seconds
+		Unity extensions init time: 	0.022 seconds
+		Asset Database refresh time: 	9.906 seconds
+	Scene opening time: 			0.219 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1791229278779,"processId":86721,"projectLoad":14.688065167000002,"projectInit":13.653343833,"templateInit":0.0,"packageManagerInit":1.121325458,"assetDatabaseInit":0.764195083,"globalIlluminationInit":0.001683709,"assembliesLoad":1.154076833,"unityExtensionsInit":0.021766542,"assetDatabaseRefresh":9.906040208,"sceneOpening":0.218823833}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1791229278779,"processId":86721,"editorVersion":"6000.3.24f1 (4e7b9b5b6244)","branch":"6000.3/staging","buildType":"Release","platform":"OSX"}
+Subscribe to USB device events
+Scanning for USB devices : 0.130ms
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Running tests for ExecutionSettings with details:
+targetPlatform = 
+playerHeartbeatTimeout = 600
+filters[0] = 
+   Filter with settings:
+   testMode = PlayMode
+   targetPlatform = 
+   testNames = null
+   groupNames = GolfArcade.Tests.MultiplayerRuntimeTests
+   categoryNames = null
+   assemblyNames = null
+ignoreTests = {}
+featureFlags = null
+
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/Executer.cs:53)
+UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:InitializeAndExecuteRun () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:64)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /Users/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 53)
+
+Start Indexing on Editor startup
+[Indexing] Starting Initial Indexing for Assets
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Created GICache directory at /Users/adnanyonathan/Library/Caches/com.unity3d.UnityEditor/GiCache. Took: 0.007s, timestamps: [14.696 - 14.702]
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Helpers/UnityShaderCompiler
+Launched and connected shader compiler UnityShaderCompiler after 0.06 seconds
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 1 unused Assets / (43.6 KB). Loaded Objects now: 6701.
+Memory consumption went from 193.4 MB to 193.4 MB.
+Total: 11.585708 ms (FindLiveObjects: 0.255708 ms CreateObjectMapping: 0.185709 ms MarkObjects: 11.111875 ms  DeleteObjects: 0.032041 ms)
+
+Start importing Assets/InitTestSceneba0f6601-a736-42ff-aa7d-d2bb6763e477.unity using Guid(e70f081be0a624d40b3852072c5a8654) (DefaultImporter) -> (artifact id: 'a32e4f9b95d77962c3133d5d9ab4dc9a') in 0.001722917 seconds
+Refreshing native plugins compatible for Editor in 1.24 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=5ddd76f4ad7e24de6a1b8fc4261a05af): Total: 0.107 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Helpers/UnityShaderCompiler
+Launched and connected shader compiler UnityShaderCompiler after 0.06 seconds
+Executing IPrebuildSetup for: Unity.PerformanceTesting.Editor.TestRunBuilder.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<ExecuteMethods>d__8<UnityEngine.TestTools.IPrebuildSetup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:48)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<Execute>d__7<UnityEngine.TestTools.IPrebuildSetup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:34)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteStep () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:173)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteCallback () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:108)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /Users/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs Line: 48)
+
+Thread 0x177cc7000 may have been prematurely finalized
+Reloading assemblies for play mode.
+Reloading assemblies after forced synchronous recompile.
+Begin MonoManager ReloadAssembly
+2026-10-05 15:41:21.120 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9013e5c20 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+2026-10-05 15:41:21.125 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9013e9180 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+2026-10-05 15:41:21.130 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9013cdf40 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+2026-10-05 15:41:21.139 Unity[86721:12870736] NSEventModifierFlagFunction specified to -setKeyEquivalentModifierMask: for item <NSMenuItem: 0x9013e92c0 SDF, ke='Command-F12'>, but is only supported for system-provided menu items; will not be used
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  2.398 seconds
+Refreshing native plugins compatible for Editor in 2.35 ms, found 2 plugins.
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.166 seconds
+Domain Reload Profiling: 3567ms
+	BeginReloadAssembly (2047ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (113ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1745ms)
+	RebuildCommonClasses (33ms)
+	RebuildNativeTypeToScriptingClass (14ms)
+	initialDomainReloadingComplete (21ms)
+	LoadAllAssembliesAndSetupDomain (285ms)
+		LoadAssemblies (193ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (205ms)
+			TypeCache.Refresh (14ms)
+				TypeCache.ScanAssembly (0ms)
+			BuildScriptInfoCaches (160ms)
+			ResolveRequiredComponents (25ms)
+	FinalizeReload (1167ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (890ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (189ms)
+			SetLoadedEditorAssemblies (8ms)
+			BeforeProcessingInitializeOnLoad (151ms)
+			ProcessInitializeOnLoadAttributes (374ms)
+			ProcessInitializeOnLoadMethodAttributes (168ms)
+			AfterProcessingInitializeOnLoad (1ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (35ms)
+Asset Pipeline Refresh (id=0a4c5b4c436304c22ac1b3eb28351f13): Total: 3.710 seconds - Initiated by StopAssetImportingV2(ForceSynchronousImport | ForceDomainReload)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=1280 ms
+		Asset DB Callback time: managed=18 ms, native=0 ms
+		Scripting: domain reloads=1, domain reload time=2409 ms, compile time=1 ms, other=0 ms
+		Project Asset Count: scripts=1374, non-scripts=3116
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 1.260ms
+	ApplyChangesToAssetFolders: 0.408ms
+	Scan: 0.000ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 0.004ms
+	ProcessAssetsWithTransientArtifactChanges: 4.196ms
+	CategorizeAssets: 70.934ms
+	ImportOutOfDateAssets: 1175.600ms (1170.176ms without children)
+		CompileScripts: 1.041ms
+		CollectScriptTypesHashes: 2.343ms
+		ReloadNativeAssets: 0.864ms
+		UnloadImportedAssets: 0.057ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.741ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.377ms
+	PostProcessAllAssets: 18.956ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.340ms
+	UnloadStreamsBegin: 0.115ms
+	PersistCurrentRevisions: 0.181ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 4.498ms
+	Untracked: 2438.132ms
+
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.795 ms
+	Integration:            361.841 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.008 ms
+	Total Operation Time:   362.644 ms
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Applied No Throttling for test run.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+MCPForUnity.Editor.Helpers.McpLog:Info (string,bool) (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Helpers/McpLog.cs:40)
+MCPForUnity.Editor.Services.TestRunnerNoThrottle:ApplyNoThrottling () (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Services/TestRunnerNoThrottle.cs:101)
+MCPForUnity.Editor.Services.TestRunnerNoThrottle/TestCallbacks:RunStarted (UnityEditor.TestTools.TestRunner.Api.ITestAdaptor) (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Services/TestRunnerNoThrottle.cs:138)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator/<>c__DisplayClass7_0:<RunStarted>b__0 (UnityEditor.TestTools.TestRunner.Api.ICallbacks) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:42)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:TryInvokeAllCallbacks (System.Action`1<UnityEditor.TestTools.TestRunner.Api.ICallbacks>) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:135)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunStarted (NUnit.Framework.Interfaces.ITest) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:42)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITest>:Invoke (NUnit.Framework.Interfaces.ITest) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITest>:Invoke (NUnit.Framework.Interfaces.ITest) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITest>:Invoke (NUnit.Framework.Interfaces.ITest) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITest>:Invoke (NUnit.Framework.Interfaces.ITest) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.TestTools.TestRunner.PlaymodeTestsController/<Run>d__25:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEngine.TestRunner/TestRunner/PlaymodeTestsController.cs:140)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Helpers/McpLog.cs Line: 40)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.274792 ms
+Loaded scene 'Assets/Scenes/Tennis.unity'
+	Deserialize:            2.502 ms
+	Integration:            271.012 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       17.932 ms
+	Total Operation Time:   291.448 ms
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:207)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:207)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Tennis.TennisKitV3:MatchHitbox (UnityEngine.Transform,UnityEngine.GameObject) (at Assets/Scripts/Tennis/TennisKitV3.cs:86)
+GolfArcade.Tennis.TennisKitV3:Equip (UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,single&) (at Assets/Scripts/Tennis/TennisKitV3.cs:50)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:345)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:207)
+
+(Filename: Assets/Scripts/Tennis/TennisKitV3.cs Line: 86)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:210)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:210)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Tennis.TennisKitV3:MatchHitbox (UnityEngine.Transform,UnityEngine.GameObject) (at Assets/Scripts/Tennis/TennisKitV3.cs:86)
+GolfArcade.Tennis.TennisKitV3:Equip (UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,single&) (at Assets/Scripts/Tennis/TennisKitV3.cs:50)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:345)
+GolfArcade.Tennis.TennisGame:Start () (at Assets/Scripts/Tennis/TennisGame.cs:210)
+
+(Filename: Assets/Scripts/Tennis/TennisKitV3.cs Line: 86)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 1; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 1; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 2; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 2; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 3; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 3; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 4; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 4; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 5; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 5; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 6; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 6; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 7; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 7; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 8; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 8; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 9; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 9; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 10; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 10; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 11; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 11; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 12; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 12; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 13; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 13; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 14; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 14; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 15; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 15; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:34)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 16; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for Resort walker 16; arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<GolfArcade.Game.StandardCharacterArms> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+GolfArcade.Tennis.TennisResortCrowd:Start () (at Assets/Scripts/Tennis/TennisResortCrowd.cs:49)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:SelectCharacter (bool) (at Assets/Scripts/Tennis/TennisGame.cs:835)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:218)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:SelectCharacter (bool) (at Assets/Scripts/Tennis/TennisGame.cs:835)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:218)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Tennis.TennisKitV3:MatchHitbox (UnityEngine.Transform,UnityEngine.GameObject) (at Assets/Scripts/Tennis/TennisKitV3.cs:86)
+GolfArcade.Tennis.TennisKitV3:Equip (UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,single&) (at Assets/Scripts/Tennis/TennisKitV3.cs:50)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:345)
+GolfArcade.Tennis.TennisGame:SelectCharacter (bool) (at Assets/Scripts/Tennis/TennisGame.cs:835)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:218)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Tennis/TennisKitV3.cs Line: 86)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:15)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:15)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Tennis.TennisKitV3:MatchHitbox (UnityEngine.Transform,UnityEngine.GameObject) (at Assets/Scripts/Tennis/TennisKitV3.cs:86)
+GolfArcade.Tennis.TennisKitV3:Equip (UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,single&) (at Assets/Scripts/Tennis/TennisKitV3.cs:50)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:345)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:15)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Tennis/TennisKitV3.cs Line: 86)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:16)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+GolfArcade.Game.StandardCharacterArms:Initialize () (at Assets/Scripts/Game/StandardCharacterArms.cs:101)
+GolfArcade.Game.StandardCharacterArms:Awake () (at Assets/Scripts/Game/StandardCharacterArms.cs:52)
+UnityEngine.Object:Internal_CloneSingleWithParent (UnityEngine.Object,UnityEngine.Transform,bool)
+UnityEngine.Object:Instantiate (UnityEngine.Object,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:632)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform,bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:668)
+UnityEngine.Object:Instantiate<UnityEngine.GameObject> (UnityEngine.GameObject,UnityEngine.Transform) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:663)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:247)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:16)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/StandardCharacterArms.cs Line: 101)
+
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Tennis.TennisKitV3:MatchHitbox (UnityEngine.Transform,UnityEngine.GameObject) (at Assets/Scripts/Tennis/TennisKitV3.cs:86)
+GolfArcade.Tennis.TennisKitV3:Equip (UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,single&) (at Assets/Scripts/Tennis/TennisKitV3.cs:50)
+GolfArcade.Tennis.TennisActor:Build (bool,UnityEngine.Color,bool,string) (at Assets/Scripts/Tennis/TennisActor.cs:345)
+GolfArcade.Tennis.TennisGame:ConfigureNetwork (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Tennis/TennisGame.Network.cs:16)
+GolfArcade.Multiplayer.SportsMultiplayer:Initialize (GolfArcade.Multiplayer.NetworkConfiguration) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:53)
+GolfArcade.Multiplayer.SportsMultiplayer:Configure (string) (at Assets/Scripts/Multiplayer/SportsMultiplayer.cs:44)
+GolfArcade.Game.NativeSportsSession/<Load>d__68:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:235)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Tennis/TennisKitV3.cs Line: 86)
+
+[SportsDisplay] Configure external=False available=1
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:276)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 276)
+
+[SportsDisplay] camera=Tennis gameplay camera aspect=1.333333 size=640x480
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:307)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 307)
+
+[SportsDisplay] Gameplay cameras routed to display 0, active=True
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:309)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 309)
+
+Unloading 2413 unused Assets / (484.1 KB). Loaded Objects now: 19375.
+Memory consumption went from 0.90 GB to 0.90 GB.
+Total: 39.773792 ms (FindLiveObjects: 2.271375 ms CreateObjectMapping: 0.692833 ms MarkObjects: 34.301875 ms  DeleteObjects: 2.504875 ms)
+
+Unloading 210 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 13.258958 ms
+[GolfLook] hole 8: 8 LK_ material slot(s) dressed, 0 lava light(s), 0 low-poly water mesh(es) densified
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Course.GolfLook:DressModel (UnityEngine.GameObject,int) (at Assets/Scripts/Course/GolfLook.cs:443)
+GolfArcade.Course.HoleView:BuildFromModel (UnityEngine.GameObject) (at Assets/Scripts/Course/HoleView.cs:131)
+GolfArcade.Course.HoleView:Build (GolfArcade.Course.Hole,UnityEngine.Transform) (at Assets/Scripts/Course/HoleView.cs:48)
+GolfArcade.Game.GolfGame:StartHole (int) (at Assets/Scripts/Game/GolfGame.cs:208)
+GolfArcade.Game.GolfGame:StartRound () (at Assets/Scripts/Game/GolfGame.cs:200)
+GolfArcade.Game.GolfGame:Awake () (at Assets/Scripts/Game/GolfGame.cs:149)
+
+(Filename: Assets/Scripts/Course/GolfLook.cs Line: 443)
+
+Loaded scene 'Assets/Scenes/Golf.unity'
+	Deserialize:            5.529 ms
+	Integration:            984.543 ms
+	Integration of assets:  0.009 ms
+	Thread Wait Time:       95.503 ms
+	Total Operation Time:   1085.585 ms
+[SportsDisplay] Configure external=False available=1
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:276)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 276)
+
+[SportsDisplay] camera=Camera Rig aspect=1.333333 size=640x480
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:307)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 307)
+
+[SportsDisplay] Gameplay cameras routed to display 0, active=True
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Game.NativeSportsSession:ConfigureDisplay (bool) (at Assets/Scripts/Game/NativeSportsSession.cs:309)
+GolfArcade.Game.NativeSportsSession/<Present>d__71:MoveNext () (at Assets/Scripts/Game/NativeSportsSession.cs:268)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Scripts/Game/NativeSportsSession.cs Line: 309)
+
+Unloading 4585 unused Assets / (45.7 MB). Loaded Objects now: 11841.
+Memory consumption went from 0.88 GB to 0.83 GB.
+Total: 46.648083 ms (FindLiveObjects: 3.583208 ms CreateObjectMapping: 0.372375 ms MarkObjects: 33.858500 ms  DeleteObjects: 8.833458 ms)
+
+[GolfLook] hole 8: 8 LK_ material slot(s) dressed, 0 lava light(s), 0 low-poly water mesh(es) densified
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Course.GolfLook:DressModel (UnityEngine.GameObject,int) (at Assets/Scripts/Course/GolfLook.cs:443)
+GolfArcade.Course.HoleView:BuildFromModel (UnityEngine.GameObject) (at Assets/Scripts/Course/HoleView.cs:131)
+GolfArcade.Course.HoleView:Build (GolfArcade.Course.Hole,UnityEngine.Transform) (at Assets/Scripts/Course/HoleView.cs:48)
+GolfArcade.Game.GolfGame:StartHole (int) (at Assets/Scripts/Game/GolfGame.cs:208)
+GolfArcade.Game.GolfGame:NetworkFrame () (at Assets/Scripts/Game/GolfGame.Network.cs:16)
+GolfArcade.Game.GolfGame:Update () (at Assets/Scripts/Game/GolfGame.cs:447)
+
+(Filename: Assets/Scripts/Course/GolfLook.cs Line: 443)
+
+[GolfLook] hole 8: 8 LK_ material slot(s) dressed, 0 lava light(s), 0 low-poly water mesh(es) densified
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.Course.GolfLook:DressModel (UnityEngine.GameObject,int) (at Assets/Scripts/Course/GolfLook.cs:443)
+GolfArcade.Course.HoleView:BuildFromModel (UnityEngine.GameObject) (at Assets/Scripts/Course/HoleView.cs:131)
+GolfArcade.Course.HoleView:Build (GolfArcade.Course.Hole,UnityEngine.Transform) (at Assets/Scripts/Course/HoleView.cs:48)
+GolfArcade.Game.GolfGame:StartHole (int) (at Assets/Scripts/Game/GolfGame.cs:208)
+GolfArcade.Game.GolfGame:NetworkFrame () (at Assets/Scripts/Game/GolfGame.Network.cs:16)
+GolfArcade.Game.GolfGame:Update () (at Assets/Scripts/Game/GolfGame.cs:447)
+
+(Filename: Assets/Scripts/Course/GolfLook.cs Line: 443)
+
+DONE PlayMode: 5 passed, 0 failed, 0 skipped
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.EditorTools.TestMenu/Report:RunFinished (UnityEditor.TestTools.TestRunner.Api.ITestResultAdaptor) (at Assets/Editor/TestMenu.cs:59)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator/<>c__DisplayClass9_0:<RunFinished>b__0 (UnityEditor.TestTools.TestRunner.Api.ICallbacks) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:55)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:TryInvokeAllCallbacks (System.Action`1<UnityEditor.TestTools.TestRunner.Api.ICallbacks>) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:135)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:55)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.TestTools.TestRunner.PlaymodeTestsController/<TestRunnerCoroutine>d__24:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEngine.TestRunner/TestRunner/PlaymodeTestsController.cs:110)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: Assets/Editor/TestMenu.cs Line: 59)
+
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+MCPForUnity.Editor.Helpers.McpLog:Info (string,bool) (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Helpers/McpLog.cs:40)
+MCPForUnity.Editor.Services.TestRunnerNoThrottle:RestoreThrottling () (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Services/TestRunnerNoThrottle.cs:114)
+MCPForUnity.Editor.Services.TestRunnerNoThrottle/TestCallbacks:RunFinished (UnityEditor.TestTools.TestRunner.Api.ITestResultAdaptor) (at ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Services/TestRunnerNoThrottle.cs:143)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator/<>c__DisplayClass9_0:<RunFinished>b__0 (UnityEditor.TestTools.TestRunner.Api.ICallbacks) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:55)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:TryInvokeAllCallbacks (System.Action`1<UnityEditor.TestTools.TestRunner.Api.ICallbacks>) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:135)
+UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/Api/CallbacksDelegator.cs:55)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.Events.InvokableCall`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<NUnit.Framework.Interfaces.ITestResult>:Invoke (NUnit.Framework.Interfaces.ITestResult) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+UnityEngine.TestTools.TestRunner.PlaymodeTestsController/<TestRunnerCoroutine>d__24:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEngine.TestRunner/TestRunner/PlaymodeTestsController.cs:110)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/Coroutines.cs:17)
+
+(Filename: ./Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8/Editor/Helpers/McpLog.cs Line: 40)
+
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+Saving results to: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/unity-multiplayer-play.xml
+Thread 0x17943b000 may have been prematurely finalized
+Assets/Scripts/Tennis/TennisActor.cs(302): PlayableGraph was not destroyed.
+Assets/Scripts/Tennis/TennisActor.cs(302): PlayableGraph was not destroyed.
+Unloading 31 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.506 ms
+	Integration:            529.240 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.014 ms
+	Total Operation Time:   529.761 ms
+Unloading 4205 unused Assets / (14.4 MB). Loaded Objects now: 6850.
+Memory consumption went from 0.60 GB to 0.59 GB.
+Total: 18.131792 ms (FindLiveObjects: 0.541500 ms CreateObjectMapping: 0.244209 ms MarkObjects: 12.116041 ms  DeleteObjects: 5.229875 ms)
+
+Executing IPostBuildCleanup for: Unity.PerformanceTesting.Editor.TestRunBuilder.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<ExecuteMethods>d__8<UnityEngine.TestTools.IPostBuildCleanup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:48)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<Execute>d__7<UnityEngine.TestTools.IPostBuildCleanup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:34)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteStep () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:173)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteCallback () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:108)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /Users/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs Line: 48)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 0 unused Assets / (0 B). Loaded Objects now: 6855.
+Memory consumption went from 0.58 GB to 0.58 GB.
+Total: 11.984916 ms (FindLiveObjects: 0.151333 ms CreateObjectMapping: 0.104083 ms MarkObjects: 11.721417 ms  DeleteObjects: 0.007834 ms)
+
+Refreshing native plugins compatible for Editor in 1.93 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=55b4f6de1bb6249449b808d654e950c4): Total: 0.116 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+DisplayProgressbar: Undo
+Test run completed. Exiting with code 0 (Ok). Run completed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitApplication (UnityEditor.TestTools.TestRunner.CommandLineTest.Executer/ReturnCodes,string) (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/Executer.cs:81)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitIfRunIsCompleted () (at ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/Executer.cs:74)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /Users/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:392)
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 81)
+
+Thread 0x30cdc7000 may have been prematurely finalized
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET application:
+      The application 'build-server' does not exist.
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+Download a .NET SDK:
+https://aka.ms/dotnet-download
+
+Learn about SDK resolution:
+https://aka.ms/dotnet/sdk-not-found
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+Thread 0x16d0d3000 may have been prematurely finalized
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+[Licensing::IpcConnector] LicenseClient-adnanyonathan-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-adnanyonathan channel disconnected successfully.
+Thread 0x16bfdf000 may have been prematurely finalized
+Thread 0x16c0f7000 may have been prematurely finalized
+Thread 0x16c06b000 may have been prematurely finalized
+Thread 0x16c20f000 may have been prematurely finalized
+Thread 0x16c29b000 may have been prematurely finalized
+Thread 0x16c327000 may have been prematurely finalized
+Thread 0x16c43f000 may have been prematurely finalized
+Thread 0x16c3b3000 may have been prematurely finalized
+Thread 0x16c183000 may have been prematurely finalized
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+debugger-agent: Unable to listen on 43
+[usbmuxd] Stop listen thread
+[usbmuxd] Error: 
+[usbmuxd] Listen thread exiting

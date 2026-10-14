@@ -1,0 +1,134 @@
+{
+ "Male_ReadyIdle": {
+  "max_mm": 74.2,
+  "verts": 462
+ },
+ "Male_ForehandArmCorrected": {
+  "max_mm": 189.3,
+  "verts": 631
+ },
+ "Male_BackhandArmCorrected": {
+  "max_mm": 127.8,
+  "verts": 881
+ },
+ "Male_Serve": {
+  "max_mm": 94.3,
+  "verts": 673
+ },
+ "Male_VolleyForehand": {
+  "max_mm": 97.3,
+  "verts": 690
+ },
+ "Male_Overhead": {
+  "max_mm": 85.8,
+  "verts": 517
+ },
+ "Male_ForehandWide": {
+  "max_mm": 170.7,
+  "verts": 453
+ },
+ "Male_ForehandShort": {
+  "max_mm": 87.8,
+  "verts": 526
+ },
+ "Male_BackhandWide": {
+  "max_mm": 158.5,
+  "verts": 765
+ },
+ "Male_SliceApproach": {
+  "max_mm": 196.6,
+  "verts": 1197
+ },
+ "Male_Return": {
+  "max_mm": 110.8,
+  "verts": 655
+ },
+ "Male_VolleyBackhand": {
+  "max_mm": 86.5,
+  "verts": 594
+ },
+ "Male_ForehandOpen": {
+  "max_mm": 187.6,
+  "verts": 462
+ },
+ "Male_SplitToForehand": {
+  "max_mm": 84.8,
+  "verts": 504
+ },
+ "Male_SplitToBackhand": {
+  "max_mm": 199.3,
+  "verts": 865
+ },
+ "Male_RecoverCenter": {
+  "max_mm": 85.1,
+  "verts": 531
+ },
+ "Male_Walk": {
+  "max_mm": 0,
+  "verts": 0
+ },
+ "Male_RunForward": {
+  "max_mm": 10.1,
+  "verts": 37
+ },
+ "Male_RunLeft": {
+  "max_mm": 10.8,
+  "verts": 43
+ },
+ "Male_RunRight": {
+  "max_mm": 7.1,
+  "verts": 41
+ },
+ "Male_Emote_Scuba": {
+  "max_mm": 70.9,
+  "verts": 444
+ },
+ "Male_Emote_Thrust": {
+  "max_mm": 71.8,
+  "verts": 452
+ },
+ "Male_Emote_Spike": {
+  "max_mm": 71.0,
+  "verts": 454
+ },
+ "Male_Intro_Wave": {
+  "max_mm": 70.9,
+  "verts": 444
+ },
+ "Male_Intro_BringIt": {
+  "max_mm": 70.9,
+  "verts": 444
+ },
+ "Male_Intro_Pushups": {
+  "max_mm": 70.9,
+  "verts": 444
+ },
+ "Male_Idle": {
+  "max_mm": 68.8,
+  "verts": 446
+ },
+ "Male_HitPerfect": {
+  "max_mm": 68.4,
+  "verts": 443
+ },
+ "Male_MissWhiff": {
+  "max_mm": 68.4,
+  "verts": 443
+ },
+ "Male_CelebratePoint": {
+  "max_mm": 68.4,
+  "verts": 443
+ },
+ "Male_SadPointLost": {
+  "max_mm": 68.4,
+  "verts": 443
+ },
+ "Male_MatchWin": {
+  "max_mm": 68.4,
+  "verts": 443
+ },
+ "Male_MatchLose": {
+  "max_mm": 107.3,
+  "verts": 610
+ }
+}

@@ -1,0 +1,78 @@
+[
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 195.27272727272728,
+"y": 250.36363636363637,
+"r": 11.2,
+"area": 11,
+"frac": 1.0,
+"img": "f00_right"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 196.0,
+"y": 242.0,
+"r": 10.0,
+"area": 11,
+"frac": 1.0,
+"img": "f01_right"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 256.1034482758621,
+"y": 330.51724137931035,
+"r": 13.8,
+"area": 29,
+"img": "f02_front"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 142.0,
+"y": 342.6,
+"r": 13.8,
+"area": 40,
+"img": "f03_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 141.30232558139534,
+"y": 340.6511627906977,
+"r": 15.1,
+"area": 43,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 256.9047619047619,
+"y": 327.3095238095238,
+"r": 14.450000000000001,
+"area": 42,
+"img": "f05_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 195.9,
+"y": 241.3,
+"r": 10.55,
+"area": 10,
+"frac": 1.0,
+"img": "f06_right"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 195.27272727272728,
+"y": 250.36363636363637,
+"r": 11.2,
+"area": 11,
+"frac": 1.0,
+"img": "f07_right"
+}
+]

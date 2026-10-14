@@ -1,0 +1,33 @@
+00:01.109  blend            | Read blend: "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/shoes/MatchHero_Female_shoe_L.blend"
+PARITY MatchHero_Female L upper   sign-negative 4  of which truly inside the body (ray parity) 4
+WORST L y/L 0.95 z 0.015 x -0.024 signed -7.4 mm
+WORST L y/L 0.96 z 0.006 x -0.022 signed -3.1 mm
+WORST L y/L 0.96 z 0.006 x -0.032 signed -1.4 mm
+WORST L y/L 0.95 z 0.015 x -0.035 signed -0.4 mm
+WORST L y/L 0.98 z 0.002 x -0.028 signed 1.1 mm
+WORST L y/L 0.96 z 0.005 x -0.008 signed 1.1 mm
+WORST L y/L 0.01 z 0.055 x 0.036 signed 1.6 mm
+WORST L y/L 0.01 z 0.050 x 0.037 signed 1.7 mm
+SHOECHECK MatchHero_Female L upper   verts 3657  min signed -7.4 mm  p1 2.2 mm  median(near) 12.4 mm  inside-skin verts 4
+PARITY MatchHero_Female L tongue  sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Female L tongue  verts 415  min signed 5.7 mm  p1 6.7 mm  median(near) 10.6 mm  inside-skin verts 0
+PARITY MatchHero_Female L heeltab sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Female L heeltab verts 56  min signed 13.3 mm  p1 13.5 mm  median(near) 21.6 mm  inside-skin verts 0
+00:01.249  blend            | Read blend: "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/shoes/MatchHero_Female_shoe_R.blend"
+PARITY MatchHero_Female R upper   sign-negative 4  of which truly inside the body (ray parity) 4
+WORST R y/L 0.95 z 0.015 x -0.024 signed -7.2 mm
+WORST R y/L 0.96 z 0.006 x -0.021 signed -3.0 mm
+WORST R y/L 0.96 z 0.006 x -0.031 signed -1.6 mm
+WORST R y/L 0.95 z 0.015 x -0.034 signed -1.2 mm
+WORST R y/L 0.96 z 0.005 x -0.007 signed 0.7 mm
+WORST R y/L 0.98 z 0.002 x -0.027 signed 0.9 mm
+WORST R y/L 0.01 z 0.055 x 0.036 signed 1.4 mm
+WORST R y/L 0.00 z 0.055 x 0.033 signed 1.4 mm
+SHOECHECK MatchHero_Female R upper   verts 3645  min signed -7.2 mm  p1 2.0 mm  median(near) 12.4 mm  inside-skin verts 4
+PARITY MatchHero_Female R tongue  sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Female R tongue  verts 415  min signed 5.8 mm  p1 6.6 mm  median(near) 10.2 mm  inside-skin verts 0
+PARITY MatchHero_Female R heeltab sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Female R heeltab verts 56  min signed 13.1 mm  p1 13.2 mm  median(near) 21.4 mm  inside-skin verts 0
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

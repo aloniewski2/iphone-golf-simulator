@@ -26,7 +26,7 @@ namespace GolfArcade.Game
             if(PresentationPolicy.Cut(GolfBoundaryKey)==PresentationCut.Full)PresentationPolicy.Seen(GolfBoundaryKey);
         }
         bool boundaryPresented;
-        float ResultSkipAfter => LastShot!=null && LastShot.IsHoled ? (holeIndex+1>=course.Holes.Length?1.5f:holeStrokes==1?1f:.5f) : 0f;
+        float ResultSkipAfter => !networkConfigured ? LocalResultSeconds : LastShot!=null && LastShot.IsHoled ? (holeIndex+1>=course.Holes.Length?1.5f:holeStrokes==1?1f:.5f) : 0f;
         bool resultHeroCamera;
         void NextPresentationHole() { Enter(State.RoundDone); NextHole(); }
         void ShowShotResult()
@@ -88,7 +88,7 @@ namespace GolfArcade.Game
             string move = TennisEmotes.ExportName(resultEmotes[selection]);
             bool played = move != null && golfer.Perform(move, loop: false);
             // the game waits for the emote to finish (and a beat after it) before it moves on by itself
-            if (played) resultHold = Mathf.Max(resultHold, stateTime + TennisEmotes.Duration(resultEmotes[selection]) + 0.8f);
+            if (played && networkConfigured) resultHold = Mathf.Max(resultHold, stateTime + TennisEmotes.Duration(resultEmotes[selection]) + 0.8f);
             return played;
         }
 

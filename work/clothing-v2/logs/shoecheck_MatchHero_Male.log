@@ -1,0 +1,33 @@
+00:01.161  blend            | Read blend: "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/shoes/MatchHero_Male_shoe_L.blend"
+PARITY MatchHero_Male L upper   sign-negative 6  of which truly inside the body (ray parity) 6
+WORST L y/L 0.99 z 0.035 x -0.038 signed -3.1 mm
+WORST L y/L 0.99 z 0.037 x -0.030 signed -1.4 mm
+WORST L y/L 0.98 z 0.047 x -0.033 signed -1.3 mm
+WORST L y/L 1.00 z 0.029 x -0.033 signed -0.6 mm
+WORST L y/L 0.98 z 0.044 x -0.042 signed -0.6 mm
+WORST L y/L 1.00 z 0.028 x -0.039 signed -0.1 mm
+WORST L y/L 0.99 z 0.033 x -0.045 signed 1.0 mm
+WORST L y/L -0.00 z 0.040 x 0.041 signed 1.2 mm
+SHOECHECK MatchHero_Male L upper   verts 3436  min signed -3.1 mm  p1 2.8 mm  median(near) 14.5 mm  inside-skin verts 6
+PARITY MatchHero_Male L tongue  sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Male L tongue  verts 415  min signed 0.0 mm  p1 0.6 mm  median(near) 15.2 mm  inside-skin verts 0
+PARITY MatchHero_Male L heeltab sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Male L heeltab verts 56  min signed 15.1 mm  p1 15.1 mm  median(near) 20.6 mm  inside-skin verts 0
+00:01.292  blend            | Read blend: "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/shoes/MatchHero_Male_shoe_R.blend"
+PARITY MatchHero_Male R upper   sign-negative 6  of which truly inside the body (ray parity) 6
+WORST R y/L 0.99 z 0.035 x -0.039 signed -3.1 mm
+WORST R y/L 0.99 z 0.037 x -0.030 signed -1.4 mm
+WORST R y/L 0.98 z 0.047 x -0.033 signed -1.3 mm
+WORST R y/L 0.98 z 0.044 x -0.043 signed -0.6 mm
+WORST R y/L 1.00 z 0.029 x -0.034 signed -0.6 mm
+WORST R y/L 1.00 z 0.028 x -0.040 signed -0.1 mm
+WORST R y/L 0.99 z 0.033 x -0.046 signed 1.0 mm
+WORST R y/L -0.00 z 0.040 x 0.041 signed 1.2 mm
+SHOECHECK MatchHero_Male R upper   verts 3439  min signed -3.1 mm  p1 2.8 mm  median(near) 14.5 mm  inside-skin verts 6
+PARITY MatchHero_Male R tongue  sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Male R tongue  verts 415  min signed 0.2 mm  p1 0.9 mm  median(near) 15.3 mm  inside-skin verts 0
+PARITY MatchHero_Male R heeltab sign-negative 0  of which truly inside the body (ray parity) 0
+SHOECHECK MatchHero_Male R heeltab verts 56  min signed 15.3 mm  p1 15.3 mm  median(near) 20.6 mm  inside-skin verts 0
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

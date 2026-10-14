@@ -1,0 +1,18 @@
+{
+  "files": [
+    "GolfArcade/Unity/CharacterModelPreview.swift",
+    "GolfArcade/Unity/IslandScreens.swift",
+    "GolfArcade/Unity/LockerCatalog.swift",
+    "GolfArcade/Unity/LockerColors.swift",
+    "GolfArcade/Unity/LockerStudio.swift",
+    "GolfArcade/Unity/MatchHeroData.swift",
+    "GolfArcade/Unity/MatchHeroMotion.swift",
+    "GolfArcade/Unity/SportsDisplays.swift",
+    "GolfArcade/Unity/SportsHome.swift",
+    "GolfArcade/Unity/SportsSession.swift",
+    "GolfArcade/Unity/TennisMenu.swift",
+    "GolfArcade/Unity/TennisMenuViews.swift",
+    "GolfArcade/Unity/TennisPlayViews.swift"
+  ],
+  "violations": []
+}

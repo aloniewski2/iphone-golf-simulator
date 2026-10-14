@@ -575,6 +575,13 @@ namespace GolfArcade.Game
         public bool IsHero => heroFigure != null;
         /// The Hero's parts (for the tests), or null.
         public HeroGolfer Hero => heroFigure;
+        /// ACCESSORIES: the golf bag is on the golfer's back between shots only (the round calls this as its state changes); swings and intros never carry it.
+        public void SetBagCarried(bool carried)
+        {
+            var look = heroFigure != null && heroFigure.Root ? heroFigure.Root.GetComponent<GolfArcade.Tennis.MatchHeroLook>() : null;
+            if (look) GolfArcade.Tennis.HeroAccessories.For(look).SetCarry(carried);
+        }
+
         /// The clubhead in world space (the point of the held club farthest from its grip), for the tests.
         public Vector3? ClubHeadWorld()
         {

@@ -1,0 +1,7 @@
+[
+{"img":"f02_front","kind":"racket under cloth","side":"R","x":161.545,"y":336.338,"depth":15.086,"n":77,"wx":0.146,"wy":0.774,"wz":0.149},
+{"img":"f02_back","kind":"racket under cloth","side":"R","x":235.703,"y":327.755,"depth":15.086,"n":77,"wx":0.146,"wy":0.774,"wz":0.149},
+{"img":"f02_left","kind":"racket under cloth","side":"R","x":167.251,"y":327.41,"depth":15.086,"n":77,"wx":0.146,"wy":0.774,"wz":0.149},
+{"img":"f02_right","kind":"racket under cloth","side":"R","x":235.502,"y":336.741,"depth":15.086,"n":77,"wx":0.146,"wy":0.774,"wz":0.149},
+{"img":"f02_handR","kind":"racket under cloth","side":"R","x":118.018,"y":168.574,"depth":15.086,"n":77,"wx":0.146,"wy":0.774,"wz":0.149}
+]

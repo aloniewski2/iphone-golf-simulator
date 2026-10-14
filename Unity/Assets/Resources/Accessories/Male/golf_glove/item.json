@@ -1,0 +1,78 @@
+{
+    "item": "golf_glove",
+    "sex": "Male",
+    "slot": "Glove",
+    "parentBone": "LeftHand",
+    "socket": "",
+    "socketPosition": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "socketRotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+    ],
+    "pieces": [
+        {
+            "name": "Kit_Glove_L",
+            "renderer": "Acc_GloveL",
+            "mesh": "Kit_Glove_L",
+            "maps": "Glove",
+            "metresPerUv": 0.3966333866119385,
+            "bones": [
+                "LeftLowerArm",
+                "LeftHand",
+                "LeftThumbProximal",
+                "LeftThumbIntermediate",
+                "LeftThumbDistal",
+                "LeftIndexProximal",
+                "LeftIndexIntermediate",
+                "LeftIndexDistal",
+                "LeftMiddleProximal",
+                "LeftMiddleIntermediate",
+                "LeftMiddleDistal",
+                "LeftRingProximal",
+                "LeftRingIntermediate",
+                "LeftRingDistal",
+                "LeftLittleProximal",
+                "LeftLittleIntermediate",
+                "LeftLittleDistal"
+            ],
+            "roles": [
+                "Acc_Glove"
+            ]
+        },
+        {
+            "name": "Kit_Glove_R",
+            "renderer": "Acc_GloveR",
+            "mesh": "Kit_Glove_R",
+            "maps": "GloveR",
+            "metresPerUv": 0.38467687368392947,
+            "bones": [
+                "RightLowerArm",
+                "RightHand",
+                "RightThumbProximal",
+                "RightThumbIntermediate",
+                "RightThumbDistal",
+                "RightIndexProximal",
+                "RightIndexIntermediate",
+                "RightIndexDistal",
+                "RightMiddleProximal",
+                "RightMiddleIntermediate",
+                "RightMiddleDistal",
+                "RightRingProximal",
+                "RightRingIntermediate",
+                "RightRingDistal",
+                "RightLittleProximal",
+                "RightLittleIntermediate",
+                "RightLittleDistal"
+            ],
+            "roles": [
+                "Acc_Glove"
+            ]
+        }
+    ]
+}

@@ -64,6 +64,7 @@ namespace GolfArcade.Hub
             go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.Euler(0, yaw, 0);
             HubWorld.SetLayer(go.transform);
             look = go.GetComponent<MatchHeroLook>();
+            if (look) HeroAccessories.For(look).SetCarry(true);   // ACCESSORIES: in the plaza the golf bag is on the back
             // the plaza hero walks empty-handed: the racket stays in the bag until a match
             if (look && look.racketGrip) foreach (var r in look.racketGrip.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
             hero = HubHeroAnimator.Attach(go);

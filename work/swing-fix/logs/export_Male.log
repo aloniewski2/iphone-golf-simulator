@@ -1,0 +1,72 @@
+FBX version: 7400
+golf_swing from gs_new/golf_swing.py
+ADDRESS Driver: bend 30.0 pelvis x 0.409 z 1.183 ankle x 0.219 side 15.6  cost 1.102
+ADDRESS Driver: bend 30.0 pelvis x 0.409 z 1.183 ankle x 0.219 side 15.6  cost 1.102
+ADDRESS Driver: bend 30.0 pelvis x 0.409 z 1.183 ankle x 0.219 side 15.6  cost 1.102
+ADDRESS Driver: bend 30.0 pelvis x 0.409 z 1.183 ankle x 0.219 side 15.6  cost 1.102
+ADDRESS Driver: bend 30.0 pelvis x 0.409 z 1.183 ankle x 0.219 side 15.6  cost 1.102
+FULL Driver: imp_bend +0.0
+Drive: worst hand misses (cm @ frame): 0.00@0, 0.00@69, 0.00@7, 0.00@25
+Drive: authored 105 frames, top 56, impact 69, finish 90; hands miss the grip by 0.00 cm at most, a foot its ground by 0.00 cm
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+FULL Iron: imp_bend +4.5
+IronSwing: worst hand misses (cm @ frame): 0.00@83, 0.00@63, 0.00@13, 0.00@10
+IronSwing: authored 101 frames, top 54, impact 66, finish 86; hands miss the grip by 0.00 cm at most, a foot its ground by 0.00 cm
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+ADDRESS Iron: bend 40.0 pelvis x 0.195 z 0.870 ankle x 0.170 side 20.5  cost 1.447
+HALF: imp_bend +4.5
+HalfSwing: worst hand misses (cm @ frame): 0.20@60, 0.00@1, 0.00@2, 0.00@51
+HalfSwing: authored 87 frames, top 44, impact 54, finish 72; hands miss the grip by 0.20 cm at most, a foot its ground by 0.00 cm
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+ADDRESS Wedge: bend 42.0 pelvis x 0.116 z 0.869 ankle x 0.054 side 20.5  cost 0.626
+CHIP: imp_bend +3.5
+Chip: worst hand misses (cm @ frame): 0.20@23, 0.20@25, 0.20@32, 0.20@15
+Chip: authored 77 frames, top 30, impact 42, finish 62; hands miss the grip by 0.20 cm at most, a foot its ground by 0.00 cm
+
+FBX export starting... 'out/golfer_m.fbx'
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+(bpy.data.armatures['Rig_Male'], 'POSE')
+export finished in 2.3097 sec.
+exported out/golfer_m.fbx
+clips json written
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

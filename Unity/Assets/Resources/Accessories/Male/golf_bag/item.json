@@ -1,0 +1,40 @@
+{
+    "item": "golf_bag",
+    "sex": "Male",
+    "slot": "BackCarry",
+    "parentBone": "UpperChest",
+    "socket": "Back_Bag",
+    "socketPosition": [
+        -0.01200002059340477,
+        -0.18052081763744355,
+        -0.13847647607326508
+    ],
+    "socketRotation": [
+        -0.03142920881509781,
+        7.446900696095327e-8,
+        2.3416584227220484e-9,
+        0.9995059967041016
+    ],
+    "pieces": [
+        {
+            "name": "Kit_Bag",
+            "renderer": "Acc_Bag",
+            "mesh": "Kit_Bag",
+            "maps": "Bag",
+            "metresPerUv": 1.639653205871582,
+            "bones": [
+                "Back_Bag",
+                "UpperChest",
+                "Chest",
+                "Spine",
+                "Hips",
+                "RightShoulder",
+                "RightUpperArm"
+            ],
+            "roles": [
+                "Acc_Bag",
+                "Acc_BagMetal"
+            ]
+        }
+    ]
+}

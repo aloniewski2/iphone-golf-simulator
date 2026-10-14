@@ -1,0 +1,10 @@
+Kit_Belt: v=2714 (from 2552) tris=5080 bones=2 metres/uv=1.081 subs=['Kit_Belt', 'Kit_Buckle']
+Kit_Bottom: v=15617 (from 14406) tris=28521 bones=6 metres/uv=1.440 subs=['Kit_Shorts']
+Kit_Glove_L: v=4126 (from 2813) tris=5442 bones=17 metres/uv=0.561 subs=['Kit_Glove', 'Kit_GolfGlove']
+Kit_Glove_R: v=4042 (from 2760) tris=5341 bones=17 metres/uv=0.562 subs=['Kit_Glove', 'Kit_GolfGlove']
+Kit_Shoe_L: v=20193 (from 15211) tris=28276 bones=3 metres/uv=0.694 subs=['Kit_Shoe', 'Kit_Sole']
+Kit_Shoe_R: v=20308 (from 15275) tris=28384 bones=3 metres/uv=0.730 subs=['Kit_Shoe', 'Kit_Sole']
+Kit_Top: v=15576 (from 15124) tris=29795 bones=9 metres/uv=1.042 subs=['Kit_Shirt']
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

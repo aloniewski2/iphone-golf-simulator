@@ -1,0 +1,134 @@
+{
+ "Female_ReadyIdle": {
+  "max_mm": 3.3,
+  "verts": 12
+ },
+ "Female_ForehandArmCorrected": {
+  "max_mm": 122.4,
+  "verts": 59
+ },
+ "Female_BackhandArmCorrected": {
+  "max_mm": 73.5,
+  "verts": 32
+ },
+ "Female_Serve": {
+  "max_mm": 3.0,
+  "verts": 13
+ },
+ "Female_VolleyForehand": {
+  "max_mm": 2.8,
+  "verts": 10
+ },
+ "Female_Overhead": {
+  "max_mm": 3.1,
+  "verts": 11
+ },
+ "Female_ForehandWide": {
+  "max_mm": 34.2,
+  "verts": 10
+ },
+ "Female_ForehandShort": {
+  "max_mm": 27.0,
+  "verts": 12
+ },
+ "Female_BackhandWide": {
+  "max_mm": 44.6,
+  "verts": 13
+ },
+ "Female_SliceApproach": {
+  "max_mm": 103.7,
+  "verts": 19
+ },
+ "Female_Return": {
+  "max_mm": 26.7,
+  "verts": 11
+ },
+ "Female_VolleyBackhand": {
+  "max_mm": 43.9,
+  "verts": 11
+ },
+ "Female_ForehandOpen": {
+  "max_mm": 10.6,
+  "verts": 10
+ },
+ "Female_SplitToForehand": {
+  "max_mm": 3.0,
+  "verts": 12
+ },
+ "Female_SplitToBackhand": {
+  "max_mm": 3.1,
+  "verts": 25
+ },
+ "Female_RecoverCenter": {
+  "max_mm": 3.0,
+  "verts": 33
+ },
+ "Female_Walk": {
+  "max_mm": 0,
+  "verts": 0
+ },
+ "Female_RunForward": {
+  "max_mm": 3.1,
+  "verts": 9
+ },
+ "Female_RunLeft": {
+  "max_mm": 8.3,
+  "verts": 9
+ },
+ "Female_RunRight": {
+  "max_mm": 6.5,
+  "verts": 10
+ },
+ "Female_Emote_Scuba": {
+  "max_mm": 3.1,
+  "verts": 10
+ },
+ "Female_Emote_Thrust": {
+  "max_mm": 3.2,
+  "verts": 12
+ },
+ "Female_Emote_Spike": {
+  "max_mm": 3.1,
+  "verts": 10
+ },
+ "Female_Intro_Wave": {
+  "max_mm": 3.3,
+  "verts": 10
+ },
+ "Female_Intro_BringIt": {
+  "max_mm": 3.1,
+  "verts": 10
+ },
+ "Female_Intro_Pushups": {
+  "max_mm": 4.6,
+  "verts": 10
+ },
+ "Female_Idle": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_HitPerfect": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_MissWhiff": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_CelebratePoint": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_SadPointLost": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_MatchWin": {
+  "max_mm": 3.2,
+  "verts": 9
+ },
+ "Female_MatchLose": {
+  "max_mm": 17.8,
+  "verts": 10
+ }
+}
