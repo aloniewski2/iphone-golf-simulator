@@ -1,0 +1,6 @@
+shapes 24
+Kit_Top: covered 7154 vertices, hidden 5059 vertices / 9661 triangles
+Kit_Top: hidden 5059 -> 2981 vertices after the pose test
+Kit_Top: contact on 5678 skin vertices, max 0.75
+Kit_Top {'res': 2048, 'coverage': 0.588, 'metres_per_uv': 1.1869994697953277, 'px_per_cm': 17.25, 'ao_min': 0.1, 'ao_mean': 0.924}
+Kit_Top sum of worst-frame poke points: all clips 1256, main tennis clips 774; clips with > 20 points: 20/33

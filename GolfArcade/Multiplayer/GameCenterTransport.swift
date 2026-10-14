@@ -12,7 +12,6 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
     var onPeersChanged: (() -> Void)?
     var onError: ((Error) -> Void)?
     var onConnected: (() -> Void)?
-    var onInvitation: ((GKInvite) -> Void)?
     private(set) var match: GKMatch?
     private var generation = 0
     private var registered = false
@@ -45,20 +44,8 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
         request.playerGroup = sport == .tennis ? 0x4d500201 : sport == .golf ? 0x4d500202 : 0x4d500200
         return request
     }
-    func invitationController() throws -> GKMatchmakerViewController {
-        guard activeController == nil else { throw MultiplayerError.invalidOperation("An invitation request is already open.") }
-        guard let controller = GKMatchmakerViewController(matchRequest: try request(sport: nil, count: 4)) else { throw MultiplayerError.unavailable("Game Center matchmaking is unavailable.") }
-        controller.matchmakerDelegate = self; controller.matchmakingMode = .inviteOnly
-        if let match { controller.addPlayers(to: match) }
-        activeController = controller
-        return controller
-    }
-    func accept(_ invite: GKInvite) throws -> GKMatchmakerViewController {
-        guard match == nil else { throw MultiplayerError.invalidOperation("Leave the current lobby before accepting another invitation.") }
-        guard activeController == nil else { throw MultiplayerError.invalidOperation("An invitation request is already open.") }
-        guard let controller = GKMatchmakerViewController(invite: invite) else { throw MultiplayerError.unavailable("The invitation is no longer available.") }
-        controller.matchmakerDelegate = self; activeController = controller; return controller
-    }
+    // (Friends are invited through the Club Hub, never Apple's invite sheet: see ClubHub and HubRoomTransport. Game Center only
+    // matches strangers here: quick match and Find more players.)
     func quickMatch(sport: MultiplayerSport, count: Int = 2) async throws {
         guard match == nil else { throw MultiplayerError.invalidOperation("Already connected to a lobby.") }
         let request = try request(sport: sport, count: sport == .tennis ? 2 : count)
@@ -106,10 +93,8 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
         Task { @MainActor [weak self] in if let error { self?.onError?(error) } }
     }
     nonisolated func match(_ match: GKMatch, shouldReinviteDisconnectedPlayer player: GKPlayer) -> Bool { true }
-    nonisolated func player(_ player: GKPlayer, didAccept invite: GKInvite) {
-        let delivery = GameKitDelivery(value: invite)
-        Task { @MainActor [weak self] in self?.onInvitation?(delivery.value) }
-    }
+    /// A Game Center invite accepted outside the game (an older build's sheet): ignored. Friends join through the Club Hub only.
+    nonisolated func player(_ player: GKPlayer, didAccept invite: GKInvite) {}
     nonisolated func matchmakerViewControllerWasCancelled(_ viewController: GKMatchmakerViewController) {
         Task { @MainActor [weak self] in guard self?.activeController === viewController else { return }; self?.cancelSearch() }
     }

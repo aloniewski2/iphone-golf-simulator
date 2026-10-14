@@ -1,21 +1,26 @@
 import SwiftUI
 
-/// The app's root. Tennis is a game front end: with no TV the phone shows the menu itself;
-/// with a TV connected the menu moves to the TV and the phone becomes its remote; during a
-/// match the phone is the racket. The classic multi-sport menu is still one option away.
+/// The app's root. The phone is always a controller: with no match on it drives the Plaza (on the TV, or on the phone's own screen
+/// with no TV), and during a match it is the racket or the golf controller. Nothing else takes the phone's screen: no lobby
+/// screens, no old menus, no Game Center sheets. (The classic multi-sport form stays behind Settings → Developer in debug builds.)
 struct SportsHome: View {
     @State private var session = SportsSession.shared
     @State private var menu = TennisMenu.shared
     @State private var onboarding = OnboardingFlow.shared
+    @State private var hub = HubSession.shared
+    @State private var clubHub = ClubHub.shared
+    @State private var partyUI = PartyUI.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if session.displayConnected && !session.active { TennisRemote() }
+            if menu.classic && !session.active { ClassicSportsHome() }
+            else if onboarding.holdsMenu && !session.active { OnboardingRoot(flow: onboarding) }
+            // no match: the Plaza's controller, whatever else happens (invites, a party, a friend joining, the plaza loading or failing)
+            else if !session.active { if hub.runtimeMissing { TennisPhoneMenu() } else { HubControllerView() } }
             else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
+            // an online match is over: its result is on the TV, the phone takes everyone back to the Plaza
+            else if session.multiplayerMatchID != nil && hub.matchOver != nil { HubMatchOverPanel(hub: hub) }
             else if session.active && (!session.loading.finished || (session.sport == "golf" && !session.ready)) { LoadingScreen(menu: menu, compact: true) }
-            else if menu.screen.isOnline && menu.screen != .online(.match) {
-                if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
-            }
             else if session.active && session.finishedMatch != nil {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
@@ -24,20 +29,29 @@ struct SportsHome: View {
             else if session.active && session.sport == "golf" {
                 GolfPhoneController(session: session)
             }
-            else if session.active { TennisRacketController(session: session) }
-            else if menu.classic { ClassicSportsHome() }
-            else if session.displayConnected { TennisRemote() }
-            else { TennisPhoneMenu() }
+            else { TennisRacketController(session: session) }
         }
-        .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 })) { sheet in
+        .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 }), onDismiss: { menu.online.sheetDismissed() }) { sheet in
             OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
         }
+        // Friends (who is online, one tap to invite, invites you got) opens over the controller. An invite arrives as a banner in a
+        // window of its own above everything (sheets, the plaza on the phone), so it is always seen (InviteBannerWindow).
+        .sheet(isPresented: $clubHub.hubOpen) { ClubHubView(dismiss: { clubHub.hubOpen = false }).presentationDetents([.large]) }
+        // Record the TV, talk and chat with your party, and their settings: one row of buttons over every phone screen
+        .overlay(alignment: .top) { CaptureDock().padding(.top, 4) }
+        .sheet(isPresented: $partyUI.settingsOpen) { PartySettingsView(dismiss: { partyUI.settingsOpen = false }).presentationDetents([.large]) }
+        .onOpenURL { clubHub.open(url: $0) }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !session.active || session.sport != "golf" { BetaFeedbackBar() }
+            // Not during an online match either: the bar opens Messages, and a palm on it mid-swing leaves the app, which ends the match
+            // for the host and starts the guest's 15 s forfeit clock. Golf hides it for its own reasons.
+            if !session.active || (session.sport != "golf" && session.multiplayerMatchID == nil) { BetaFeedbackBar() }
         }
         .simultaneousGesture(TapGesture().onEnded {
             guard session.active, session.loading.finished, !session.paused, session.multiplayerMatchID == nil else { return }
-            if ["intro", "point", "finished"].contains(session.tennisPhase) || ["Intro", "Result"].contains(session.golfPhase) {
+            // (a tap skips only the intro's flyover: the character intros always play; online only the button asks)
+            let intro = session.tennisPhase == "intro" || session.golfPhase == "Intro"
+            if (intro && session.introSkip != nil && !session.canPlayEmote && !session.canPickGolfIntroEmote)
+                || ["point", "finished"].contains(session.tennisPhase) || session.golfPhase == "Result" {
                 session.command("presentationSkip")
             }
         })
@@ -60,19 +74,51 @@ struct SportsHome: View {
             }
         }
         .overlay(alignment: .bottom) {
-            if session.active && session.loading.finished && !session.paused && session.multiplayerMatchID == nil && (session.tennisPhase == "intro" || session.golfPhase == "Intro") {
-                Button("Skip intro") { session.command("presentationSkip") }
-                    .font(IslandUI.font(18, bold: true)).padding(16).background(IslandUI.lime, in: Capsule()).foregroundStyle(IslandUI.navy)
-                    .accessibilityIdentifier("presentation-skip").padding(.bottom, 16)
-            }
+            VStack(spacing: 12) {
+                // golf: the golfer up picks their intro emote while the flyover plays (tennis has its own row on the racket screen)
+                if session.canPickGolfIntroEmote {
+                    EquippedEmoteControls(title: "YOUR INTRO · PICK AN EMOTE", ids: golfIntroEmotes,
+                        enabled: true, notice: "Your golfer does it on the tee.", identifier: "golf-intro-emote") { slot in
+                            session.command("golfEmote", value: Double(slot), value2: Double(session.golfController.party?.turn ?? -1))
+                        }
+                        .padding(16).background(IslandUI.navy.opacity(0.92), in: RoundedRectangle(cornerRadius: 20)).padding(.horizontal, 16)
+                }
+                // the flyover's skip; online it is skipped once everyone has asked (the intros themselves always play)
+                if session.active && session.loading.finished && !session.paused, let skip = session.introSkip,
+                   session.tennisPhase == "intro" || session.golfPhase == "Intro" {
+                    Button(skip.needed > 1 ? (skip.mine ? "Waiting for everyone · \(skip.voted)/\(skip.needed)" : "Skip intro · \(skip.voted)/\(skip.needed)") : "Skip intro") {
+                        session.command("presentationSkip")
+                    }
+                    .disabled(skip.mine)
+                    .font(IslandUI.font(18, bold: true)).padding(16).background(skip.mine ? IslandUI.paper : IslandUI.lime, in: Capsule()).foregroundStyle(IslandUI.navy)
+                    .accessibilityIdentifier("presentation-skip")
+                }
+            }.padding(.bottom, 16)
         }
-        .overlay(alignment:.top) { if session.active && menu.screen == .online(.match) { MultiplayerMatchOverlay() } }
+        .overlay(alignment:.top) { if session.active && session.multiplayerMatchID != nil && hub.matchOver == nil && session.loading.finished { MultiplayerMatchOverlay() } }
         .animation(.easeInOut(duration: 0.3), value: session.active)
         .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
+        // The Plaza (PLAN_MenuHub_WalkableWorld) opens and closes with the TV, matches and the menu screen.
+        .onChange(of: session.displayConnected) { _, _ in hub.evaluate() }
+        .onChange(of: session.active) { _, _ in hub.evaluate() }
+        .onChange(of: menu.screen) { _, _ in hub.evaluate() }
+        .onChange(of: session.active) { _, _ in clubHub.updateBanner(); clubHub.publishPresence() }
+        .onChange(of: session.displayConnected) { _, on in if !on { RecordingService.shared.displayLost() } }
+        .onChange(of: hub.arriving) { _, _ in clubHub.updateBanner() }
+        .onChange(of: hub.phase) { _, _ in clubHub.updateBanner() }
+        .onChange(of: menu.online.service.lobby?.revision) { _, _ in clubHub.publishPresence() }
+        .onChange(of: menu.classic) { _, _ in hub.evaluate() }
+        .onChange(of: onboarding.holdsMenu) { _, _ in hub.evaluate() }
         .onChange(of:menu.online.service.lobby?.revision) { _,_ in menu.online.sync(menu) }
-        .onChange(of:menu.online.service.lastError) { _,error in if let error { menu.onlineNotice(error) } }
-        .onChange(of:menu.online.service.pendingInvite) { _,invite in if invite != nil { menu.online.acceptInvite(menu) } }
+        .onChange(of:menu.online.service.lastError) { _,error in if let error { menu.onlineNotice(error); if hub.drivesPhone { hub.notice = error } } }
+        .onChange(of: hub.drivesPhone) { _, _ in SportsDisplays.shared.phoneSeeThrough(hub.drivesPhone && hub.onPhone) }
+        .onChange(of: hub.onPhone) { _, _ in SportsDisplays.shared.phoneSeeThrough(hub.drivesPhone && hub.onPhone) }
         .task {
+            InviteBannerWindow.install()
+            clubHub.configureLive(); clubHub.start()
+            PartySafety.shared.refresh()
+            RecordingService.shared.captureHook = { PartyVoiceCoordinator.shared.recordingChanged($0) }
+            await RecordingService.shared.recoverLeftovers()
             menu.online.installCallbacks(menu)
             let args = ProcessInfo.processInfo.arguments
             #if DEBUG
@@ -85,6 +131,15 @@ struct SportsHome: View {
                 session.golfController = .reference; session.loading.cancel()
                 if args.contains("-golfControllerNotReady") { session.ready = false }
                 if args.contains("-golfControllerLoading") { session.loading.begin(now: Date()) }
+            }
+            if args.contains("-phonePlazaCheck") {
+                OnboardingFlow.shared.exitToMenu(); session.displayConnected = false
+                hub.debugLive(place: "plaza", zone: "door|door-plaza-play|Play|TV needed", onPhone: true)
+                SportsDisplays.shared.debugFakePhonePlaza()
+                if args.contains("-phonePlazaInvite") {
+                    clubHub.notification(invite: HubInvite(inviteID: "check", from: HubPlayerRef(id: "sam", name: "Sam"), sport: "tennis", lobbyCode: "ABC234", group: 0, capacity: 2,
+                                                           expiresAt: Date().timeIntervalSince1970 * 1000 + 110_000), accept: nil)
+                }
             }
             if args.contains("-controllerMenuCheck") {
                 SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
@@ -120,6 +175,8 @@ struct SportsHome: View {
             if ProcessInfo.processInfo.arguments.contains("--character-editor") { menu.openCharacterEditor() }
             // `-benchTennis`: play a self-driving rally on the phone and log frame times.
             if args.contains("--playability-check") { await PlayabilityCheck.run(); return }
+            // the Plaza is the menu from the first frame, with a TV or without (a TV arriving later re-evaluates by itself)
+            hub.evaluate()
             if SportsSession.benchmark && !session.active {
                 session.sport = args.contains("-benchGolf") ? "golf" : "tennis"
                 session.touch = true; session.start(preview:!session.displayConnected)
@@ -127,6 +184,8 @@ struct SportsHome: View {
         }
         .background(DisplayRegistration().frame(width:0,height:0))
         .onChange(of:scenePhase) { _,phase in
+            if phase == .active { clubHub.start(); Task { await clubHub.refresh() } } else { clubHub.background() }
+            clubHub.updateBanner()
             if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
             SportsRuntime.shared().setForeground(phase == .active)
         }
@@ -339,6 +398,7 @@ private struct SportsControls:View {
         if session.sport == "tennis" {
             Section("Recording") { PointRecordingSettings(session: session) }
         }
+        PartySettingsSections()
         Section("Session") {
             if session.paused {
                 Toggle("Sound",isOn:$session.sound).onChange(of:session.sound) { _,v in session.command("sound",value:v ? 1 : 0) }
@@ -361,7 +421,7 @@ private struct SportsControls:View {
         for sport in [Sport.golf, .tennis] {
             menu.begin(MenuLaunch(sport: sport, mode: sport == .golf ? .round : .exhibition, round: sport == .tennis ? 0 : nil))
             guard menu.screen == .map else { SportsDiagnostics.write("PLAYABILITY FAIL map \(sport)"); return }
-            let key = sport == .golf ? "postcards" : "resort"
+            let key = sport == .golf ? "cliffside" : "resort"
             menu.tap("map-\(key)")
             for _ in 0..<400 {
                 if session.ready && session.loading.finished || !session.active { break }
@@ -418,6 +478,14 @@ struct GolfShotResultControls: View {
 }
 
 /// A host can choose any guest sharing this phone; peers only receive controls for their own seat.
+extension SportsHome {
+    /// The emotes the golfer up can greet the gallery with: online, that player's own three; alone, the equipped three.
+    var golfIntroEmotes: [String] {
+        if let party = session.golfController.party, let up = party.players.first(where: { $0.seat == party.turn }) { return up.emotes }
+        return session.matchEmotes
+    }
+}
+
 struct GolfPartyEmoteControls: View {
     @Bindable var session: SportsSession
     let party: GolfControllerReading.Party

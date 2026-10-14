@@ -74,25 +74,6 @@ struct ClubPartyScreen: View {
     }
 }
 
-struct ClubQuickPlayScreen: View {
-    let menu: TennisMenu
-    let compact: Bool
-    var body: some View {
-        ClubScreen(scene: "pavilion", breadcrumb: ["Clubhouse", "Quick play"], compact: compact) {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Jump straight in").font(Club.display(compact ? 40 : 60)).foregroundStyle(.white)
-                HStack(spacing: 18) {
-                    ClubCard(art: "tennis", title: "Tennis", subtitle: "A relaxed match", tint: Club.sky,
-                             focused: menu.isFocused("quickTennis"), compact: compact) { menu.tap("quickTennis") }.clubEntrance(0)
-                    ClubCard(art: "golf", title: "Golf", subtitle: "Choose your course", tint: Club.green,
-                             focused: menu.isFocused("quickGolf"), compact: compact) { menu.tap("quickGolf") }.clubEntrance(1)
-                }.frame(height: compact ? 220 : 320)
-                ClubButton(title: "Back", icon: "", focused: menu.isFocused("back"), style: .quiet, size: 20) { menu.tap("back") }
-            }
-        }
-    }
-}
-
 // MARK: - Adventure ladder and quick match
 
 
@@ -383,12 +364,14 @@ struct IslandPauseScreen: View {
     var dismiss: () -> Void = {}
     @State private var options = false
     @State private var leaving = false
+    @State private var partySettings = false
     private var session: SportsSession { .shared }
     var body: some View {
         IslandShell(title: "Paused", compact: compact) {
             VStack(alignment: .leading, spacing: 16) {
                 IslandAction(title: "Resume", primary: true, compact: compact) { session.readyToPlay(); dismiss() }
                 IslandAction(title: "Settings", compact: compact) { options.toggle() }
+                IslandAction(title: "Voice, chat & recording", compact: compact) { partySettings = true }
                 if options {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 12) {
@@ -407,7 +390,8 @@ struct IslandPauseScreen: View {
                                 }
                                 Button("Flip left / right") { session.flipSteering() }
                             }
-                            if session.displayConnected && session.sport == "tennis" {
+                            // Not online: a network match has no timing check (Unity ignores it), so the screens would never finish.
+                            if session.displayConnected && session.sport == "tennis" && session.multiplayerMatchID == nil {
                                 Button("Re-check swing timing") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.recheckTiming(); dismiss() }
                             }
                             Button(session.touch ? "Use motion controls" : "Use touch controls") { if session.touch { session.useMotion() } else { session.useTouch() }; dismiss() }
@@ -420,7 +404,13 @@ struct IslandPauseScreen: View {
                         Text("Your score in this match will be lost.").font(IslandUI.font(15)).foregroundStyle(IslandUI.muted)
                         HStack(spacing: 10) {
                             IslandAction(title: "Keep playing", primary: true, compact: compact) { leaving = false }
-                            IslandAction(title: "Leave", compact: compact) { TennisMenu.shared.finishMatch(.menu); dismiss() }
+                            IslandAction(title: "Leave", compact: compact) {
+                                // Online, leaving has to leave the lobby too. finishMatch(.menu) only ends this phone's session: the lobby
+                                // stayed "playing" with a phone still sending heartbeats and nothing behind it, and the opponent's match froze.
+                                if session.multiplayerMatchID != nil { TennisMenu.shared.online.select("net-confirm-leave", menu: .shared) }
+                                else { TennisMenu.shared.finishMatch(.menu) }
+                                dismiss()
+                            }
                         }
                     }.padding(16).background(.white.opacity(0.95), in: RoundedRectangle(cornerRadius: 16))
                 } else {
@@ -430,5 +420,6 @@ struct IslandPauseScreen: View {
                 if !compact { Text("Use your phone to continue.").font(IslandUI.font(17)) }
             }.foregroundStyle(IslandUI.navy).frame(maxWidth:compact ? .infinity : 400,alignment:.leading)
         }
+        .sheet(isPresented: $partySettings) { PartySettingsView(dismiss: { partySettings = false }).presentationDetents([.large]) }
     }
 }

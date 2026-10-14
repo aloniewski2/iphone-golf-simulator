@@ -1,0 +1,106 @@
+{
+ "Kit_Top": {
+  "Cheer": {
+   "max_mm": 9.0,
+   "verts": 21,
+   "frame": 10,
+   "vertex": 9956
+  },
+  "Chip": {
+   "max_mm": 17.4,
+   "verts": 3,
+   "frame": 4,
+   "vertex": 1925
+  },
+  "Drive": {
+   "max_mm": 12.9,
+   "verts": 2,
+   "frame": 0,
+   "vertex": 1925
+  },
+  "Emote_Scuba": {
+   "max_mm": 5.2,
+   "verts": 2,
+   "frame": 10,
+   "vertex": 7787
+  },
+  "Emote_Spike": {
+   "max_mm": 6.4,
+   "verts": 13,
+   "frame": 9,
+   "vertex": 9980
+  },
+  "Emote_Thrust": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "FistPump": {
+   "max_mm": 30.0,
+   "verts": 15,
+   "frame": 21,
+   "vertex": 9807
+  },
+  "HalfSwing": {
+   "max_mm": 28.1,
+   "verts": 3,
+   "frame": 35,
+   "vertex": 1926
+  },
+  "Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Intro_Pushups": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Intro_Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "IronSwing": {
+   "max_mm": 21.1,
+   "verts": 3,
+   "frame": 29,
+   "vertex": 1925
+  },
+  "Putt": {
+   "max_mm": 16.4,
+   "verts": 2,
+   "frame": 11,
+   "vertex": 1925
+  },
+  "RunForward": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  }
+ }
+}

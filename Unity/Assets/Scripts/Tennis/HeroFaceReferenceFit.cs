@@ -11,6 +11,8 @@ namespace GolfArcade.Tennis
     public static class HeroFaceReferenceFit
     {
         static readonly Dictionary<Mesh, Mesh> cache = new();
+        /// The orbit term lowers the eyes (and the face measured from them) by 10 mm; the bald-base numbers were taken on the finished face.
+        const float Settle = -.010f;
         public static Mesh Prepare(SkinnedMeshRenderer source, SkinnedMeshRenderer body, SkinnedMeshRenderer features, string headName, bool female)
         {
             if (!source || !body || !features || !source.sharedMesh.isReadable) return source ? source.sharedMesh : null;
@@ -36,9 +38,12 @@ namespace GolfArcade.Tennis
             Vector3 ToFace(Vector3 p) { var d = sourceMap.MultiplyPoint3x4(p) - eye; return new Vector3(Vector3.Dot(d, right), Vector3.Dot(d, up), Vector3.Dot(d, forward)); }
             Vector3 FromFace(Vector3 p) => sourceMap.inverse.MultiplyPoint3x4(eye + right * p.x + up * p.y + forward * p.z);
             float Smooth(float a, float b, float x) => Mathf.SmoothStep(0, 1, Mathf.Clamp01((x - a) / (b - a)));
-            var browVertices = new HashSet<int>();
-            if (source == features) for (int sub = 0; sub < features.sharedMaterials.Length; sub++)
-                if (features.sharedMaterials[sub].name.Contains("Brow")) foreach (int i in mesh.GetTriangles(sub)) browVertices.Add(i);
+            var browVertices = new HashSet<int>(); var irisVertices = new HashSet<int>();
+            if (source == features) for (int sub = 0; sub < features.sharedMaterials.Length; sub++) {
+                string role = features.sharedMaterials[sub].name;
+                if (role.Contains("Brow")) foreach (int i in mesh.GetTriangles(sub)) browVertices.Add(i);
+                if (new[] { "Iris", "Pupil", "Limbal", "Catch" }.Any(role.Contains)) foreach (int i in mesh.GetTriangles(sub)) irisVertices.Add(i);
+            }
             Vector3 Warp(Vector3 original, int vertex)
             {
                 var p = ToFace(original);
@@ -63,7 +68,7 @@ namespace GolfArcade.Tennis
                 p.y -= .010f * orbit;
                 if (browVertices.Contains(vertex) && female) p.y = .0249f + (p.y - .0249f) * .88f;
                 float mouth = Mathf.Exp(-Mathf.Pow((p.y + .079f) / .022f, 4)) * (1 - Smooth(.045f, .075f, Mathf.Abs(p.x))) * front;
-                if (!female) p.x *= 1 + .16f * mouth;
+                if (!female) p.x *= 1 + .06f * mouth;   // bald-base pass 2: was .16, the wide stretched grin
                 if(source==body){
                     if(!female) {
                         // Open the existing auricle toward the front view while
@@ -74,6 +79,21 @@ namespace GolfArcade.Tennis
                         float dx=Mathf.Abs(p.x)-.078f,dz=p.z+.090f;
                         p.x=Mathf.Sign(p.x)*(.078f+dx*Mathf.Cos(angle)-dz*Mathf.Sin(angle));
                         p.z=-.090f+dx*Mathf.Sin(angle)+dz*Mathf.Cos(angle);
+                    }
+                    // Bald-base pass 2026-10-12: a smaller, tidier auricle. Measured on this fitted head, the ear spans male y -.052..+.021,
+                    // z -.118..-.071 (up to 26 mm proud of the skull) and female y -.052..+.040, z -.170..-.109 (31 mm). It shrinks toward its
+                    // own centre on the skull side; a soft elliptical falloff lets the scalp around it slide along itself instead of denting.
+                    // (Measured on the finished face: here y is Settle lower and the male x is before its 1.085 head scale.)
+                    {
+                        float yc=(female?-.003f:-.017f)+Settle,zc=female?-.138f:-.092f,root=female?.0888f:.0906f/1.085f;
+                        float ry=female?.048f:.040f,rz=female?.032f:.026f,shrink=female?.16f:.14f;
+                        float reach=Mathf.Sqrt(Mathf.Pow((p.y-yc)/ry,2)+Mathf.Pow((p.z-zc)/rz,2));
+                        float earShrink=shrink*(1-Smooth(1f,1.6f,reach))*Smooth(root-.030f,root-.015f,Mathf.Abs(p.x));
+                        if(earShrink>0){
+                            p.y=yc+(p.y-yc)*(1-earShrink);p.z=zc+(p.z-zc)*(1-earShrink);
+                            float lateral=Mathf.Abs(p.x)-root;
+                            p.x-=Mathf.Sign(p.x)*earShrink*Smooth(0,.006f,lateral)*Mathf.Max(lateral,0);
+                        }
                     }
                     // Restore the rounded malar volume below the outer eyes.
                     // A broad, continuous support avoids a hard cosmetic ridge.
@@ -104,6 +124,46 @@ namespace GolfArcade.Tennis
                 // Male plate has a fuller cranium and mandible. Fade completely
                 // above the neck base; no body or skeletal scaling.
                 if (!female) p.x *= 1 + .085f * head;
+                // Bald-base pass 2 (2026-10-12), in this finished face's own measurements (mm in comments, centred on the finished eyes;
+                // this warp's frame is centred on the source eyes, which the orbit term above lowered by Settle):
+                // eyes a little bigger and rounder, irises round and slightly larger, the female eyes 3 mm closer together,
+                // a smaller, narrower nose, and the ears a second step smaller. Head only; every term fades to zero before the neck.
+                {
+                    float sx = Mathf.Sign(p.x), ax = Mathf.Abs(p.x);
+                    // eye openings: male 39 x 15 centred (38.5, -1.5); female 58 x 32 centred (46.7, -0.6)
+                    float ec = female ? .0467f : .0385f, ey = (female ? -.0006f : -.0015f) + Settle, hw = female ? .029f : .020f, hh = female ? .016f : .0075f;
+                    float grow = female ? 1.0f : 1.08f, tall = female ? 1.20f : 1.55f, inward = female ? .003f : 0;
+                    float dx = ax - ec, dy = p.y - ey, reach = Mathf.Sqrt(dx * dx / (hw * hw) + dy * dy / (hh * hh));
+                    float eyeFront = Smooth(-.060f, -.035f, p.z);
+                    float eyeWeight = (1 - Smooth(1.0f, 2.6f, reach)) * eyeFront;
+                    if (irisVertices.Contains(vertex)) {
+                        // the iris stays round: one uniform scale about its own centre (male (36.6, 1.4), female (42.6, 0.7))
+                        float ic = female ? .0426f : .0366f, iy = (female ? .0007f : .0014f) + Settle, iris = female ? 1.06f : 1.16f;
+                        ax = ic + (ax - ic) * iris; p.y = iy + (p.y - iy) * iris;
+                    }
+                    else if (!browVertices.Contains(vertex) && eyeWeight > 0) {
+                        ax = ec + dx * (1 + (grow - 1) * eyeWeight); p.y = ey + dy * (1 + (tall - 1) * eyeWeight);
+                    }
+                    ax -= inward * (1 - Smooth(1.3f, 3.2f, reach)) * eyeFront * Smooth(.004f, .022f, ax);   // nothing crosses the midline
+                    p.x = sx * ax;
+                    if (source == body) {
+                        // nose: narrower at the nostrils and a little less proud (only what stands in front of the cheek plane)
+                        float noseFront = female ? Smooth(.004f, .016f, p.z) : Smooth(.031f, .045f, p.z);
+                        float nose = Mathf.Exp(-Mathf.Pow(p.x / .028f, 4) - Mathf.Pow((p.y - Settle + (female ? .047f : .048f)) / .030f, 4)) * noseFront;
+                        p.x *= 1 - (female ? .22f : .24f) * nose;
+                        p.z -= (female ? .0040f : .0045f) * nose * Smooth(0, 1, nose);
+                        // ears, second step: male 65 mm tall centred (y -15.2, z -93.2), female 95 mm (y -1.6, z -138.4)
+                        float yc = (female ? -.0016f : -.0152f) + Settle, zc = female ? -.1384f : -.0932f, root = female ? .0892f : .0909f;
+                        float ry = female ? .052f : .036f, rz = female ? .032f : .022f, shrink = female ? .16f : .14f;
+                        float earReach = Mathf.Sqrt(Mathf.Pow((p.y - yc) / ry, 2) + Mathf.Pow((p.z - zc) / rz, 2));
+                        float earShrink = shrink * (1 - Smooth(1f, 1.6f, earReach)) * Smooth(root - .030f, root - .015f, Mathf.Abs(p.x));
+                        if (earShrink > 0) {
+                            p.y = yc + (p.y - yc) * (1 - earShrink); p.z = zc + (p.z - zc) * (1 - earShrink);
+                            float lateral = Mathf.Abs(p.x) - root;
+                            p.x -= Mathf.Sign(p.x) * earShrink * Smooth(0, .006f, lateral) * Mathf.Max(lateral, 0);
+                        }
+                    }
+                }
                 return FromFace(p);
             }
             var before = mesh.vertices; var after = new Vector3[before.Length]; var normals = mesh.normals;

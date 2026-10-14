@@ -15,6 +15,7 @@ Shader "GolfArcade/GolfCoastalTurf"
   _RoughTipColor("Warm rough tips",Color)=(.370,.455,.245,1)
   _PatchCenter("Moving patch centre and enabled",Vector)=(0,0,0,0)
   _PatchFade("Moving patch fade yards",Vector)=(9,12,0,0)
+  _CameraFade("Camera distance fade yards (start, end)",Vector)=(28,37,0,0)
   _TurfSurface("Instanced0 rough1 fairway3 tee4 fringe",Float)=3
  }
  SubShader {
@@ -35,7 +36,7 @@ Shader "GolfArcade/GolfCoastalTurf"
    #include "../../Tennis/Shaders/HeroLighting.hlsl"
    #include "GolfTurfField.hlsl"
    CBUFFER_START(UnityPerMaterial)
-    half4 _RootColor,_TipColor,_FairwayRootColor,_FairwayTipColor,_FringeRootColor,_FringeTipColor,_RoughRootColor,_RoughTipColor;float4 _StripeDirection,_PatchCenter,_PatchFade;half _Smoothness,_StripeWidth,_Bands;
+    half4 _RootColor,_TipColor,_FairwayRootColor,_FairwayTipColor,_FringeRootColor,_FringeTipColor,_RoughRootColor,_RoughTipColor;float4 _StripeDirection,_PatchCenter,_PatchFade,_CameraFade;half _Smoothness,_StripeWidth,_Bands;
    CBUFFER_END
    UNITY_INSTANCING_BUFFER_START(TurfTypes)
     UNITY_DEFINE_INSTANCED_PROP(float,_TurfSurface)
@@ -48,7 +49,7 @@ Shader "GolfArcade/GolfCoastalTurf"
     o.w=TransformObjectToWorld(a.p.xyz);
     // A few millimeters of motion keep short groomed grass quiet in wind.
     o.w.xz+=_GolfWind.xz*a.role.y*.010*(.5+.5*sin(_GolfWind.w*1.9+dot(o.w.xz,float2(.73,.51))));
-    o.p=TransformWorldToHClip(o.w);o.n=TransformObjectToWorldNormal(a.n);o.role=half4(a.role,UNITY_ACCESS_INSTANCED_PROP(TurfTypes,_TurfSurface),lerp(1,1-smoothstep(_PatchFade.x,_PatchFade.y,distance(o.w.xz,_PatchCenter.xz)),_PatchCenter.w));o.fog=ComputeFogFactor(o.p.z);return o;
+    o.p=TransformWorldToHClip(o.w);o.n=TransformObjectToWorldNormal(a.n);o.role=half4(a.role,UNITY_ACCESS_INSTANCED_PROP(TurfTypes,_TurfSurface),lerp(1,1-smoothstep(_PatchFade.x,_PatchFade.y,distance(o.w.xz,_PatchCenter.xz)),_PatchCenter.w)*(1-smoothstep(_CameraFade.x,_CameraFade.y,distance(o.w,_WorldSpaceCameraPos))));o.fog=ComputeFogFactor(o.p.z);return o;
    }
    half4 frag(V i,FRONT_FACE_TYPE face:FRONT_FACE_SEMANTIC):SV_Target {
     UNITY_SETUP_INSTANCE_ID(i);

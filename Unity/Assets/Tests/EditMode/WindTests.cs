@@ -96,5 +96,41 @@ namespace GolfArcade.Tests
                 Assert.That(w.DirectionDegrees, Is.InRange(-180, 180));
             }
         }
+
+        [Test]
+        public void StrongWindIsRareAndMostHolesAreLight()
+        {
+            var rng = new System.Random(11);
+            int n = 20000, strong = 0, light = 0, calm = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var w = Wind.Random(rng);
+                if (w.IsStrong) strong++;
+                if (w.SpeedMPH < Wind.ModerateMPH) light++;
+                if (w.SpeedMPH <= 3) calm++;
+            }
+            Assert.That(strong / (double)n, Is.InRange(0.08, 0.12), "about one hole in ten blows 15 mph or more");
+            Assert.That(light / (double)n, Is.InRange(0.6, 0.7), "two holes in three are under 10 mph");
+            Assert.That(calm / (double)n, Is.InRange(0.2, 0.3), "a quarter are near calm");
+            Assert.AreEqual("Strong", new Wind(18, 0).Strength);
+            Assert.AreEqual("Moderate", new Wind(12, 0).Strength);
+            Assert.AreEqual("Light", new Wind(5, 0).Strength);
+            Assert.AreEqual("Calm", Wind.Calm.Strength);
+        }
+
+        [Test]
+        public void AStrongWindMovesAFullShotAndNotAPutt()
+        {
+            var iron = Fly(GolfClub.Iron, 0, 0);
+            var across = Fly(GolfClub.Iron, Wind.StrongMPH, 90);
+            Assert.Greater(across.Landing.LateralYards, 15, "15 mph across pushes a 7-iron well off its line");
+            var hole = Course.Course.Meadow().Holes[0];
+            var green = new CoursePoint(hole.Pin.X, hole.Pin.D - 6);
+            var still = new CourseShot(GolfClub.Putter, new SwingImpact { Power = 0.5 }, 0, green, hole, 1, Wind.Calm);
+            var gale = new CourseShot(GolfClub.Putter, new SwingImpact { Power = 0.5 }, 0, green, hole, 1, new Wind(Wind.MaxMPH, 90));
+            Assert.AreEqual(still.Rest.X, gale.Rest.X, 1e-9, "a putt rolls on the ground, out of the wind");
+            Assert.AreEqual(still.Rest.D, gale.Rest.D, 1e-9);
+            Assert.Less(iron.Landing.LateralYards, 0.5);
+        }
     }
 }

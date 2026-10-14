@@ -1,0 +1,7 @@
+sync_worst_frame_ms_editor=2221 (a friend's hero spawning; the 0.45 s after any frame over 100 ms are left out of the error, there was no data)
+sync_fps_four_heroes_editor=60.0
+sync_error_p95_m=0.193
+sync_error_max_m=0.213
+sync_lag_vs_now_p95_m=0.577
+LOOK_editor=PASS (near E8505B, far 3F62CC/965835 female)
+TOGETHER_editor_unity=PASS (online match from a bay loads behind the plaza)

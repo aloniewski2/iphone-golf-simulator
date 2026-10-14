@@ -1,0 +1,26 @@
+free_Emote_Defeat {('skin', 'skin through clothes'): 39, ('hand', 'hand under cloth R'): 15, ('hand', 'hand in body L'): 30, ('hand', 'hand in body R'): 5}
+free_Emote_FistPump {('skin', 'skin through clothes'): 8, ('lining', 'Kit_Top'): 1, ('hand', 'hand under cloth R'): 5}
+free_Emote_JumpJoy {('skin', 'skin through clothes'): 7, ('hand', 'hand in body R'): 5, ('hand', 'hand under cloth R'): 5}
+free_Emote_Shock {('hole', 'see-through Kit_Glove_L'): 1, ('skin', 'skin through clothes'): 14, ('hand', 'hand in body L'): 35}
+free_Emote_Slump {('hand', 'hand in body L'): 55, ('hand', 'hand in body R'): 55, ('hand', 'hand under cloth R'): 60}
+free_Emote_Stomp {('skin', 'skin through clothes'): 9, ('hand', 'hand in body L'): 30, ('hand', 'hand in body R'): 10, ('hand', 'hand under cloth R'): 10}
+free_Emote_Victory {('skin', 'skin through clothes'): 18}
+free_Run {('hole', 'see-through Kit_Bottom'): 16, ('skin', 'skin through clothes'): 21, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body L'): 10}
+free_Walk {('hole', 'see-through Kit_Bottom'): 11, ('skin', 'skin through clothes'): 7, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body L'): 15}
+golf_Cheer {}
+golf_Chip {('skin', 'skin through clothes'): 42, ('lining', 'Kit_Top'): 2, ('hole', 'see-through Kit_Bottom'): 5, ('hole', 'see-through Kit_Top'): 1, ('hand', 'hands overlap L'): 80, ('hand', 'hands overlap R'): 80, ('hand', 'hand under cloth R'): 80}
+golf_Drive {('skin', 'skin through clothes'): 93, ('hole', 'see-through Kit_Bottom'): 7, ('hand', 'hands overlap L'): 80, ('hand', 'hands overlap R'): 80, ('hand', 'hand under cloth R'): 80}
+golf_Emote_Scuba {('skin', 'skin through clothes'): 19}
+golf_Emote_Spike {('skin', 'skin through clothes'): 4, ('hand', 'hand in body L'): 20, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20}
+golf_Emote_Thrust {('skin', 'skin through clothes'): 4}
+golf_FistPump {('skin', 'skin through clothes'): 86}
+golf_HalfSwing {('skin', 'skin through clothes'): 58, ('hole', 'see-through Kit_Bottom'): 6, ('hand', 'hands overlap L'): 80, ('hand', 'hands overlap R'): 80, ('hand', 'hand under cloth R'): 80}
+golf_Idle {}
+golf_Intro_BringIt {('hole', 'see-through Kit_Top'): 2, ('hole', 'see-through Kit_Glove_L'): 1, ('skin', 'skin through clothes'): 2}
+golf_Intro_Pushups {('skin', 'skin through clothes'): 10}
+golf_Intro_Wave {}
+golf_IronSwing {('skin', 'skin through clothes'): 87, ('lining', 'Kit_Top'): 1, ('hole', 'see-through Kit_Bottom'): 6, ('hand', 'hands overlap L'): 80, ('hand', 'hands overlap R'): 80, ('hand', 'hand under cloth R'): 80}
+golf_Putt {('skin', 'skin through clothes'): 44, ('lining', 'Kit_Top'): 10, ('hand', 'hands overlap L'): 75, ('hand', 'hands overlap R'): 75, ('hand', 'hand under cloth R'): 75}
+golf_RunForward {('skin', 'skin through clothes'): 18, ('hole', 'see-through Kit_Bottom'): 7}
+golf_Walk {('hole', 'see-through Kit_Bottom'): 14, ('skin', 'skin through clothes'): 10}
+golf_Wave {}

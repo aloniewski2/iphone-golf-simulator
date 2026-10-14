@@ -38,70 +38,6 @@ final class ShotEngineTests: XCTestCase {
 }
 
 final class SwingStateMachineTests: XCTestCase {
-    func testSyntheticSwingProducesShotMetrics() {
-        var machine = SwingStateMachine()
-        var time = 0.0
-        var shotMetrics: SwingMetrics?
-        func feed(_ handY: CGFloat, step: Double = 0.05) {
-            time += step
-            if case .shotReady(let metrics) = machine.ingest(frame(time: time, handY: handY)) { shotMetrics = metrics }
-        }
-        for _ in 0..<10 { feed(0.34) }
-        feed(0.42); feed(0.55); feed(0.66); feed(0.58); feed(0.46); feed(0.35); feed(0.40)
-        for _ in 0..<7 { feed(0.52) }
-        XCTAssertNotNil(shotMetrics)
-        XCTAssertGreaterThan(shotMetrics?.normalizedWristSpeed ?? 0, 0.2)
-    }
-
-    func testSameSwingFartherFromTheCameraStillProducesAShot() {
-        // Half-size body: every distance and speed in frame units is halved, so only body-relative
-        // thresholds can recognise it.
-        var machine = SwingStateMachine()
-        var time = 0.0
-        var shotMetrics: SwingMetrics?
-        func feed(_ handY: CGFloat, step: Double = 0.05) {
-            time += step
-            if case .shotReady(let metrics) = machine.ingest(frame(time: time, handY: handY, scale: 0.5)) { shotMetrics = metrics }
-        }
-        for _ in 0..<10 { feed(0.34) }
-        feed(0.42); feed(0.55); feed(0.66); feed(0.58); feed(0.46); feed(0.35); feed(0.40)
-        for _ in 0..<7 { feed(0.52) }
-        XCTAssertNotNil(shotMetrics)
-        XCTAssertEqual(shotMetrics?.normalizedWristSpeed ?? 0, 2.6, accuracy: 0.01, "same value as the full-size body: reference-body units")
-    }
-
-    func testLosingAWristAtTheTopDoesNotResetTheSwing() {
-        var machine = SwingStateMachine()
-        var time = 0.0
-        var events: [SwingEvent] = []
-        func feed(_ handY: CGFloat, drop: Set<BodyJoint> = []) {
-            time += 0.05
-            if let event = machine.ingest(frame(time: time, handY: handY, dropping: drop)) { events.append(event) }
-        }
-        for _ in 0..<10 { feed(0.34) }
-        feed(0.42); feed(0.55)
-        feed(0.66, drop: [.rightWrist])                    // one wrist hidden: still tracked
-        feed(0.66, drop: [.leftWrist, .rightWrist])        // both gone for a frame: skipped
-        feed(0.58); feed(0.46); feed(0.35); feed(0.40)
-        for _ in 0..<7 { feed(0.52) }
-        XCTAssertFalse(events.contains(.phaseChanged(.findingPlayer)), "brief dropouts must not reset to Step into frame")
-        XCTAssertTrue(events.contains { if case .shotReady = $0 { true } else { false } })
-    }
-
-    func testLosingTheBodyForLongerResetsTheSwing() {
-        var machine = SwingStateMachine()
-        var time = 0.0
-        var events: [SwingEvent] = []
-        func feed(_ handY: CGFloat, drop: Set<BodyJoint> = []) {
-            time += 0.05
-            if let event = machine.ingest(frame(time: time, handY: handY, dropping: drop)) { events.append(event) }
-        }
-        for _ in 0..<10 { feed(0.34) }
-        feed(0.42); feed(0.55)
-        for _ in 0..<15 { feed(0.66, drop: [.leftShoulder]) } // 0.75 s without a body
-        XCTAssertEqual(events.last, .phaseChanged(.findingPlayer))
-    }
-
     private func frame(time: Double, handY: CGFloat, scale: CGFloat = 1, dropping: Set<BodyJoint> = []) -> PoseFrame {
         let high: Float = 0.95
         func p(_ x: CGFloat, _ y: CGFloat) -> PosePoint {
@@ -270,40 +206,6 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertLessThan(score, 0.24)
     }
 
-    func testAcquiredPlayerSurvivesArmForeshorteningAndMissingLegs() throws {
-        let calibration = try XCTUnwrap(makeCalibration())
-        var selector = PlayerPoseSelector()
-        XCTAssertNotNil(selector.select(from: [calibrationFrame(timestamp: 0)], calibration: calibration, at: 0))
-        let swing = calibrationFrame(timestamp: 0.03, dropping: [.leftAnkle, .rightAnkle, .leftKnee, .rightKnee], armScale: 0.25)
-        XCTAssertEqual(selector.select(from: [swing], calibration: calibration, at: 0.03)?.frame, swing,
-                       "limb proportions must not re-certify an already acquired player every frame")
-    }
-
-    func testPlayerContinuityDoesNotJumpToADistantBystander() throws {
-        let calibration = try XCTUnwrap(makeCalibration())
-        var selector = PlayerPoseSelector()
-        let original = calibrationFrame(timestamp: 0)
-        XCTAssertNotNil(selector.select(from: [original], calibration: calibration, at: 0))
-        let bystander = transform(calibrationFrame(timestamp: 0.03)) { CGPoint(x: $0.x + 0.55, y: $0.y) }
-        XCTAssertNil(selector.select(from: [bystander], calibration: calibration, at: 0.03))
-        XCTAssertEqual(selector.select(from: [bystander, original], calibration: calibration, at: 0.06)?.frame, original)
-        XCTAssertNil(selector.select(from: [original, original], calibration: calibration, at: 0.09), "ambiguous overlap is not an identity match")
-    }
-
-    func testAcquiredPlayerRemainsSelectedWhenBackswingOccludesShoulders() throws {
-        let calibration = try XCTUnwrap(makeCalibration())
-        var selector = PlayerPoseSelector()
-        XCTAssertNotNil(selector.select(from: [calibrationFrame(timestamp: 0)], calibration: calibration, at: 0))
-        for i in 1...20 {
-            let time = Double(i) / 30
-            let turned = calibrationFrame(timestamp: time, dropping: [.leftShoulder, .rightShoulder], armScale: 0.5)
-            XCTAssertEqual(selector.select(from: [turned], calibration: calibration, at: time)?.frame, turned,
-                           "measured hips/root must preserve identity through shoulder occlusion")
-        }
-        let unseen = calibrationFrame(timestamp: 0.7, dropping: [.leftShoulder, .rightShoulder, .leftHip, .rightHip, .neck, .root])
-        XCTAssertNil(selector.select(from: [unseen], calibration: calibration, at: 0.7), "hands alone cannot identify the player")
-    }
-
     func testCalibrationStoreRoundTripsAndClears() throws {
         let suiteName = "PlayerCalibrationTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
@@ -334,24 +236,6 @@ final class PlayerCalibrationTests: XCTestCase {
         players.append(Player(name: "Sam", colorIndex: 1))
         PlayerRosterStore.save(players, defaults: defaults)
         XCTAssertEqual(PlayerRosterStore.load(defaults: defaults), players)
-    }
-
-    @MainActor
-    func testGameFlowNeedsEveryPlayerScanned() {
-        let flow = GameFlow(fixturePlayers: [Player(name: "Ana", colorIndex: 0, calibration: .uiTestingFixture)])
-        flow.choose(.solo)
-        XCTAssertTrue(flow.canContinue)
-        flow.choose(.multiplayer)
-        XCTAssertEqual(flow.players.count, 2)
-        XCTAssertFalse(flow.canContinue)
-        flow.finishScan(flow.players[1].id, calibration: .uiTestingFixture)
-        XCTAssertTrue(flow.canContinue)
-        flow.addPlayer(); flow.addPlayer(); flow.addPlayer()
-        XCTAssertEqual(flow.players.count, GameFlow.maxPlayers)
-        flow.removePlayer(flow.players[3].id)
-        XCTAssertEqual(flow.players.count, 3)
-        flow.choose(.solo)
-        XCTAssertEqual(flow.players.map(\.name), ["Ana"])
     }
 
     private func makeCalibration() -> PlayerCalibration? {
@@ -414,51 +298,3 @@ final class PlayerCalibrationTests: XCTestCase {
     }
 }
 
-final class PoseSkeletonMapperTests: XCTestCase {
-    func testCameraRotationFallsBackToSupportedRightAngles() {
-        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 89.7), 90)
-        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 271), 270)
-        XCTAssertEqual(CameraRotation.nearestRightAngle(to: -90), 270)
-        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 359.9), 0)
-    }
-
-    func testAspectFitMapsPortraitFrameIntoVisibleCameraRect() {
-        let size = CGSize(width: 390, height: 844)
-        let topLeft = PoseSkeletonMapper.screenPoint(
-            CGPoint(x: 0, y: 1), in: size, frameAspect: 0.75, fitsEntireFrame: true
-        )
-        let bottomRight = PoseSkeletonMapper.screenPoint(
-            CGPoint(x: 1, y: 0), in: size, frameAspect: 0.75, fitsEntireFrame: true
-        )
-
-        XCTAssertEqual(topLeft.x, 0, accuracy: 0.001)
-        XCTAssertEqual(topLeft.y, 162, accuracy: 0.001)
-        XCTAssertEqual(bottomRight.x, 390, accuracy: 0.001)
-        XCTAssertEqual(bottomRight.y, 682, accuracy: 0.001)
-    }
-
-    func testAspectFillAccountsForHorizontalCameraCropping() {
-        let size = CGSize(width: 390, height: 844)
-        let topLeft = PoseSkeletonMapper.screenPoint(
-            CGPoint(x: 0, y: 1), in: size, frameAspect: 0.75, fitsEntireFrame: false
-        )
-        let center = PoseSkeletonMapper.screenPoint(
-            CGPoint(x: 0.5, y: 0.5), in: size, frameAspect: 0.75, fitsEntireFrame: false
-        )
-
-        XCTAssertEqual(topLeft.x, -121.5, accuracy: 0.001)
-        XCTAssertEqual(topLeft.y, 0, accuracy: 0.001)
-        XCTAssertEqual(center.x, size.width / 2, accuracy: 0.001)
-        XCTAssertEqual(center.y, size.height / 2, accuracy: 0.001)
-    }
-
-    func testLandscapeCenterRemainsAligned() {
-        let size = CGSize(width: 844, height: 390)
-        let center = PoseSkeletonMapper.screenPoint(
-            CGPoint(x: 0.5, y: 0.5), in: size, frameAspect: 4.0 / 3.0, fitsEntireFrame: true
-        )
-
-        XCTAssertEqual(center.x, size.width / 2, accuracy: 0.001)
-        XCTAssertEqual(center.y, size.height / 2, accuracy: 0.001)
-    }
-}

@@ -69,6 +69,10 @@ namespace GolfArcade.UI
         RectTransform root, sheet;
         Image ring;
         GameObject[] aimParts; GameObject skipPart; Text skipLabel;
+        /// While the opening plays: the golfer's three equipped emotes, one tap picks their intro on the tee.
+        public readonly HoldButton[] IntroEmotes = new HoldButton[3];
+        readonly Text[] introEmoteLabels = new Text[3]; readonly Image[] introEmoteFills = new Image[3];
+        GameObject introEmoteRow, skipButton; Text introEmoteTitle;
         Image tvFill;
         Image startFill, startHit; Text startLabel; int startState = -1;
         Text holeText, parText, yardsText, windText, aimText, tvText, nameText;
@@ -78,9 +82,8 @@ namespace GolfArcade.UI
         // the club in hand: one card you swipe (or tap an arrow) to step through the bag
         RectTransform clubCard; RawImage clubPicture; Text clubName, clubYards; Image[] clubDots;
         SwipeArea clubSwipe; int clubSelected = -1;
-        // whose shot it is, on the ribbon under the hole badge (else the hole's name), and the card asking for the phone to be passed
+        // whose shot it is, on the ribbon under the hole badge (else the hole's name)
         string holeName, playerName;
-        RectTransform passCard; Text passName;
         static Texture2D[] familyPictures;
         static Sprite skySprite;
 
@@ -333,6 +336,22 @@ namespace GolfArcade.UI
             button.gameObject.AddComponent<Image>().color = Color.clear;
             Skip = button.gameObject.AddComponent<HoldButton>();
             Skip.Fill = skipFill; Skip.RestColor = Yellow;
+            skipButton = button.gameObject;
+            // the intro emote: pick one of the three equipped while the flyover plays
+            var row = new GameObject("Intro emotes").AddComponent<RectTransform>();
+            row.SetParent(skip, false); row.anchorMin = row.anchorMax = new Vector2(0.5f, 0.5f); row.sizeDelta = Vector2.zero; row.anchoredPosition = new Vector2(0, -400);
+            introEmoteTitle = Chunky(row, "Title", "PICK YOUR INTRO", 40, 3f);
+            introEmoteTitle.rectTransform.anchorMin = introEmoteTitle.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            introEmoteTitle.rectTransform.sizeDelta = new Vector2(800, 60); introEmoteTitle.rectTransform.anchoredPosition = new Vector2(0, 80);
+            for (int i = 0; i < 3; i++)
+            {
+                var emote = UiKit.Pill(row, "Emote " + (i + 1), BlueDeep, new Vector2(0.5f, 0.5f), new Vector2((i - 1) * 310, -20), new Vector2(290, 120), out var emoteFill, 7);
+                introEmoteLabels[i] = Chunky(emoteFill.transform, "Label", "", 40, 3f);
+                emote.gameObject.AddComponent<Image>().color = Color.clear;
+                IntroEmotes[i] = emote.gameObject.AddComponent<HoldButton>();
+                IntroEmotes[i].Fill = emoteFill; IntroEmotes[i].RestColor = BlueDeep; introEmoteFills[i] = emoteFill;
+            }
+            introEmoteRow = row.gameObject;
             skipPart = skip.gameObject;
             skipPart.SetActive(false);
         }
@@ -348,6 +367,25 @@ namespace GolfArcade.UI
             foreach (var part in aimParts) part.SetActive(!on);
             skipPart.SetActive(on);
             if (skipLabel) skipLabel.text = skip;
+        }
+
+        /// The opening's controls as they stand: the skip button's words (null hides it: the golfer's intro always
+        /// plays), and the intro emotes (null hides them; `picked` lights the one chosen, -1 none).
+        public void SetIntroControls(string skip, string[] emotes, bool canPick, int picked)
+        {
+            if (!skipPart) return;
+            skipButton.SetActive(skip != null);
+            if (skip != null && skipLabel.text != skip) skipLabel.text = skip;
+            introEmoteRow.SetActive(emotes != null && (canPick || picked >= 0));
+            if (emotes == null) return;
+            introEmoteTitle.text = picked >= 0 ? "YOUR INTRO" : "PICK YOUR INTRO";
+            for (int i = 0; i < 3; i++)
+            {
+                string label = i < emotes.Length ? emotes[i].ToUpperInvariant() : "";
+                if (introEmoteLabels[i].text != label) introEmoteLabels[i].text = label;
+                var color = picked == i ? Yellow : canPick ? BlueDeep : UiKit.Hex("5B6F8C");
+                IntroEmotes[i].RestColor = color; if (!IntroEmotes[i].IsHeld) introEmoteFills[i].color = color;
+            }
         }
 
         public void SetHole(int number, int par, double yards, string name = null)
@@ -381,37 +419,6 @@ namespace GolfArcade.UI
             namePill.sizeDelta = new Vector2(Mathf.Clamp(nameText.preferredWidth + 60, 220, 540), 50);
         }
 
-        /// Players sharing this phone: the next one's name, big, for a couple of seconds (a tap puts it away).
-        public void ShowPass(string name)
-        {
-            if (!root) return;
-            if (!passCard)
-            {
-                var dim = UiKit.Panel(root, "Pass the phone", new Color(0.03f, 0.2f, 0.5f, 0.6f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
-                passCard = dim.rectTransform;
-                passCard.offsetMin = passCard.offsetMax = Vector2.zero;
-                dim.gameObject.AddComponent<PassCard>();
-                UiKit.Pill(passCard, "Card", Blue, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(860, 440), out var fill, 9);
-                var line = Chunky(fill.transform, "Line", "PASS THE PHONE TO", 54, 4f);
-                line.rectTransform.anchorMin = new Vector2(0, 0.6f); line.rectTransform.anchorMax = new Vector2(1, 0.92f);
-                passName = Chunky(fill.transform, "Name", "", 120, 6f);
-                passName.rectTransform.anchorMin = new Vector2(0, 0.1f); passName.rectTransform.anchorMax = new Vector2(1, 0.62f);
-                passName.resizeTextForBestFit = true; passName.resizeTextMinSize = 50; passName.resizeTextMaxSize = 120;
-            }
-            passName.text = (name ?? "").ToUpperInvariant();
-            passCard.SetAsLastSibling();
-            passCard.gameObject.SetActive(true);
-            passCard.GetComponent<PassCard>().Until = Time.unscaledTime + 2.4f;
-        }
-        public bool ShowingPass => passCard && passCard.gameObject.activeSelf;
-
-        /// The pass-the-phone card: gone after its time, or at a tap.
-        sealed class PassCard : MonoBehaviour, IPointerClickHandler
-        {
-            public float Until;
-            void Update() { if (Time.unscaledTime >= Until) gameObject.SetActive(false); }
-            public void OnPointerClick(PointerEventData e) => gameObject.SetActive(false);
-        }
 
         /// How far is left to the pin (the phone HUD's big number).
         public void SetDistance(double amount, string unit) => yardsText.text = $"{amount:F0} {unit.ToUpperInvariant()}";

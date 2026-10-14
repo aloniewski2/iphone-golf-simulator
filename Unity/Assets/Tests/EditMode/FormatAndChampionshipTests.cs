@@ -22,9 +22,9 @@ namespace GolfArcade.Tests
         [Test]
         public void ContestsArePlayedOnTheirOwnHoles()
         {
-            var cliffside = Course.Course.Cliffside(); // pars 4, 3, 5, 4, 3
+            var cliffside = Course.Course.Cliffside(); // pars 4, 4, 5, 3, 3
             CollectionAssert.AreEqual(new[] { 12, 15 }, System.Array.ConvertAll(Match.HolesFor(cliffside, MatchFormat.ClosestToPin).Holes, h => h.Number));
-            CollectionAssert.AreEqual(new[] { 7, 13, 14 }, System.Array.ConvertAll(Match.HolesFor(cliffside, MatchFormat.LongestDrive).Holes, h => h.Number));
+            CollectionAssert.AreEqual(new[] { 7, 8, 9 }, System.Array.ConvertAll(Match.HolesFor(cliffside, MatchFormat.LongestDrive).Holes, h => h.Number));
             Assert.AreSame(cliffside, Match.HolesFor(cliffside, MatchFormat.MatchPlay));
             var par4 = new Course.Course { Name = "x", Holes = new[] { cliffside.Holes[0] } };
             Assert.AreSame(par4, Match.HolesFor(par4, MatchFormat.ClosestToPin), "no par 3s: the holes there are");

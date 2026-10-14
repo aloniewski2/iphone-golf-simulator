@@ -40,6 +40,16 @@ namespace GolfArcade.Course
 
         public static HoleView Build(Hole hole, Transform parent)
         {
+            HoleView view = null;
+            var steps = BuildSteps(hole, parent, built => view = built);
+            while (steps.MoveNext()) { }
+            return view;
+        }
+
+        /// The same build, in slices: after each slow pass it yields how far along it is (0 to 1), so a loading
+        /// screen can be drawn between them; `built` gets the finished view. Build runs it to the end in one go.
+        public static IEnumerator<float> BuildSteps(Hole hole, Transform parent, Action<HoleView> built)
+        {
             var root = new GameObject($"Hole {hole.Number}");
             root.transform.SetParent(parent, false);
             var view = root.AddComponent<HoleView>();
@@ -47,9 +57,16 @@ namespace GolfArcade.Course
             Current = view;
             var model = Resources.Load<GameObject>($"Course/hole_{hole.Number:00}");
             model = GolfCoastalComposition.Model(hole, model);
-            if (model) view.BuildFromModel(model); else view.BuildGeometry();
+            yield return 0.02f;
+            if (model)
+            {
+                var body = view.BuildFromModelSteps(model, 0.02f, 0.94f);
+                while (body.MoveNext()) yield return body.Current;
+            }
+            else view.BuildGeometry();
             view.BuildPin();
             HoleAtmosphere.Apply(hole);
+            yield return 0.97f;
             var sunObject = GameObject.Find("Sun");
             var sun = sunObject ? sunObject.GetComponent<Light>() : null;
             if (hole.Number == 7 || GolfLook.IsPostcard(hole.Number) || GolfCourseLook.Handles(hole.Number))
@@ -66,7 +83,7 @@ namespace GolfArcade.Course
             }
             var game = FindFirstObjectByType<GolfArcade.Game.GolfGame>();
             GolfWindSway.SetWind(game ? game.Wind : Wind.Calm);
-            return view;
+            built(view);
         }
 
         void OnDestroy() { if (Current == this) Current = null; }
@@ -194,6 +211,14 @@ namespace GolfArcade.Course
 
         void BuildFromModel(GameObject prefab)
         {
+            var steps = BuildFromModelSteps(prefab, 0, 1);
+            while (steps.MoveNext()) { }
+        }
+
+        /// BuildFromModel in slices, yielding its progress between `from` and `to` after each slow part.
+        IEnumerator<float> BuildFromModelSteps(GameObject prefab, float from, float to)
+        {
+            float At(float f) => Mathf.Lerp(from, to, f);
             model = Instantiate(prefab, transform);
             model.name = "Course model";
             var tee = FindDeep(model.transform, "MARKER_TEE");
@@ -204,7 +229,7 @@ namespace GolfArcade.Course
                 Debug.LogError("Course model needs MARKER_TEE, MARKER_PIN and MARKER_UP; drawing the hole from primitives instead");
                 Destroy(model);
                 BuildGeometry();
-                return;
+                yield break;
             }
 
             // Place the model so its markers land on the hole's: the frame from the markers
@@ -231,6 +256,7 @@ namespace GolfArcade.Course
             if (residual > 0.5f) Debug.LogWarning($"Course model pin is {residual:F2} yd off the hole's pin after alignment");
             float tilt = Vector3.Angle((up.position - tee.position), Vector3.up);
             if (tilt > 1f) Debug.LogWarning($"Course model up is {tilt:F1}° off vertical after alignment");
+            yield return At(0.03f);
 
             var standardLook = GolfCourseLook.Attach(Hole, gameObject);
             if (standardLook) GolfCoursePalms.Prepare(model);
@@ -257,7 +283,9 @@ namespace GolfArcade.Course
                 r.shadowCastingMode = StartsWithAny(r.name, Unshadowed) ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
             if (Hole.Number == 7 && !standardLook) GolfLook.DressLegacy(model, Hole.Number);
+            yield return At(0.08f);
             if (GolfLook.IsPostcard(Hole.Number)) GolfLook.DressModel(model, Hole.Number);
+            yield return At(0.16f);
             // The model's own open sea is one quad kilometres across, which the fog paints the
             // colour of the sky; the backdrop's sea (Backdrop.Place) replaces it.
             if (FindDeep(model.transform, "WATER_OCEAN") is Transform ocean)
@@ -293,6 +321,7 @@ namespace GolfArcade.Course
             if (hasGround) { Hole.Surface = SampleSurface(); Hole.Ground = GroundHeight; }
             // what stands on it, for the ball to run into
             Hole.Obstacles = ObstacleScan.From(model.transform);
+            yield return At(0.2f);
             PlaceTeeMarkers();
             // the islands and boats out on the sea round it, past the playable ground
             var land = new Bounds(); bool any = false;
@@ -311,7 +340,12 @@ namespace GolfArcade.Course
                 }
                 else Backdrop.Place(transform, land, pinC - teeC, standardLook ? standardLook.Get(GolfCourseLook.Surface.Water) : WaterMat(Colour("MAT_WATER").Value));
             }
-            if (standardLook) standardLook.FinishModel(model);
+            yield return At(0.24f);
+            if (standardLook)
+            {
+                var finish = standardLook.FinishModelSteps(model);
+                while (finish.MoveNext()) yield return At(0.24f + 0.76f * finish.Current);
+            }
         }
 
         /// The ground around the green as the ball will roll over it, read off the meshes the
@@ -468,7 +502,7 @@ namespace GolfArcade.Course
                 }
                 flagstick = FindDeep(pinRoot, "FLAG_POLE");
                 flag = FindDeep(pinRoot, "FLAG");
-                if (flag) DressFlag(flag, Hole.Number);
+                if (flag) DressFlag(flag, Hole.PlayNumber);
                 // the flag flutters: its four shape keys cross-faded round a loop, a ripple running
                 // out to the fly a little faster than once a second
                 if (flag) WaterMotion.Attach(flag, null, 1.1f, true);

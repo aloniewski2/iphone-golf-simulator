@@ -51,7 +51,7 @@ final class NewMenuSnapshotTests: XCTestCase {
         menu.debugShow(.online(.clothes)); menu.tap("lk-tab-customize")
         try await both("clothes-customize") { IslandOnlineScreen(menu:menu,route:.clothes,compact:$0) }
         menu.tap("lk-revert")
-        try service.configure(.golf,venue:"postcards"); menu.debugShow(.online(.lobby))
+        try service.configure(.golf,venue:"cliffside"); menu.debugShow(.online(.lobby))
         try await both("golf-four") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
         try service.configure(.tennis,venue:"resort")
         service.mockState(phase:.lobby,ready:true); menu.debugShow(.online(.lobby))
@@ -90,7 +90,9 @@ final class NewMenuSnapshotTests: XCTestCase {
         let observer=service.lobby!.participants[2].id;menu.tap("net-seat-\(observer)")
         XCTAssertEqual(service.lobby!.participants[2].seat,1)
         menu.tap("net-settings-match");menu.tap("net-sport-golf");XCTAssertEqual(service.lobby?.sport,.golf)
-        menu.back();menu.tap("net-leave");XCTAssertEqual(menu.screen,.online(.leave));menu.back();XCTAssertEqual(menu.screen,.online(.lobby))
+        // Leave goes straight back to the Plaza (no confirm screen, the lobby is left)
+        menu.back();menu.tap("net-leave");XCTAssertNil(service.lobby);XCTAssertFalse(menu.screen.isOnline)
+        try service.enableMock(count:4,player:try XCTUnwrap(menu.player));menu.showOnline(.lobby)
         service.mockState(phase:.lobby,guest:true);menu.tap("net-settings")
         XCTAssertEqual(menu.rows(menu.screen),[["net-settings-seats"],["back"]])
         let before=service.lobby;menu.tap("net-sport-tennis");XCTAssertEqual(service.lobby,before)

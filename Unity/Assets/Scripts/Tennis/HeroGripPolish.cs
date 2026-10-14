@@ -107,9 +107,12 @@ namespace GolfArcade.Tennis
             var hand=hero.Bone(HumanBodyBones.RightHand);if(!hand)return;
             var grip=hero.racketGrip;
             if(Vector3.Distance(hand.position,grip.position)>.145f)return; // released prop
-            var axis=grip.up.normalized;var origin=grip.position;
-            float radius=.017f*Mathf.Abs(grip.lossyScale.x);
-            FitDigits(hero,false,origin,axis,radius,.006f,24,32);
+            // Bald-base pass 2026-10-12: the fingers and thumb close on the real handle instead of lying straight across it
+            // (the old radial nudge assumed a 17 mm handle before the 1.3x racket scale, i.e. 22 mm, and skipped tips already inside it).
+            // The handle's own centre is measured on the Grip mesh, so a re-seated racket (HeroRacketSeat) is followed.
+            var handle=Handle(hero);float scale=Mathf.Abs(grip.lossyScale.x);
+            var axis=grip.up.normalized;var origin=grip.TransformPoint(new Vector3(handle.centre.x,0,handle.centre.y));
+            WrapDigits(hero,false,origin,axis,handle.radius*scale,handle.start*scale,handle.end*scale);
         }
         /// Baked supporting fingers for the reference two-handed backhand.
         public static void ApplySupportGrip(MatchHeroLook hero)
@@ -132,9 +135,9 @@ namespace GolfArcade.Tennis
             public Quaternion upperRotation, lowerRotation, handRotation;
         }
         static readonly System.Collections.Generic.Dictionary<MatchHeroLook,GolfGripData> golfData=new();
-        sealed class RestJoint { public Transform bone;public Quaternion local;public Vector3 hinge,tip,palmTarget,palmNormal; }
+        sealed class RestJoint { public Transform bone;public Quaternion local;public Vector3 hinge,tip,palmTarget,palmNormal;public Vector3[] skin;public int[] skinBin; }
         static readonly System.Collections.Generic.Dictionary<MatchHeroLook,System.Collections.Generic.Dictionary<string,RestJoint>> restData=new();
-        void OnDestroy(){if(look){golfData.Remove(look);restData.Remove(look);}}
+        void OnDestroy(){if(look){golfData.Remove(look);restData.Remove(look);wrapMemory.Remove(look);handles.Remove(look);}}
         static System.Collections.Generic.Dictionary<string,RestJoint> Rest(MatchHeroLook hero,float palmHeight=.68f)
         {
             if(restData.TryGetValue(hero,out var found))return found;
@@ -171,6 +174,7 @@ namespace GolfArcade.Tennis
                         var sum=Vector3.zero;int count=0;foreach(var point in tips)if(point.magnitude>max*.8f){sum+=point;count++;}
                         record.tip=count>0 ? sum/count:Vector3.up*.018f;
                     }
+                    record.skin=SkinSamples(body,System.Array.IndexOf(palette,b),out record.skinBin);
                     result[b.name]=record;
                 }
             }
@@ -346,6 +350,152 @@ namespace GolfArcade.Tennis
             data.solvedPose ??= new Matrix4x4[data.solvedBones.Length];
             for(int bone=0;bone<data.solvedBones.Length;bone++)if(data.solvedBones[bone])data.solvedPose[bone]=data.solvedBones[bone].localToWorldMatrix;
         }
+        // ---- finger wrap (bald-base pass 2026-10-12) ---------------------------------------------------------------------------
+        // Each finger's (and the thumb's) three flexion hinges, the anatomical axes measured in Rest, close on the handle like a grasp
+        // (WrapDigits): no skin sample inside the handle, inside anatomical limits, checked on the finger's own skin samples with
+        // closed-form hinge rotations (no transform writes until the answer is applied). A function of the pose alone (every solve
+        // closes from the clip's own curl, never from a previous answer), so the game, the turnaround and the locker export get the
+        // same grip for the same frame; in play the answer is reused on alternate frames.
+        static readonly System.Collections.Generic.Dictionary<MatchHeroLook,float[]> wrapMemory=new();
+        struct HandleShape { public float radius,start,end; public Vector2 centre; }
+        static readonly System.Collections.Generic.Dictionary<MatchHeroLook,HandleShape> handles=new();
+        static readonly string[] WrapDigitNames={"Index","Middle","Ring","Little","Thumb"};
+        static readonly string[] WrapJoints={"Proximal","Intermediate","Distal"};
+        /// Absolute flexion limits from the bind pose, degrees (finger MCP, PIP, DIP; thumb base, middle, tip). The thumb closes over
+        /// the far side from the fingers.
+        static readonly float[] WrapLimit={95,110,85},ThumbLimit={55,75,80};
+        const float WrapTolerance=.0012f;   // soft skin may press 1.2 mm into the wrap before it counts as passing through
+        const float GraspStep=2;   // degrees per closing step
+
+        /// The handle in unscaled racket-grip space, measured once on the Grip mesh: its centre line (x, z), its outer radius (95th
+        /// percentile) and its start / end along +Y (fallback: the classic racket's measured 17.3 mm over -99..+99 mm, centred).
+        static HandleShape Handle(MatchHeroLook hero)
+        {
+            if(handles.TryGetValue(hero,out var found))return found;
+            var result=new HandleShape{radius=.0173f,start=-.099f,end=.099f};
+            foreach(var filter in hero.racketGrip.GetComponentsInChildren<MeshFilter>(true)){
+                if(filter.name!="Grip"||!filter.sharedMesh||!filter.sharedMesh.isReadable)continue;
+                var toGrip=hero.racketGrip.worldToLocalMatrix*filter.transform.localToWorldMatrix;var points=new System.Collections.Generic.List<Vector3>();
+                foreach(var v in filter.sharedMesh.vertices)points.Add(toGrip.MultiplyPoint3x4(v));
+                if(points.Count==0)break;
+                var centre=Vector2.zero;float lo=float.MaxValue,hi=float.MinValue;
+                foreach(var q in points){centre+=new Vector2(q.x,q.z);lo=Mathf.Min(lo,q.y);hi=Mathf.Max(hi,q.y);}
+                centre/=points.Count;var sizes=new System.Collections.Generic.List<float>();foreach(var q in points)sizes.Add((new Vector2(q.x,q.z)-centre).magnitude);sizes.Sort();
+                result=new HandleShape{radius=sizes[(int)(sizes.Count*.95f)],start=lo,end=hi,centre=centre};
+                break;
+            }
+            handles[hero]=result;return result;
+        }
+
+        const int WrapBins=5;
+        /// Up to 40 skin points of one finger bone in its own space, spread round its cross-section in WrapBins stations along its length.
+        static Vector3[] SkinSamples(SkinnedMeshRenderer body,int bone,out int[] bins)
+        {
+            bins=System.Array.Empty<int>();
+            if(bone<0)return System.Array.Empty<Vector3>();
+            var mesh=body.sharedMesh;var weights=mesh.boneWeights;var vertices=mesh.vertices;var bind=mesh.bindposes[bone];
+            var points=new System.Collections.Generic.List<Vector3>();
+            for(int v=0;v<weights.Length;v++){var w=weights[v];float amount=(w.boneIndex0==bone?w.weight0:0)+(w.boneIndex1==bone?w.weight1:0)+(w.boneIndex2==bone?w.weight2:0)+(w.boneIndex3==bone?w.weight3:0);if(amount>=.5f)points.Add(bind.MultiplyPoint3x4(vertices[v]));}
+            if(points.Count==0)return System.Array.Empty<Vector3>();
+            float lo=float.MaxValue,hi=float.MinValue;foreach(var p in points){lo=Mathf.Min(lo,p.y);hi=Mathf.Max(hi,p.y);}
+            const int Bins=WrapBins,Rays=8;var best=new int[Bins*Rays];var score=new float[Bins*Rays];for(int i=0;i<best.Length;i++){best[i]=-1;score[i]=float.MinValue;}
+            for(int i=0;i<points.Count;i++){
+                var p=points[i];int bin=Mathf.Clamp((int)((p.y-lo)/Mathf.Max(hi-lo,1e-5f)*Bins),0,Bins-1);
+                for(int r=0;r<Rays;r++){float a=r*Mathf.PI*2/Rays;float d=p.x*Mathf.Cos(a)+p.z*Mathf.Sin(a);int k=bin*Rays+r;if(d>score[k]){score[k]=d;best[k]=i;}}
+            }
+            var picked=new System.Collections.Generic.List<Vector3>();var station=new System.Collections.Generic.List<int>();
+            for(int k=0;k<best.Length;k++){int i=best[k];if(i>=0&&!picked.Contains(points[i])){picked.Add(points[i]);station.Add(k/Rays);}}
+            bins=station.ToArray();return picked.ToArray();
+        }
+
+        static float Twist(Quaternion q,Vector3 axis)
+        {
+            float angle=2*Mathf.Atan2(Vector3.Dot(new Vector3(q.x,q.y,q.z),axis),q.w)*Mathf.Rad2Deg;
+            return Mathf.DeltaAngle(0,angle);
+        }
+
+        static void WrapDigits(MatchHeroLook hero,bool left,Vector3 origin,Vector3 axis,float radius,float start,float end)
+        {
+            var rest=Rest(hero);string prefix=left?"Left":"Right";
+            if(!wrapMemory.TryGetValue(hero,out var memory))wrapMemory[hero]=memory=new float[1+WrapDigitNames.Length*3];
+            bool solved=memory[0]>.5f;
+            // Rest's hinges come from a mirrored palm normal: +angle curls a LEFT finger and opens a RIGHT one (see ApplyFist).
+            // The solver works in flexion (positive = curl toward the palm) and turns it into hinge angles here.
+            float flex=left?1:-1;
+            // In play the fingers move smoothly: every other frame reuses the previous answer (sampling tools always solve).
+            if(solved&&Application.isPlaying&&((Time.frameCount+hero.GetInstanceID())&1)==1){
+                for(int f=0;f<WrapDigitNames.Length;f++)for(int j=0;j<3;j++)
+                    if(rest.TryGetValue(prefix+WrapDigitNames[f]+WrapJoints[j],out var rj))rj.bone.localRotation*=Quaternion.AngleAxis(flex*memory[1+f*3+j],rj.hinge);
+                return;
+            }
+            var joints=new RestJoint[3];var pivot=new Vector3[3];var hinge=new Vector3[3];var lo=new float[3];var hi=new float[3];
+            var world=new Vector3[3][];
+            for(int f=0;f<WrapDigitNames.Length;f++){
+                bool complete=true;
+                for(int j=0;j<3;j++)if(!rest.TryGetValue(prefix+WrapDigitNames[f]+WrapJoints[j],out joints[j])||joints[j].skin==null||joints[j].skin.Length==0){complete=false;break;}
+                if(!complete)continue;
+                for(int j=0;j<3;j++){
+                    var b=joints[j].bone;pivot[j]=b.position;hinge[j]=b.TransformDirection(joints[j].hinge).normalized*flex;
+                    float current=flex*Twist(Quaternion.Inverse(joints[j].local)*b.localRotation,joints[j].hinge);
+                    bool thumb=WrapDigitNames[f]=="Thumb";
+                    lo[j]=Mathf.Max(-35,(thumb?-25:-10)-current);hi[j]=Mathf.Max(lo[j],Mathf.Min(110,(thumb?ThumbLimit:WrapLimit)[j]-current));
+                    var m=b.localToWorldMatrix;var skin=joints[j].skin;
+                    if(world[j]==null||world[j].Length!=skin.Length)world[j]=new Vector3[skin.Length];
+                    for(int i=0;i<skin.Length;i++)world[j][i]=m.MultiplyPoint3x4(skin[i]);
+                }
+                // How deep phalanx `seg` sits inside the handle (beyond the soft-contact tolerance) for the flexion changes `d` (degrees).
+                float Depth(int seg,float[] d)
+                {
+                    var q0=Quaternion.AngleAxis(d[0],hinge[0]);var q1=Quaternion.AngleAxis(d[1],hinge[1]);var q2=Quaternion.AngleAxis(d[2],hinge[2]);
+                    float worst=0;var src=world[seg];
+                    for(int i=0;i<src.Length;i++){
+                        var p=src[i];
+                        if(seg==2)p=pivot[2]+q2*(p-pivot[2]);
+                        if(seg>=1)p=pivot[1]+q1*(p-pivot[1]);
+                        p=pivot[0]+q0*(p-pivot[0]);
+                        var v=p-origin;float along=Vector3.Dot(v,axis);
+                        if(along<start-.004f||along>end+.004f)continue;
+                        float inside=radius-WrapTolerance-(v-axis*along).magnitude;if(inside>worst)worst=inside;
+                    }
+                    return worst;
+                }
+                // A grasp, as a motion: start from the clip's own curl (opened first if it already sinks into the handle), then every
+                // joint closes in small steps; when a phalanx meets the handle, its joint and the joints before it stop and the joints
+                // beyond it keep closing. With the handle across the finger roots that wraps the finger round it; nothing passes through.
+                int slot=1+f*3;
+                var delta=new float[3];
+                for(int guard=0;guard<60;guard++){
+                    int hit=-1;for(int seg=0;seg<3;seg++)if(Depth(seg,delta)>0){hit=seg;break;}
+                    if(hit<0)break;
+                    int open=hit;while(open>0&&delta[open]<=lo[open]+.01f)open--;
+                    if(delta[open]<=lo[open]+.01f)break;
+                    delta[open]=Mathf.Max(lo[open],delta[open]-GraspStep);
+                }
+                // A joint stops for good only when its own phalanx touches (and so do the joints before it); if a phalanx further out is
+                // in the way it waits while the outer joints keep curling, which carries the fingertip round the handle instead of hooking.
+                var moving=new[]{true,true,true};
+                for(int step=0;step<120;step++){
+                    bool advanced=false;
+                    for(int j=0;j<3;j++){
+                        if(!moving[j])continue;
+                        float was=delta[j];delta[j]=Mathf.Min(hi[j],was+GraspStep);
+                        if(delta[j]<=was+1e-4f){moving[j]=false;continue;}
+                        int hit=-1;for(int seg=j;seg<3;seg++)if(Depth(seg,delta)>0){hit=seg;break;}
+                        if(hit<0){advanced=true;continue;}
+                        delta[j]=was;
+                        if(hit==j)for(int k=0;k<=j;k++)moving[k]=false;
+                    }
+                    if(!advanced)break;
+                }
+                float b0=delta[0],b1=delta[1],b2=delta[2];
+                memory[slot]=b0;memory[slot+1]=b1;memory[slot+2]=b2;
+                joints[0].bone.localRotation*=Quaternion.AngleAxis(flex*b0,joints[0].hinge);
+                joints[1].bone.localRotation*=Quaternion.AngleAxis(flex*b1,joints[1].hinge);
+                joints[2].bone.localRotation*=Quaternion.AngleAxis(flex*b2,joints[2].hinge);
+            }
+            memory[0]=1;
+        }
+
         static void FitDigits(MatchHeroLook hero,bool left,Vector3 origin,Vector3 axis,float radius,float padding,float proximalLimit,float distalLimit)
         {
             foreach(string digit in new[]{"Index","Middle","Ring","Little"})

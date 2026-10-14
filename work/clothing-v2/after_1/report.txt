@@ -1,0 +1,41 @@
+Hero turnaround 2026-10-12 12:30  Unity 6000.3.24f1
+VISUAL_CHARACTER_SKIN_POLISH=UNSET; VISUAL_BLINK_NORMAL_FIELD=UNSET
+== MatchHero_Male
+  shader profile: HeroLightingProfile.Tennis()  _HeroSkinPolish=0
+  parts: Body_M[body] v=44168, OriginalSeamFeatures[face] v=3824, Racket_Classic[equipment] v=2998, ButtCap[equipment] v=314, Grip[equipment] v=1442, StringBed[equipment] v=1368, Kit_Bottom[kit] v=10589, Kit_Shoe_L[kit] v=9141, Kit_Shoe_R[kit] v=9047, Kit_Sock_L[kit] v=3781, Kit_Sock_R[kit] v=3647, Kit_Top[kit] v=20943
+  tris: 197046 (hero) + 10760 (equipment)
+  top kit: Kit_Top; bottom kit: Kit_Bottom
+  look: skin B7744A, shirt 2F6FD6, shorts/skirt F4F0E6, shoes FFFFFF (lobby-parity case s3)
+  ready pose: Male_ReadyIdle t=0
+  rest bounds 1.336 x 1.736 x 0.362 m; turntable heading 1.1 deg
+  50 stills + contact sheet -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/after_1/MatchHero_Male
+== MatchHero_Female
+  shader profile: HeroLightingProfile.Tennis()  _HeroSkinPolish=0
+  dropped 6 stale cache entries (meshes unloaded with the previous scene)
+  parts: Body_F[body] v=34443, OriginalSeamFeatures[face] v=3004, Racket_Classic[equipment] v=2998, ButtCap[equipment] v=314, Grip[equipment] v=1442, StringBed[equipment] v=1368, Kit_Bottom[kit] v=31732, Kit_Shoe_L[kit] v=9442, Kit_Shoe_R[kit] v=9696, Kit_Sock_L[kit] v=2366, Kit_Sock_R[kit] v=2317, Kit_Top[kit] v=6699
+  tris: 188181 (hero) + 10760 (equipment)
+  top kit: Kit_Top; bottom kit: Kit_Bottom
+  look: skin B7744A, shirt 2F6FD6, shorts/skirt F4F0E6, shoes FFFFFF (lobby-parity case s3)
+  ready pose: Female_ReadyIdle t=0
+  rest bounds 0.518 x 1.730 x 0.377 m; turntable heading 0.1 deg
+  50 stills + contact sheet -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/after_1/MatchHero_Female
+== GolfKitHero_Male
+  shader profile: HeroLightingProfile.Golf(studio key, studio ambient, rim .35, cloth 1.05)  _HeroSkinPolish=0
+  dropped 6 stale cache entries (meshes unloaded with the previous scene)
+  parts: Body[body] v=44168, OriginalSeamFeatures[face] v=3824, CLUB_IRON[equipment] v=1232, Kit_Belt[kit] v=4808, Kit_Bottom[kit] v=16238, Kit_Glove_L[kit] v=4126, Kit_Shoe_L[kit] v=13245, Kit_Shoe_R[kit] v=13122, Kit_Top[kit] v=17877
+  tris: 206702 (hero) + 1540 (equipment)
+  top kit: Kit_Top; bottom kit: Kit_Bottom
+  look: skin B7744A, shirt 2F6FD6, shorts/skirt F4F0E6, shoes FFFFFF (lobby-parity case s3)
+  ready pose: Idle t=0 + menu iron socket
+  rest bounds 1.343 x 1.737 x 0.361 m; turntable heading 1.1 deg
+  50 stills + contact sheet -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/after_1/GolfKitHero_Male
+== GolfKitHero_Female
+  shader profile: HeroLightingProfile.Golf(studio key, studio ambient, rim .35, cloth 1.05)  _HeroSkinPolish=0
+  dropped 13 stale cache entries (meshes unloaded with the previous scene)
+  parts: Body[body] v=34443, OriginalSeamFeatures[face] v=3004, CLUB_IRON[equipment] v=1232, Kit_Belt[kit] v=4813, Kit_Bottom[kit] v=31038, Kit_Glove_L[kit] v=2615, Kit_Shoe_L[kit] v=12342, Kit_Shoe_R[kit] v=12647, Kit_Top[kit] v=12249
+  tris: 204919 (hero) + 1540 (equipment)
+  top kit: Kit_Top; bottom kit: Kit_Bottom
+  look: skin B7744A, shirt 2F6FD6, shorts/skirt F4F0E6, shoes FFFFFF (lobby-parity case s3)
+  ready pose: Idle t=0 + menu iron socket
+  rest bounds 0.520 x 1.732 x 0.369 m; turntable heading 0.1 deg
+  50 stills + contact sheet -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/after_1/GolfKitHero_Female

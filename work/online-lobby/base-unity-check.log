@@ -1,0 +1,20 @@
+Assets/Scripts/Tennis/TennisGame.cs(93,29): warning CS0108: 'TennisGame.audio' hides inherited member 'Component.audio'. Use the new keyword if hiding was intended.
+Assets/Scripts/Tennis/TennisJuice.cs(39,61): warning CS0649: Field 'TennisJuice.subject2' is never assigned to, and will always have its default value null
+Assets/Scripts/Tennis/TennisLook.cs(119,74): warning CS0649: Field 'TennisLook.MaskReference.shorts' is never assigned to, and will always have its default value 0
+Assets/Scripts/Tennis/TennisLook.cs(119,82): warning CS0649: Field 'TennisLook.MaskReference.accent' is never assigned to, and will always have its default value 0
+Assets/Scripts/Tennis/TennisLook.cs(119,67): warning CS0649: Field 'TennisLook.MaskReference.shirt' is never assigned to, and will always have its default value 0
+Assets/Scripts/Tennis/HeroTennisDriver.cs(299,53): warning CS0169: The field 'HeroTennisDriver.spineBind' is never used
+Assets/Scripts/Tennis/TennisCustomization.cs(168,59): warning CS0649: Field 'TennisCustomization.SkinReference.skin' is never assigned to, and will always have its default value 0
+Assets/Scripts/Tennis/TennisGame.cs(2133,14): warning CS0169: The field 'TennisGame.cutHeld' is never used
+Assets/Scripts/Tennis/TennisLook.cs(119,90): warning CS0649: Field 'TennisLook.MaskReference.skin' is never assigned to, and will always have its default value 0
+Assets/Scripts/Tennis/HeroTennisDriver.cs(299,64): warning CS0169: The field 'HeroTennisDriver.chestBind' is never used
+Assets/Scripts/Tennis/TennisAmbience.cs(16,19): warning CS0169: The field 'TennisAmbience.rendered' is never used
+Assets/Scripts/Tennis/TennisStandsCrowd.cs(20,120): warning CS0649: Field 'TennisStandsCrowd.Fan.cheerLength' is never assigned to, and will always have its default value 0
+Assets/Scripts/Game/PointClipAudioTap.cs(12,16): warning CS0169: The field 'PointClipAudioTap.clockOffset' is never used
+Assets/Scripts/Tennis/TennisResortCrowd.cs(19,58): warning CS0649: Field 'TennisResortCrowd.Visitor.held' is never assigned to, and will always have its default value 0
+GolfArcade compiled
+tests compiled
+FAIL TennisCampaignBalanceTests.TheLadderGetsSteeplyHarderUpToAnAlmostImpossibleFinal: NullReferenceException: Object reference not set to an instance of an object.
+FAIL TennisCampaignBalanceTests.AGreenServeIsNotAFreeAceAgainstStrongReturners: NullReferenceException: Object reference not set to an instance of an object.
+FAIL TennisTutorialTests.KitColoursParseFromTheLaunchMessage: SecurityException: ECall methods must be packaged into a system module.
+182 passed, 3 failed

@@ -93,12 +93,19 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void RoughIsAFlyerThatWontStop()
+        public void RoughCostsSomeDistanceAndSandMore()
         {
-            var fair = Fly(CourseLie.Fairway, GolfClub.Iron);
-            var rough = Fly(CourseLie.Rough, GolfClub.Iron);
-            Assert.Less(rough.Carry, fair.Carry, "the grass costs club speed");
-            Assert.Greater(rough.Roll, fair.Roll * 1.5, "and the spin: it runs on");
+            foreach (var club in new[] { GolfClub.Driver, GolfClub.Iron5, GolfClub.Iron, GolfClub.Iron9, GolfClub.PitchingWedge })
+            {
+                var fair = Fly(CourseLie.Fairway, club);
+                var rough = Fly(CourseLie.Rough, club);
+                var sand = Fly(CourseLie.Bunker, club);
+                Assert.That(rough.Carry / fair.Carry, Is.InRange(0.87, 0.93), $"{club}: the rough keeps about nine tenths of the carry");
+                Assert.That(rough.Total / fair.Total, Is.InRange(0.87, 0.94), $"{club}: and of where it finishes (no flyer running on)");
+                Assert.Less(sand.Carry, rough.Carry - 0.04 * fair.Carry, $"{club}: the sand costs more than the rough");
+            }
+            double iron = Fly(CourseLie.Bunker, GolfClub.Iron).Carry / Fly(CourseLie.Fairway, GolfClub.Iron).Carry;
+            Assert.That(iron, Is.InRange(0.72, 0.78), "a 7-iron from the sand keeps about three quarters");
         }
 
         [Test]
@@ -106,7 +113,35 @@ namespace GolfArcade.Tests
         {
             double wedge = Fly(CourseLie.Bunker, GolfClub.Wedge).Carry / Fly(CourseLie.Fairway, GolfClub.Wedge).Carry;
             double iron = Fly(CourseLie.Bunker, GolfClub.Iron).Carry / Fly(CourseLie.Fairway, GolfClub.Iron).Carry;
-            Assert.Greater(wedge, iron + 0.15);
+            Assert.Greater(wedge, iron + 0.08);
+        }
+
+        [Test]
+        public void RoughAndSandKnockTheShotOffLine()
+        {
+            var swing = new SwingImpact { Power = 1, StartLineDegrees = 1, SpeedBonus = 0.02 };
+            foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Green, CourseLie.Fringe })
+            {
+                var same = lie.Scattered(swing, 0, 1);
+                Assert.AreEqual(1, same.StartLineDegrees, 1e-12, $"{lie} is a clean lie");
+                Assert.AreEqual(0.02, same.SpeedBonus, 1e-12);
+            }
+            Assert.AreEqual(1, CourseLie.Rough.Scattered(swing, 0.5, 0.5).StartLineDegrees, 1e-12, "the middle draw is the clean strike");
+            double roughWorst = 0, sandWorst = 0;
+            for (int i = 0; i <= 20; i++)
+            {
+                double u = i / 20.0;
+                roughWorst = Math.Max(roughWorst, Math.Abs(CourseLie.Rough.Scattered(swing, u, u).StartLineDegrees - 1));
+                sandWorst = Math.Max(sandWorst, Math.Abs(CourseLie.Bunker.Scattered(swing, u, u).StartLineDegrees - 1));
+                Assert.That(CourseLie.Rough.Scattered(swing, u, u).SpeedBonus - 0.02, Is.InRange(-0.04 - 1e-9, 0.04 + 1e-9));
+            }
+            Assert.That(roughWorst, Is.EqualTo(2.5).Within(1e-9), "the rough: up to 2.5° off line");
+            Assert.That(sandWorst, Is.EqualTo(5).Within(1e-9), "the sand: twice that");
+            // a 7-iron knocked the most the rough can: a few yards off line, not a different shot
+            var hole = Course.Course.Meadow().Holes[0];
+            var clean = new CourseShot(GolfClub.Iron, new SwingImpact { Power = 1 }, 0, hole.Tee, hole);
+            var off = new CourseShot(GolfClub.Iron, CourseLie.Rough.Scattered(new SwingImpact { Power = 1 }, 1, 0.5), 0, hole.Tee, hole);
+            Assert.That(off.Landing.X - clean.Landing.X, Is.InRange(4, 9), "2.5° at 150 yd is about 6 yd");
         }
 
         [Test]

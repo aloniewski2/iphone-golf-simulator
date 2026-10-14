@@ -1,0 +1,95 @@
+{
+ "item": "tennis_cap",
+ "sex": "Product",
+ "slot": "Headwear",
+ "npz": "Kit_Cap_final.npz",
+ "tag": "Cap",
+ "pieces": [
+  "Kit_Cap"
+ ],
+ "piece": {
+  "name": "Kit_Cap",
+  "vertexCount": 6675,
+  "triangleCount": 10572,
+  "submeshes": [
+   {
+    "role": "Kit_Cap",
+    "start": 0,
+    "count": 9972
+   },
+   {
+    "role": "Kit_Buckle",
+    "start": 9972,
+    "count": 600
+   }
+  ],
+  "bones": [
+   "Headwear"
+  ],
+  "bindposes": [
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "metresPerUv": 0.6778687823060661,
+  "texture": 2048
+ },
+ "entries": {
+  "Kit_Cap": {
+   "name": "Kit_Cap",
+   "vertexCount": 6675,
+   "triangleCount": 10572,
+   "submeshes": [
+    {
+     "role": "Kit_Cap",
+     "start": 0,
+     "count": 9972
+    },
+    {
+     "role": "Kit_Buckle",
+     "start": 9972,
+     "count": 600
+    }
+   ],
+   "bones": [
+    "Headwear"
+   ],
+   "bindposes": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "metresPerUv": 0.6778687823060661,
+   "texture": 2048
+  }
+ },
+ "tags": {
+  "Kit_Cap": "Cap"
+ }
+}

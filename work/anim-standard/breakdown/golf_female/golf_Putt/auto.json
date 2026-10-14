@@ -1,0 +1,1922 @@
+[
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 133.88235294117646,
+"y": 267.52941176470586,
+"r": 10.55,
+"area": 17,
+"frac": 1.0,
+"img": "f00_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 267.796875,
+"y": 290.65625,
+"r": 15.75,
+"area": 64,
+"frac": 1.0,
+"img": "f00_back"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 168.2,
+"y": 285.4,
+"r": 10.0,
+"area": 10,
+"frac": 0.91,
+"img": "f00_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 157.94117647058823,
+"y": 285.47058823529414,
+"r": 10.55,
+"area": 17,
+"frac": 1.0,
+"img": "f00_right"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 134.25925925925927,
+"y": 268.0740740740741,
+"r": 12.5,
+"area": 27,
+"frac": 1.0,
+"img": "f01_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 267.98387096774195,
+"y": 289.7741935483871,
+"r": 15.75,
+"area": 62,
+"frac": 1.0,
+"img": "f01_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 155.94444444444446,
+"y": 281.8333333333333,
+"r": 11.850000000000001,
+"area": 18,
+"frac": 1.0,
+"img": "f01_right"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 135.5151515151515,
+"y": 268.1515151515151,
+"r": 15.1,
+"area": 33,
+"frac": 1.0,
+"img": "f02_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 134.3235294117647,
+"y": 269.3529411764706,
+"r": 15.1,
+"area": 34,
+"frac": 1.0,
+"img": "f03_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 132.3846153846154,
+"y": 271.0769230769231,
+"r": 11.850000000000001,
+"area": 26,
+"frac": 1.0,
+"img": "f04_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 168.8,
+"y": 285.6,
+"r": 10.0,
+"area": 10,
+"frac": 0.88,
+"img": "f04_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 134.02857142857144,
+"y": 270.42857142857144,
+"r": 14.450000000000001,
+"area": 35,
+"frac": 1.0,
+"img": "f05_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 168.8,
+"y": 285.6,
+"r": 10.0,
+"area": 10,
+"frac": 0.88,
+"img": "f05_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 133.8125,
+"y": 270.625,
+"r": 14.450000000000001,
+"area": 32,
+"frac": 1.0,
+"img": "f06_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 168.8,
+"y": 285.6,
+"r": 10.0,
+"area": 10,
+"frac": 0.83,
+"img": "f06_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 134.5,
+"y": 269.72222222222223,
+"r": 15.1,
+"area": 36,
+"frac": 1.0,
+"img": "f07_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 134.925,
+"y": 267.675,
+"r": 17.05,
+"area": 40,
+"frac": 1.0,
+"img": "f08_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 127.64,
+"y": 277.32,
+"r": 13.8,
+"area": 25,
+"frac": 1.0,
+"img": "f08_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 169.63636363636363,
+"y": 284.3636363636364,
+"r": 10.55,
+"area": 11,
+"frac": 0.88,
+"img": "f08_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 203.73333333333332,
+"y": 345.2,
+"r": 13.15,
+"area": 15,
+"frac": 1.0,
+"img": "f08_right"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 137.82051282051282,
+"y": 264.2564102564103,
+"r": 17.05,
+"area": 39,
+"frac": 1.0,
+"img": "f09_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 127.58333333333333,
+"y": 274.4166666666667,
+"r": 10.0,
+"area": 12,
+"frac": 1.0,
+"img": "f09_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 168.33333333333334,
+"y": 284.8333333333333,
+"r": 12.5,
+"area": 12,
+"frac": 0.91,
+"img": "f09_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 139.625,
+"y": 262.21875,
+"r": 15.1,
+"area": 32,
+"frac": 1.0,
+"img": "f10_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 140.4516129032258,
+"y": 261.16129032258067,
+"r": 13.8,
+"area": 31,
+"frac": 1.0,
+"img": "f11_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 169.0,
+"y": 283.45454545454544,
+"r": 12.5,
+"area": 11,
+"frac": 0.89,
+"img": "f11_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 140.5483870967742,
+"y": 261.0967741935484,
+"r": 14.450000000000001,
+"area": 31,
+"frac": 1.0,
+"img": "f12_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 169.0,
+"y": 283.45454545454544,
+"r": 12.5,
+"area": 11,
+"frac": 0.89,
+"img": "f12_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 140.5483870967742,
+"y": 261.0967741935484,
+"r": 14.450000000000001,
+"area": 31,
+"frac": 1.0,
+"img": "f13_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 169.0,
+"y": 283.45454545454544,
+"r": 12.5,
+"area": 11,
+"frac": 0.89,
+"img": "f13_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 140.5483870967742,
+"y": 261.0967741935484,
+"r": 14.450000000000001,
+"area": 31,
+"frac": 1.0,
+"img": "f14_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 169.0,
+"y": 283.45454545454544,
+"r": 12.5,
+"area": 11,
+"frac": 0.89,
+"img": "f14_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 50.977,
+"y": 351.287,
+"r": 18,
+"depth": 21.216,
+"n": 105,
+"img": "f00_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 50.316,
+"y": 347.71,
+"r": 18,
+"depth": 6.658,
+"n": 10,
+"img": "f00_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 353.697,
+"y": 355.519,
+"r": 18,
+"depth": 21.216,
+"n": 105,
+"img": "f00_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 353.133,
+"y": 350.736,
+"r": 18,
+"depth": 6.658,
+"n": 10,
+"img": "f00_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 212.171,
+"y": 333.988,
+"r": 18,
+"depth": 21.216,
+"n": 105,
+"img": "f00_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 208.977,
+"y": 330.406,
+"r": 18,
+"depth": 6.658,
+"n": 10,
+"img": "f00_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 183.024,
+"y": 380.404,
+"r": 18,
+"depth": 21.216,
+"n": 105,
+"img": "f00_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 187.477,
+"y": 375.43,
+"r": 18,
+"depth": 6.658,
+"n": 10,
+"img": "f00_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 117.212,
+"y": 180.603,
+"r": 22,
+"depth": 21.216,
+"n": 105,
+"img": "f00_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 147.062,
+"y": 122.741,
+"r": 22,
+"depth": 6.658,
+"n": 10,
+"img": "f00_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 51.948,
+"y": 350.729,
+"r": 18,
+"depth": 21.187,
+"n": 107,
+"img": "f01_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 51.078,
+"y": 347.117,
+"r": 18,
+"depth": 6.573,
+"n": 10,
+"img": "f01_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.331,
+"y": 356.426,
+"r": 18,
+"depth": 21.187,
+"n": 107,
+"img": "f01_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 353.963,
+"y": 351.541,
+"r": 18,
+"depth": 6.573,
+"n": 10,
+"img": "f01_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 216.368,
+"y": 334.137,
+"r": 18,
+"depth": 21.187,
+"n": 107,
+"img": "f01_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 213.115,
+"y": 330.478,
+"r": 18,
+"depth": 6.573,
+"n": 10,
+"img": "f01_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 177.181,
+"y": 380.539,
+"r": 18,
+"depth": 21.187,
+"n": 107,
+"img": "f01_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 181.705,
+"y": 375.536,
+"r": 18,
+"depth": 6.573,
+"n": 10,
+"img": "f01_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 118.591,
+"y": 181.727,
+"r": 22,
+"depth": 21.187,
+"n": 107,
+"img": "f01_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 146.674,
+"y": 121.26,
+"r": 22,
+"depth": 6.573,
+"n": 10,
+"img": "f01_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 52.921,
+"y": 350.972,
+"r": 18,
+"depth": 14.125,
+"n": 88,
+"img": "f02_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 52.782,
+"y": 351.048,
+"r": 18,
+"depth": 7.107,
+"n": 8,
+"img": "f02_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 52.625,
+"y": 349.208,
+"r": 18,
+"depth": 9.836,
+"n": 10,
+"img": "f02_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.817,
+"y": 358.052,
+"r": 18,
+"depth": 14.125,
+"n": 88,
+"img": "f02_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 353.614,
+"y": 356.898,
+"r": 18,
+"depth": 7.107,
+"n": 8,
+"img": "f02_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 354.262,
+"y": 355.415,
+"r": 18,
+"depth": 9.836,
+"n": 10,
+"img": "f02_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 220.21,
+"y": 334.943,
+"r": 18,
+"depth": 14.125,
+"n": 88,
+"img": "f02_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 216.773,
+"y": 334.56,
+"r": 18,
+"depth": 7.107,
+"n": 8,
+"img": "f02_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 218.006,
+"y": 333.082,
+"r": 18,
+"depth": 9.836,
+"n": 10,
+"img": "f02_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 171.842,
+"y": 381.56,
+"r": 18,
+"depth": 14.125,
+"n": 88,
+"img": "f02_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 176.657,
+"y": 380.841,
+"r": 18,
+"depth": 7.107,
+"n": 8,
+"img": "f02_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 174.92,
+"y": 378.927,
+"r": 18,
+"depth": 9.836,
+"n": 10,
+"img": "f02_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 118.907,
+"y": 184.053,
+"r": 22,
+"depth": 14.125,
+"n": 88,
+"img": "f02_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 156.788,
+"y": 123.88,
+"r": 22,
+"depth": 7.107,
+"n": 8,
+"img": "f02_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 153.756,
+"y": 119.589,
+"r": 22,
+"depth": 9.836,
+"n": 10,
+"img": "f02_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 53.839,
+"y": 350.465,
+"r": 18,
+"depth": 16.073,
+"n": 99,
+"img": "f03_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 53.123,
+"y": 347.627,
+"r": 18,
+"depth": 7.967,
+"n": 7,
+"img": "f03_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 53.437,
+"y": 349.036,
+"r": 18,
+"depth": 6.445,
+"n": 6,
+"img": "f03_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.825,
+"y": 358.412,
+"r": 18,
+"depth": 16.073,
+"n": 99,
+"img": "f03_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 354.452,
+"y": 354.395,
+"r": 18,
+"depth": 7.967,
+"n": 7,
+"img": "f03_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 354.146,
+"y": 355.898,
+"r": 18,
+"depth": 6.445,
+"n": 6,
+"img": "f03_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 222.707,
+"y": 334.913,
+"r": 18,
+"depth": 16.073,
+"n": 99,
+"img": "f03_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 219.828,
+"y": 331.971,
+"r": 18,
+"depth": 7.967,
+"n": 7,
+"img": "f03_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 219.893,
+"y": 333.255,
+"r": 18,
+"depth": 6.445,
+"n": 6,
+"img": "f03_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 168.398,
+"y": 381.34,
+"r": 18,
+"depth": 16.073,
+"n": 99,
+"img": "f03_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 172.392,
+"y": 377.318,
+"r": 18,
+"depth": 7.967,
+"n": 7,
+"img": "f03_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 172.321,
+"y": 378.993,
+"r": 18,
+"depth": 6.445,
+"n": 6,
+"img": "f03_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 120.379,
+"y": 184.262,
+"r": 22,
+"depth": 16.073,
+"n": 99,
+"img": "f03_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 151.902,
+"y": 118.201,
+"r": 22,
+"depth": 7.967,
+"n": 7,
+"img": "f03_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 152.18,
+"y": 121.41,
+"r": 22,
+"depth": 6.445,
+"n": 6,
+"img": "f03_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 54.524,
+"y": 350.275,
+"r": 18,
+"depth": 16.88,
+"n": 100,
+"img": "f04_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 54.129,
+"y": 349.252,
+"r": 18,
+"depth": 7.46,
+"n": 7,
+"img": "f04_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.827,
+"y": 358.88,
+"r": 18,
+"depth": 16.88,
+"n": 100,
+"img": "f04_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 353.932,
+"y": 356.593,
+"r": 18,
+"depth": 7.46,
+"n": 7,
+"img": "f04_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 224.571,
+"y": 335.056,
+"r": 18,
+"depth": 16.88,
+"n": 100,
+"img": "f04_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 221.22,
+"y": 333.687,
+"r": 18,
+"depth": 7.46,
+"n": 7,
+"img": "f04_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 165.831,
+"y": 381.405,
+"r": 18,
+"depth": 16.88,
+"n": 100,
+"img": "f04_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 170.505,
+"y": 379.424,
+"r": 18,
+"depth": 7.46,
+"n": 7,
+"img": "f04_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 121.234,
+"y": 184.624,
+"r": 22,
+"depth": 16.88,
+"n": 100,
+"img": "f04_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 153.519,
+"y": 122.549,
+"r": 22,
+"depth": 7.46,
+"n": 7,
+"img": "f04_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 54.898,
+"y": 350.283,
+"r": 18,
+"depth": 17.081,
+"n": 100,
+"img": "f05_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 54.473,
+"y": 349.306,
+"r": 18,
+"depth": 7.393,
+"n": 7,
+"img": "f05_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.847,
+"y": 359.275,
+"r": 18,
+"depth": 17.081,
+"n": 100,
+"img": "f05_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 353.98,
+"y": 357.026,
+"r": 18,
+"depth": 7.393,
+"n": 7,
+"img": "f05_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.642,
+"y": 335.24,
+"r": 18,
+"depth": 17.081,
+"n": 100,
+"img": "f05_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 222.279,
+"y": 333.904,
+"r": 18,
+"depth": 7.393,
+"n": 7,
+"img": "f05_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 164.356,
+"y": 381.591,
+"r": 18,
+"depth": 17.081,
+"n": 100,
+"img": "f05_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 169.045,
+"y": 379.668,
+"r": 18,
+"depth": 7.393,
+"n": 7,
+"img": "f05_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 121.748,
+"y": 184.903,
+"r": 22,
+"depth": 17.081,
+"n": 100,
+"img": "f05_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 153.891,
+"y": 122.242,
+"r": 22,
+"depth": 7.393,
+"n": 7,
+"img": "f05_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 54.795,
+"y": 350.441,
+"r": 18,
+"depth": 17.22,
+"n": 100,
+"img": "f06_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 54.37,
+"y": 349.462,
+"r": 18,
+"depth": 7.425,
+"n": 7,
+"img": "f06_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 354.969,
+"y": 359.454,
+"r": 18,
+"depth": 17.22,
+"n": 100,
+"img": "f06_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 354.1,
+"y": 357.201,
+"r": 18,
+"depth": 7.425,
+"n": 7,
+"img": "f06_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.668,
+"y": 335.371,
+"r": 18,
+"depth": 17.22,
+"n": 100,
+"img": "f06_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 222.305,
+"y": 334.035,
+"r": 18,
+"depth": 7.425,
+"n": 7,
+"img": "f06_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 164.312,
+"y": 381.815,
+"r": 18,
+"depth": 17.22,
+"n": 100,
+"img": "f06_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 169,
+"y": 379.89,
+"r": 18,
+"depth": 7.425,
+"n": 7,
+"img": "f06_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 121.871,
+"y": 184.896,
+"r": 22,
+"depth": 17.22,
+"n": 100,
+"img": "f06_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 154.1,
+"y": 122.002,
+"r": 22,
+"depth": 7.425,
+"n": 7,
+"img": "f06_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 50.318,
+"y": 351,
+"r": 18,
+"depth": 19.791,
+"n": 124,
+"img": "f07_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 355.079,
+"y": 355.853,
+"r": 18,
+"depth": 19.791,
+"n": 124,
+"img": "f07_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 213.943,
+"y": 333.889,
+"r": 18,
+"depth": 19.791,
+"n": 124,
+"img": "f07_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 180.509,
+"y": 380.636,
+"r": 18,
+"depth": 19.791,
+"n": 124,
+"img": "f07_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 120.384,
+"y": 179.163,
+"r": 22,
+"depth": 19.791,
+"n": 124,
+"img": "f07_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 47.593,
+"y": 353.214,
+"r": 18,
+"depth": 19.37,
+"n": 124,
+"img": "f08_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 46.925,
+"y": 350.621,
+"r": 18,
+"depth": 6.513,
+"n": 8,
+"img": "f08_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 351.604,
+"y": 352.493,
+"r": 18,
+"depth": 19.37,
+"n": 124,
+"img": "f08_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 350.944,
+"y": 348.753,
+"r": 18,
+"depth": 6.513,
+"n": 8,
+"img": "f08_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 197.92,
+"y": 333.469,
+"r": 18,
+"depth": 19.37,
+"n": 124,
+"img": "f08_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 194.48,
+"y": 330.748,
+"r": 18,
+"depth": 6.513,
+"n": 8,
+"img": "f08_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 202.905,
+"y": 379.929,
+"r": 18,
+"depth": 19.37,
+"n": 124,
+"img": "f08_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 207.711,
+"y": 376.126,
+"r": 18,
+"depth": 6.513,
+"n": 8,
+"img": "f08_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 116.04,
+"y": 173.085,
+"r": 22,
+"depth": 19.37,
+"n": 124,
+"img": "f08_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 145.213,
+"y": 120.161,
+"r": 22,
+"depth": 6.513,
+"n": 8,
+"img": "f08_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 49.47,
+"y": 355.698,
+"r": 18,
+"depth": 14.447,
+"n": 90,
+"img": "f09_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 49.893,
+"y": 354.6,
+"r": 18,
+"depth": 6.387,
+"n": 7,
+"img": "f09_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 49.619,
+"y": 354.2,
+"r": 18,
+"depth": 9.11,
+"n": 10,
+"img": "f09_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 346.385,
+"y": 351.862,
+"r": 18,
+"depth": 14.447,
+"n": 90,
+"img": "f09_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 344.878,
+"y": 349.786,
+"r": 18,
+"depth": 6.387,
+"n": 7,
+"img": "f09_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 345.328,
+"y": 349.57,
+"r": 18,
+"depth": 9.11,
+"n": 10,
+"img": "f09_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 188.967,
+"y": 334.637,
+"r": 18,
+"depth": 14.447,
+"n": 90,
+"img": "f09_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 185.979,
+"y": 333.365,
+"r": 18,
+"depth": 6.387,
+"n": 7,
+"img": "f09_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 186.487,
+"y": 333.062,
+"r": 18,
+"depth": 9.11,
+"n": 10,
+"img": "f09_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 215.288,
+"y": 380.243,
+"r": 18,
+"depth": 14.447,
+"n": 90,
+"img": "f09_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 219.386,
+"y": 378.125,
+"r": 18,
+"depth": 6.387,
+"n": 7,
+"img": "f09_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 218.699,
+"y": 377.838,
+"r": 18,
+"depth": 9.11,
+"n": 10,
+"img": "f09_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 109.881,
+"y": 172.545,
+"r": 22,
+"depth": 14.447,
+"n": 90,
+"img": "f09_handL"
+},
+{
+"kind": "hand",
+"what": "hands overlap R",
+"x": 149.016,
+"y": 124.245,
+"r": 22,
+"depth": 6.387,
+"n": 7,
+"img": "f09_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 147.52,
+"y": 123.422,
+"r": 22,
+"depth": 9.11,
+"n": 10,
+"img": "f09_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 51.483,
+"y": 354.693,
+"r": 18,
+"depth": 21.131,
+"n": 116,
+"img": "f10_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 51.573,
+"y": 352.064,
+"r": 18,
+"depth": 6.272,
+"n": 9,
+"img": "f10_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 342.558,
+"y": 349.144,
+"r": 18,
+"depth": 21.131,
+"n": 116,
+"img": "f10_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 341.285,
+"y": 345.536,
+"r": 18,
+"depth": 6.272,
+"n": 9,
+"img": "f10_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 183.777,
+"y": 333.332,
+"r": 18,
+"depth": 21.131,
+"n": 116,
+"img": "f10_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 180.451,
+"y": 330.696,
+"r": 18,
+"depth": 6.272,
+"n": 9,
+"img": "f10_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 222.333,
+"y": 377.369,
+"r": 18,
+"depth": 21.131,
+"n": 116,
+"img": "f10_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 226.869,
+"y": 373.492,
+"r": 18,
+"depth": 6.272,
+"n": 9,
+"img": "f10_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 109.287,
+"y": 168.548,
+"r": 22,
+"depth": 21.131,
+"n": 116,
+"img": "f10_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.706,
+"y": 125.225,
+"r": 22,
+"depth": 6.272,
+"n": 9,
+"img": "f10_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 52.658,
+"y": 354.804,
+"r": 18,
+"depth": 21.156,
+"n": 114,
+"img": "f11_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 52.509,
+"y": 351.638,
+"r": 18,
+"depth": 6.353,
+"n": 8,
+"img": "f11_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 340.697,
+"y": 348.561,
+"r": 18,
+"depth": 21.156,
+"n": 114,
+"img": "f11_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 339.619,
+"y": 344.42,
+"r": 18,
+"depth": 6.353,
+"n": 8,
+"img": "f11_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 181.69,
+"y": 333.284,
+"r": 18,
+"depth": 21.156,
+"n": 114,
+"img": "f11_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 178.231,
+"y": 330.155,
+"r": 18,
+"depth": 6.353,
+"n": 8,
+"img": "f11_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.119,
+"y": 376.752,
+"r": 18,
+"depth": 21.156,
+"n": 114,
+"img": "f11_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 229.832,
+"y": 372.288,
+"r": 18,
+"depth": 6.353,
+"n": 8,
+"img": "f11_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 108.194,
+"y": 168.179,
+"r": 22,
+"depth": 21.156,
+"n": 114,
+"img": "f11_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.669,
+"y": 124.876,
+"r": 22,
+"depth": 6.353,
+"n": 8,
+"img": "f11_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 52.761,
+"y": 355.012,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f12_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 52.517,
+"y": 351.776,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f12_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 340.591,
+"y": 348.753,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f12_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 339.576,
+"y": 344.518,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f12_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 181.668,
+"y": 333.468,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f12_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 178.13,
+"y": 330.259,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f12_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.144,
+"y": 376.968,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f12_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 229.969,
+"y": 372.421,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f12_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 108.017,
+"y": 168.577,
+"r": 22,
+"depth": 19.974,
+"n": 108,
+"img": "f12_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.825,
+"y": 124.336,
+"r": 22,
+"depth": 6.342,
+"n": 11,
+"img": "f12_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 52.761,
+"y": 355.012,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f13_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 52.517,
+"y": 351.776,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f13_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 340.591,
+"y": 348.753,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f13_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 339.576,
+"y": 344.518,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f13_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 181.668,
+"y": 333.468,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f13_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 178.13,
+"y": 330.259,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f13_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.144,
+"y": 376.968,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f13_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 229.969,
+"y": 372.421,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f13_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 108.017,
+"y": 168.577,
+"r": 22,
+"depth": 19.974,
+"n": 108,
+"img": "f13_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.825,
+"y": 124.336,
+"r": 22,
+"depth": 6.342,
+"n": 11,
+"img": "f13_handR"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 52.761,
+"y": 355.012,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f14_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 52.517,
+"y": 351.776,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f14_front"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 340.591,
+"y": 348.753,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f14_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 339.576,
+"y": 344.518,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f14_back"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 181.668,
+"y": 333.468,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f14_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 178.13,
+"y": 330.259,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f14_left"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 225.144,
+"y": 376.968,
+"r": 18,
+"depth": 19.974,
+"n": 108,
+"img": "f14_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 229.969,
+"y": 372.421,
+"r": 18,
+"depth": 6.342,
+"n": 11,
+"img": "f14_right"
+},
+{
+"kind": "hand",
+"what": "hands overlap L",
+"x": 108.017,
+"y": 168.577,
+"r": 22,
+"depth": 19.974,
+"n": 108,
+"img": "f14_handL"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.825,
+"y": 124.336,
+"r": 22,
+"depth": 6.342,
+"n": 11,
+"img": "f14_handR"
+}
+]

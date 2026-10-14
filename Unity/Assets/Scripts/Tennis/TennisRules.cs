@@ -50,6 +50,23 @@ namespace GolfArcade.Tennis
         /// "EARLY" / "LATE" for a swing off by more than a perfect one, else "".
         public static string TimingWord(float late) => late > .035f ? "LATE" : late < -.035f ? "EARLY" : "";
 
+        /// The grade a label stands for (the host sends the label, `GradeLabel`, with every online hit).
+        public static Timing GradeFromLabel(string label) => label switch
+        {
+            "PERFECT!" => Timing.Perfect,
+            "EXCELLENT" => Timing.Excellent,
+            "GREAT" => Timing.Great,
+            "GOOD" => Timing.Good,
+            "OK" => Timing.Ok,
+            _ => Timing.Good,
+        };
+
+        /// How hard the phone clicks for a hit of this grade, 0..1 (a cleaner hit is a crisper click).
+        public static float GradeFeel(Timing grade) => grade switch
+        {
+            Timing.Perfect => .95f, Timing.Excellent => .85f, Timing.Great => .75f, Timing.Good => .55f, _ => .35f,
+        };
+
         public static string GradeLabel(Timing grade) => grade switch
         {
             Timing.Perfect => "PERFECT!",
@@ -105,19 +122,39 @@ namespace GolfArcade.Tennis
         /// Human movement, not a sprinter on rails: the old 28 m/s² and 9 m/s sprint got the
         /// character to every ball, which took reaching the ball out of the game. A tour player
         /// peaks around 6 m/s and takes most of a second to get there.
+        ///
+        /// Tuned for a phone player who cannot see where the ball is going from the phone and sees
+        /// the TV a beat late: the human gets a quicker burst (16 m/s², 0.15 s reading time) and a
+        /// higher top speed than the CPU, whose own pace keeps `CourtMovementScale`. A 0.9 s ball
+        /// is then 3.1 m of running plus the reach, where it used to be 2.0 m.
         public const float CourtMovementScale = .88f;
-        public const float RunSpeed = 5.6f * CourtMovementScale, SprintSpeed = 6.6f * CourtMovementScale, Acceleration = 10f;
+        public const float PlayerMovementScale = .96f;
+        public const float RunSpeed = 5.6f * PlayerMovementScale, SprintSpeed = 6.6f * PlayerMovementScale, Acceleration = 16f;
         /// Braking the auto-positioning uses to arrive at the ball instead of stopping dead.
-        public const float Deceleration = 14f;
+        public const float Deceleration = 18f;
 
         /// Reading the ball. The character commits `ReactionTime` after the opponent strikes;
         /// a player who leans or steps toward the ball in that window gets a "good jump": an
-        /// almost immediate first step and a sprint.
-        public const float ReactionTime = .24f, JumpReaction = .05f, JumpLean = .45f;
+        /// almost immediate first step and a sprint. Players on auto-pilot (phone motion, where
+        /// nothing steers) earn the same jump from `EarnsAutoJump`.
+        public const float ReactionTime = .15f, JumpReaction = .05f, JumpLean = .45f;
+
+        /// A ball that cannot be reached at a plain run, after the usual reading time, earns the
+        /// good jump automatically. Players who steer (touch, lean) still earn it themselves; this
+        /// is for the phone-motion player, whose steering input is always zero, so the sprint and
+        /// instant first step were never reachable. Easy balls are unaffected: it is a rescue for
+        /// the balls that would otherwise be pure winners.
+        public static bool EarnsAutoJump(InterceptPlan plan) => plan.Found && !plan.Reachable;
+
+        /// Tired legs are slower, but only a little: long rallies are the fun part, so stamina
+        /// trims 15% of top speed at the floor (it was 28%).
+        public static float StaminaSpeedFactor(float stamina) => Mathf.Lerp(.85f, 1f, Mathf.Clamp01(stamina / .35f));
         /// Horizontal reach from where the player stands to the ball, and with a dive.
         public const float StrokeReach = 1.35f, DiveReach = 2.55f;
         /// Diving costs: on the floor for a beat, and legs.
-        public const float DiveRecovery = 1.1f, DiveStamina = .14f, DiveQualityCap = .42f;
+        public const float DiveRecovery = .8f, DiveStamina = .08f, DiveQualityCap = .42f;
+        /// Share of running speed available while getting up from a dive (it was 8%, a crawl).
+        public const float GroundRecoverySpeed = .3f;
         /// Where a player stands between points and recovers to after a shot.
         public const float BaselineZ = -11.2f, NetZ = -5.8f, NetRushLine = -7.6f;
 
@@ -308,7 +345,7 @@ namespace GolfArcade.Tennis
         public static float StaminaStep(float value, float speed, float dt)
         {
             float exertion = Mathf.Pow(Mathf.Clamp01(Mathf.Abs(speed) / SprintSpeed), 2);
-            return Mathf.Clamp01(value + (Mathf.Abs(speed) < .15f ? .13f : -.23f * exertion) * dt);
+            return Mathf.Clamp01(value + (Mathf.Abs(speed) < .15f ? .13f : -.11f * exertion) * dt);
         }
 
         /// Heights a player can play the ball at without it being a miss: from a scoop off the
@@ -423,18 +460,22 @@ namespace GolfArcade.Tennis
         // as fast as a serve goes, and is harder to return. The serve plays slower than the
         // rally (ServePace) and the game returns to full pace once the ball is struck.
 
-        /// The serve's pace against the rally's: the slowest part of the game.
-        public const float ServePace = .75f;
-        /// The tossing arm's slow rise once TOSS is pressed.
-        public const float ServeWindUp = .5f;
+        /// The serve's pace against the rally's: still the slowest part of the game, but brisker than it
+        /// was (.75): the toss, the apex and the swing all arrive ~17% sooner in real time.
+        public const float ServePace = .9f;
+        /// The tossing arm's rise once TOSS is pressed (game seconds; it was .5, a 0.67 s wait in real
+        /// time before the ball even left the hand, now about a third of a second).
+        public const float ServeWindUp = .3f;
         /// How far either side of the top of the toss the power bar has anything to give.
         public const float ServePowerWindow = .4f;
         /// Swings with less power than this are too early or too late to clear the net.
         public const float ServeFaultPower = .12f;
-        /// Swing onset must be within 25 real milliseconds of the apex for a perfect serve.
-        public const float ServePerfectRealSeconds = .025f;
-        /// A perfect toss is inside the middle 5% of the meter's half-width.
-        public const float ServePerfectToss = .95f;
+        /// Swing onset must be within 45 real milliseconds of the apex for a perfect serve (it was 25,
+        /// tighter than the sensor-to-screen chain's own jitter, so a "perfect" was mostly luck).
+        public const float ServePerfectRealSeconds = .045f;
+        /// A perfect toss is inside the middle 12% of the meter's half-width: +/-30 ms at the ticker's
+        /// speed of four half-widths a second (it was the middle 5%, +/-12.5 ms).
+        public const float ServePerfectToss = .88f;
         /// Maximum landing scatter, in metres, for a press at either end of the toss meter.
         public const float ServeTossMaxSpread = 2.6f;
 
@@ -468,9 +509,21 @@ namespace GolfArcade.Tennis
             return new Vector3(x, BallRadius, serverNearSide ? z : -z);
         }
 
+        /// The racket has to be swinging about this long before the ball arrives (the stroke's
+        /// lead-in), so the receiver's decision is due that much earlier than the ball itself.
+        public const float ServeSwingLead = .12f;
+
+        /// Share of the rival's serves that may be left unreturnable from where the player stands
+        /// (the rest are eased toward the player until they can be reached). It grows with the
+        /// server's skill, but never past `MaxUnreturnableServes`.
+        public const float MaxUnreturnableServes = .15f;
+        public static float UnreturnableServeShare(float skill) =>
+            Mathf.Min(MaxUnreturnableServes, .05f + .3f * skill * skill);
+
         /// Could a receiver standing at (`playerX`, `playerZ`) get a racket on this serve? Flies it
         /// to where it crosses in front of them after the bounce and compares the time it takes
-        /// with the time they need: react, then run the gap beyond their reach.
+        /// with the time they need: react, run the gap beyond their reach, and have the racket
+        /// already swinging (`ServeSwingLead`) when the ball arrives.
         public static bool ServeReachable(Vector3 start, Vector3 velocity, float spin, float restitution, float playerX, float playerZ)
         {
             Vector3 p = start, v = velocity; int bounced = 0;
@@ -482,7 +535,7 @@ namespace GolfArcade.Tennis
                 if (bounced > 0 && (velocity.z < 0 ? p.z <= plane : p.z >= plane))
                 {
                     float gap = Mathf.Abs(p.x - playerX) - StrokeReach;
-                    return gap <= 0 || ReactionTime + TimeToCover(gap, RunSpeed) <= t;
+                    return gap <= 0 || ReactionTime + TimeToCover(gap, RunSpeed) + ServeSwingLead <= t;
                 }
             }
             return false;
@@ -789,21 +842,61 @@ namespace GolfArcade.Tennis
         /// still must not keep the feet turning over.
         public static float CycleRate(float speed) => Mathf.Abs(speed) / StrideMetres;
 
-        /// Wii Sports put all the skill in the swing, because the character walks itself to
-        /// the ball. Swinging early sends it cross-court, late sends it down the line, and
-        /// only a wildly mistimed swing is punished. That is what keeps rallies alive while
-        /// still rewarding timing.
-        public const float AimWindow = .26f;
+        // --- Timing decides direction (Wii Sports Tennis) ------------------------------------
+        //
+        // Wii Sports put all the skill in the swing, because the character walks itself to the ball:
+        // swing on the ball and it goes straight, swing a little early and it goes to the left, a little
+        // late and it goes to the right. The direction is the same whichever wing is playing it (it is
+        // screen-relative, like the Wii's), so it is learned once: "early = left, late = right".
+        //
+        // It replaces aiming with the racket face. The phone's yaw angle was an invisible number
+        // (about 10 cm of landing spot per degree, read 50-100 ms before contact, no personal "straight"),
+        // and depth sat behind three buttons on a screen nobody looks at mid-rally.
 
-        /// Direction from swing timing, in the same -1..1 units the aim slider used.
-        /// `offset` is seconds between the swing and the ball reaching the strike zone;
-        /// negative is early.
-        public static float AimFromTiming(float offset, bool backhand)
+        /// Full left or right at this many seconds early or late.
+        public const float AimWindow = .24f;
+        /// Within this long of the ideal moment the ball goes straight up the middle. It is wider than a
+        /// Perfect (35 ms) because the TV's delay and a frame or two of jitter blur the player's sense of
+        /// "on the ball", and a straight ball has to be easy to find.
+        public const float AimCentreBand = .06f;
+
+        /// Direction from swing timing, -1 (left corner) .. 1 (right corner). `late` is the seconds the
+        /// swing met the ball after the ideal moment; negative is early. Linear between the centre band and
+        /// `AimWindow`, so a swing 100 ms late goes about 0.8 m right and one 200 ms late about 2.9 m.
+        public static float AimFromTiming(float late)
         {
-            float bias = Mathf.Clamp(-offset / AimWindow, -1f, 1f);
-            // A right-hander's early forehand pulls cross-court to their left; the backhand
-            // mirrors it, so the same early swing opens the opposite corner.
-            return backhand ? -bias : bias;
+            float t = Mathf.Abs(late);
+            if (t <= AimCentreBand) return 0;
+            return Mathf.Sign(late) * Mathf.Clamp01((t - AimCentreBand) / (AimWindow - AimCentreBand));
+        }
+
+        /// Depth from the swing's power (0..1 as the phone reports it: a gentle swing is about 0.15):
+        /// a soft swing lands shorter, a full one deep. 0 is the short end of the court, 1 the baseline.
+        public static float DepthFromPower(float power) =>
+            Mathf.Lerp(.45f, .95f, Mathf.InverseLerp(.15f, 1f, Mathf.Clamp01(power)));
+
+        /// Where a rally ball goes when the swing's timing aims it. The timing has already chosen the side
+        /// and is never punished a second time: unlike `TimedPlacement` this does not pull the target toward
+        /// the middle. Only the contact's quality loosens it (scatter) and shortens it a little, so a clean
+        /// strike lands where the timing sent it. Clamped inside the lines, so a rally ball is never out.
+        public static Vector3 TimingPlacement(float late, float power, float quality, float rollX, float rollZ)
+        {
+            Vector3 intended = PlacementTarget(AimFromTiming(late), DepthFromPower(power));
+            float control = Mathf.SmoothStep(0, 1, Mathf.Clamp01(quality / .8f));
+            float spread = Mathf.Lerp(.5f, .03f, control);
+            float x = intended.x + Mathf.Clamp(rollX, -1, 1) * spread;
+            float z = Mathf.Lerp(6.5f, intended.z, Mathf.Lerp(.75f, 1f, control)) + Mathf.Clamp(rollZ, -1, 1) * spread;
+            return new Vector3(Mathf.Clamp(x, -CourtHalfWidth + .12f, CourtHalfWidth - .12f), BallRadius,
+                Mathf.Clamp(z, 2.8f, CourtHalfLength - .3f));
+        }
+
+        /// "EARLY · LEFT", "LATE · RIGHT" or "STRAIGHT": the hit badge's reading of the swing's timing.
+        public static string TimingAimWord(float late)
+        {
+            float aim = AimFromTiming(late);
+            if (aim == 0) return "STRAIGHT";
+            string side = aim < 0 ? "LEFT" : "RIGHT";
+            return (late < 0 ? "EARLY" : "LATE") + " · " + side;
         }
 
         /// Which authored stroke suits the ball. Height and distance pick the animation, so

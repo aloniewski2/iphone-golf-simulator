@@ -160,7 +160,7 @@ namespace GolfArcade.Game
             {
                 roundCoins += bounty.Coins; roundBounties++;
                 eventSounds?.Jingle();
-                Haptics.Impact(0.5);
+                Haptics.Success();
                 hud.ShowCallout($"Bounty!  +{bounty.Coins}", GolfArcade.UI.GolfShotHud.Gold);
                 hud.SetCoins(roundCoins);
             }

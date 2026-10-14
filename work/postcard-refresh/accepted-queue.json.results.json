@@ -1,0 +1,16 @@
+[
+  {
+    "name": "postcard-refresh-render-gates-accepted",
+    "exit": 1,
+    "seconds": 50.27,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-tennis-accepted",
+    "exit": 0,
+    "seconds": 32.71,
+    "shaderErrors": [],
+    "compileErrors": []
+  }
+]

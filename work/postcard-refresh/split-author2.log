@@ -1,0 +1,9 @@
+FBX version: 7400
+
+FBX export starting... 'work/postcard-refresh/split-source/ReferenceHole09.fbx'
+export finished in 0.4734 sec.
+Info: Saved as "ReferenceHole09.blend"
+REFERENCE_HOLE09 {"terrain": [{"name": "TERRAIN_SPLIT", "mode": "continuous complete mesh warp", "vertices": 3623, "triangles": 6829, "movedVertices": 752, "maximumYDisplacementMeters": 45.17288303375244, "boundsBefore": [[-85.58783721923828, -30.723838806152344, -6.000078201293945], [29.718000411987305, 482.7117614746094, 6.000004768371582]], "boundsAfter": [[-85.31352233886719, -30.723838806152344, -6.000078201293945], [29.718000411987305, 482.7117614746094, 6.000004768371582]], "shapeKeys": 0}], "markers": {"MARKER_PIN": [-9.144000053405762, 449.8847961425781, 6.259926795959473], "MARKER_TEE": [0.0, 1.0166249921894632e-06, 6.239999771118164], "MARKER_UP": [0.0, 9.162659807770979e-06, 56.2400016784668]}, "rigidGroups": 986, "rigidExtentError": 3.814697265625e-06}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

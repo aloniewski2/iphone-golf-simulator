@@ -1,0 +1,172 @@
+== Male
+  parts: Body[body] v=44168 subs=1, Face[face] v=3824 subs=6, Acc_Cap[kit] v=6675 subs=2, Kit_Bottom[kit] v=18642 subs=3, Kit_Shoe_L[kit] v=13800 subs=2, Kit_Shoe_R[kit] v=13755 subs=2, Kit_Sock_L[kit] v=3634 subs=1, Kit_Sock_R[kit] v=3636 subs=1, Kit_Top[kit] v=19644 subs=1, Racket_Racket_Classic[racket] v=2998 subs=1, Racket_ButtCap[racket] v=314 subs=1, Racket_Grip[racket] v=1442 subs=1, Racket_StringBed[racket] v=1368 subs=1
+  base pose Male_ReadyIdle t=0: body bounds min=(-0.392, 0.002, -0.101) max=(0.392, 1.658, 0.495) height=1.656 m; neck y=1.361 head bone y=1.464; head box centre y=1.520 top=1.658 size=(0.217, 0.277, 0.241)
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Body max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 44168
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Face max deviation 0.000 mm, mean 0.0003 mm, 0 verts over 1 mm, of 3824
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Acc_Cap max deviation 0.000 mm, mean 0.0002 mm, 0 verts over 1 mm, of 6675
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Bottom max deviation 0.000 mm, mean 0.0001 mm, 0 verts over 1 mm, of 18642
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Shoe_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 13800
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Shoe_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 13755
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Sock_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 3634
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Sock_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 3636
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Top max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 19644
+  corrective targets Body: Hero_Blink_Half,Hero_Blink
+  corrective targets Face: Hero_Blink_Half,Hero_Blink,Face_GazeRight,Face_GazeLeft,Face_GazeUp,Face_GazeDown,Face_BrowUp,Face_BrowDown
+  corrective targets Kit_Top: CV2_Pose00,CV2_Pose01,CV2_Pose02,CV2_Pose03,CV2_Pose04,CV2_Pose05,CV2_Pose06,CV2_Pose07,CV2_Pose08,CV2_Pose09,CV2_Pose10,CV2_Pose11,CV2_Pose12,CV2_Pose13,CV2_Pose14,CV2_Pose15,CV2_Pose16,CV2_Pose17,CV2_Pose18,CV2_Pose19,CV2_Pose20,CV2_Pose21,CV2_Pose22,CV2_Pose23
+  rig: 145 bones, 4 rigid parts (Racket_Racket_Classic, Racket_ButtCap, Racket_Grip, Racket_StringBed), tracks 149; skinned parts 9
+  clip ready: Male_ReadyIdle length 2.200s, 133 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.71E-007, bone scale error 1.31E-006; mesh bounds (file space) min=(-0.399, -0.029, -0.755) max=(0.399, 1.666, 0.142)
+  clip serve: Male_Serve length 2.500s, 151 frames at 60.00 Hz, loop seam 942.893 mm / 177.459 deg (last frame vs first), TRS recompose error 1.97E-006, bone scale error 2.26E-006; mesh bounds (file space) min=(-0.850, -0.029, -1.139) max=(0.702, 2.425, 0.745)
+  clip scuba: 4079 total samples including 60 Hz base + cut guards
+  clip scuba: Male_Emote_Scuba length 4.700s, 4079 frames at 60.00 Hz, loop seam 40.915 mm / 2.091 deg (last frame vs first), TRS recompose error 1.82E-006, bone scale error 2.26E-006; mesh bounds (file space) min=(-0.425, -0.029, -1.083) max=(0.576, 1.670, 0.174)
+  clip thrust: 4174 total samples including 60 Hz base + cut guards
+  clip thrust: Male_Emote_Thrust length 3.500s, 4174 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 1.64E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.451, -0.029, -1.023) max=(0.465, 1.693, 0.424)
+  clip spike: 2677 total samples including 60 Hz base + cut guards
+  clip spike: Male_Emote_Spike length 3.200s, 2677 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.96E-006, bone scale error 2.38E-006; mesh bounds (file space) min=(-0.444, -0.029, -1.254) max=(0.634, 2.245, 0.994)
+  clip wave: 346 total samples including 60 Hz base + cut guards
+  clip wave: Male_Intro_Wave length 2.000s, 346 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.13E-006, bone scale error 1.43E-006; mesh bounds (file space) min=(-0.498, -0.029, -0.755) max=(0.406, 1.670, 0.142)
+  clip bringIt: 226 total samples including 60 Hz base + cut guards
+  clip bringIt: Male_Intro_BringIt length 3.000s, 226 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.54E-006, bone scale error 1.91E-006; mesh bounds (file space) min=(-0.399, -0.029, -1.070) max=(0.455, 1.678, 0.142)
+  clip pushups: 3359 total samples including 60 Hz base + cut guards
+  clip pushups: Male_Intro_Pushups length 3.000s, 3359 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.74E-006, bone scale error 2.62E-006; mesh bounds (file space) min=(-0.405, -0.033, -1.734) max=(0.968, 1.666, 0.144)
+  clip idle: Male_Idle length 4.000s, 241 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 7.60E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.399, -0.029, -0.755) max=(0.399, 1.662, 0.142)
+  clip hitPerfect: 290 total samples including 60 Hz base + cut guards
+  clip hitPerfect: Male_Emote_FistPump length 1.567s, 290 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.37E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.429, -0.029, -0.836) max=(0.768, 1.702, 0.157)
+  clip missWhiff: 426 total samples including 60 Hz base + cut guards
+  clip missWhiff: Male_Emote_Shock length 2.167s, 426 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.49E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.488, -0.029, -0.767) max=(0.768, 2.165, 0.679)
+  clip celebratePoint: 598 total samples including 60 Hz base + cut guards
+  clip celebratePoint: Male_Emote_JumpJoy length 2.067s, 598 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.62E-006, bone scale error 2.15E-006; mesh bounds (file space) min=(-0.566, -0.029, -0.900) max=(0.843, 2.663, 0.720)
+  clip sadPointLost: 234 total samples including 60 Hz base + cut guards
+  clip sadPointLost: Male_Emote_Slump length 2.567s, 234 frames at 60.00 Hz, loop seam 1.871 mm / 0.968 deg (last frame vs first), TRS recompose error 1.52E-006, bone scale error 1.91E-006; mesh bounds (file space) min=(-0.399, -0.029, -0.830) max=(0.409, 1.673, 0.180)
+  clip matchWin: 894 total samples including 60 Hz base + cut guards
+  clip matchWin: Male_Emote_Victory length 3.167s, 894 frames at 60.00 Hz, loop seam 0.002 mm / 0.000 deg (last frame vs first), TRS recompose error 1.96E-006, bone scale error 2.38E-006; mesh bounds (file space) min=(-0.635, -0.029, -0.755) max=(0.948, 2.303, 0.881)
+  clip matchLose: 370 total samples including 60 Hz base + cut guards
+  clip matchLose: Male_Emote_Defeat length 3.300s, 370 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 2.03E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.400, -0.037, -1.374) max=(0.658, 1.666, 0.143)
+  clip jumpJoy: 598 total samples including 60 Hz base + cut guards
+  clip jumpJoy: Male_Emote_JumpJoy length 2.067s, 598 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.62E-006, bone scale error 2.15E-006; mesh bounds (file space) min=(-0.566, -0.029, -0.900) max=(0.843, 2.663, 0.720)
+  clip fistPump: 290 total samples including 60 Hz base + cut guards
+  clip fistPump: Male_Emote_FistPump length 1.567s, 290 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.37E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.429, -0.029, -0.836) max=(0.768, 1.702, 0.157)
+  clip stomp: 368 total samples including 60 Hz base + cut guards
+  clip stomp: Male_Emote_Stomp length 2.167s, 368 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 1.65E-006, bone scale error 2.38E-006; mesh bounds (file space) min=(-0.443, -0.029, -0.825) max=(0.769, 1.761, 0.614)
+  clip slump: 234 total samples including 60 Hz base + cut guards
+  clip slump: Male_Emote_Slump length 2.567s, 234 frames at 60.00 Hz, loop seam 1.871 mm / 0.968 deg (last frame vs first), TRS recompose error 1.52E-006, bone scale error 1.91E-006; mesh bounds (file space) min=(-0.399, -0.029, -0.830) max=(0.409, 1.673, 0.180)
+  clip shock: 426 total samples including 60 Hz base + cut guards
+  clip shock: Male_Emote_Shock length 2.167s, 426 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.49E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.488, -0.029, -0.767) max=(0.768, 2.165, 0.679)
+  clip victory: 894 total samples including 60 Hz base + cut guards
+  clip victory: Male_Emote_Victory length 3.167s, 894 frames at 60.00 Hz, loop seam 0.002 mm / 0.000 deg (last frame vs first), TRS recompose error 1.96E-006, bone scale error 2.38E-006; mesh bounds (file space) min=(-0.635, -0.029, -0.755) max=(0.948, 2.303, 0.881)
+  clip defeat: 370 total samples including 60 Hz base + cut guards
+  clip defeat: Male_Emote_Defeat length 3.300s, 370 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 2.03E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.400, -0.037, -1.374) max=(0.658, 1.666, 0.143)
+  rig file MatchHero_Male_Rig: 143.18 MB decompressed
+  rig self check ready: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (ready frame 110 Kit_Top v4053)
+  rig self check serve: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0007 mm (serve frame 124 Body v7728)
+  rig self check scuba: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (scuba frame 1917 Body v10976)
+  rig self check thrust: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (thrust frame 3464 Kit_Sock_R v266)
+  rig self check spike: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0007 mm (spike frame 2221 Body v4746)
+  rig self check wave: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (wave frame 72 Kit_Top v9716)
+  rig self check bringIt: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (bringIt frame 187 Body v19656)
+  rig self check pushups: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (pushups frame 1578 Kit_Sock_R v203)
+  rig self check idle: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0007 mm (idle frame 199 Body v23849)
+  rig self check hitPerfect: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (hitPerfect frame 0 Kit_Top v4214)
+  rig self check missWhiff: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (missWhiff frame 0 Kit_Top v4214)
+  rig self check celebratePoint: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (celebratePoint frame 0 Kit_Top v4214)
+  rig self check sadPointLost: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (sadPointLost frame 0 Kit_Top v4214)
+  rig self check matchWin: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (matchWin frame 0 Kit_Top v4214)
+  rig self check matchLose: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (matchLose frame 0 Kit_Top v4214)
+  rig self check jumpJoy: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (jumpJoy frame 0 Kit_Top v4214)
+  rig self check fistPump: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (fistPump frame 0 Kit_Top v4214)
+  rig self check stomp: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (stomp frame 0 Kit_Top v4214)
+  rig self check slump: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (slump frame 0 Kit_Top v4214)
+  rig self check shock: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (shock frame 0 Kit_Top v4214)
+  rig self check victory: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (victory frame 0 Kit_Top v4214)
+  rig self check defeat: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (defeat frame 0 Kit_Top v4214)
+  wrote MatchHero_Male.json + .lzfse + 12 swing frames (30.7 MB compressed); triangles=235902; materials=Acc_Cap,Acc_CapMetal,Black_Grip,Kit_Buckle,Kit_Shirt,Kit_Shoe,Kit_Shorts,Kit_ShortsBand,Kit_Sock,Reference_Face_Brow,Reference_Face_Catch,Reference_Face_Iris,Reference_Face_Limbal,Reference_Face_Pupil,Reference_Face_Sclera,Skin,White_Frame,White_Strings
+  maps copied: OriginalEye_RelativeIris.png, OriginalEye_RelativeSclera.png, OriginalSeam_RelativeSkinPigment.png, Acc_Male_tennis_cap_Cap_M.png, Acc_Male_tennis_cap_Cap_N.png, KitV2_FabricAtlas.png, KitV2_Tennis_Male_Bottom_M.png, KitV2_Tennis_Male_Bottom_N.png, KitV2_Tennis_Male_ShoeL_M.png, KitV2_Tennis_Male_ShoeL_N.png, KitV2_Tennis_Male_ShoeR_M.png, KitV2_Tennis_Male_ShoeR_N.png, KitV2_Tennis_Male_SockL_M.png, KitV2_Tennis_Male_SockL_N.png, KitV2_Tennis_Male_SockR_M.png, KitV2_Tennis_Male_SockR_N.png, KitV2_Tennis_Male_Top_M.png, KitV2_Tennis_Male_Top_N.png
+  swing clip Male_ForehandArmCorrected len=1.200s contact=0.667s sampled at [0.000, 0.150, 0.300, 0.420, 0.500, 0.560, 0.620, 0.667, 0.720, 0.780, 0.900, 1.200]
+  BUDGET Male: vertices 133900 (kit 79786), triangles 235902 (kit 153778); one swing frame = 3.06 MB decompressed (positions + normals), base file 8.26 MB; 12 morph targets resident = 36.8 MB
+  looks: Body/Skin=Character; Face/Reference_Face_Brow=Character; Face/Reference_Face_Sclera=Character; Face/Reference_Face_Iris=Character; Face/Reference_Face_Pupil=Character; Face/Reference_Face_Limbal=Character; Face/Reference_Face_Catch=Character; Acc_Cap/Acc_Cap=Cloth; Acc_Cap/Acc_CapMetal=Character; Kit_Bottom/Kit_Shorts=Cloth; Kit_Bottom/Kit_ShortsBand=Cloth; Kit_Bottom/Kit_Buckle=Character; Kit_Shoe_L/Kit_Shoe=Cloth; Kit_Shoe_L/Kit_Buckle=Character; Kit_Shoe_R/Kit_Shoe=Cloth; Kit_Shoe_R/Kit_Buckle=Character; Kit_Sock_L/Kit_Sock=Cloth; Kit_Sock_R/Kit_Sock=Cloth; Kit_Top/Kit_Shirt=Cloth; Racket_Racket_Classic/White_Frame=Character; Racket_ButtCap/Black_Grip=Cloth; Racket_Grip/Black_Grip=Cloth; Racket_StringBed/White_Strings=Character
+
+== Female
+  parts: Body[body] v=34443 subs=1, Face[face] v=3004 subs=7, Acc_Cap[kit] v=6675 subs=2, Kit_Bottom[kit] v=14328 subs=2, Kit_Shoe_L[kit] v=14054 subs=2, Kit_Shoe_R[kit] v=13924 subs=2, Kit_Sock_L[kit] v=1958 subs=1, Kit_Sock_R[kit] v=1958 subs=1, Kit_Top[kit] v=26430 subs=1, Racket_Racket_Classic[racket] v=2998 subs=1, Racket_ButtCap[racket] v=314 subs=1, Racket_Grip[racket] v=1442 subs=1, Racket_StringBed[racket] v=1368 subs=1
+  base pose Female_ReadyIdle t=0: body bounds min=(-0.383, 0.001, -0.119) max=(0.383, 1.653, 0.400) height=1.652 m; neck y=1.336 head bone y=1.438; head box centre y=1.504 top=1.653 size=(0.218, 0.297, 0.253)
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Body max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 34443
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Face max deviation 0.000 mm, mean 0.0003 mm, 0 verts over 1 mm, of 3004
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Acc_Cap max deviation 0.000 mm, mean 0.0001 mm, 0 verts over 1 mm, of 6675
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Bottom max deviation 0.000 mm, mean 0.0001 mm, 0 verts over 1 mm, of 14328
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Shoe_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 14054
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Shoe_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 13924
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Sock_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 1958
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Sock_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 1958
+  CPU skin vs Unity BakeMesh (tier skinWeights was FourBones): Kit_Top max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 26430
+  corrective targets Body: Hero_Blink_Half,Hero_Blink
+  corrective targets Face: Hero_Blink_Half,Hero_Blink,Face_GazeRight,Face_GazeLeft,Face_GazeUp,Face_GazeDown,Face_BrowUp,Face_BrowDown
+  corrective targets Kit_Top: CV2_Pose00,CV2_Pose01,CV2_Pose02,CV2_Pose03,CV2_Pose04,CV2_Pose05,CV2_Pose06,CV2_Pose07,CV2_Pose08,CV2_Pose09,CV2_Pose10,CV2_Pose11,CV2_Pose12,CV2_Pose13,CV2_Pose14,CV2_Pose15,CV2_Pose16,CV2_Pose17,CV2_Pose18,CV2_Pose19,CV2_Pose20,CV2_Pose21,CV2_Pose22,CV2_Pose23
+  rig: 159 bones, 4 rigid parts (Racket_Racket_Classic, Racket_ButtCap, Racket_Grip, Racket_StringBed), tracks 163; skinned parts 9
+  clip ready: Female_ReadyIdle length 2.200s, 133 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.05E-006, bone scale error 8.94E-007; mesh bounds (file space) min=(-0.393, -0.026, -0.643) max=(0.393, 1.662, 0.135)
+  clip serve: Female_Serve length 2.500s, 151 frames at 60.00 Hz, loop seam 965.363 mm / 169.584 deg (last frame vs first), TRS recompose error 1.13E-006, bone scale error 1.25E-006; mesh bounds (file space) min=(-0.769, -0.026, -1.100) max=(0.707, 2.315, 0.686)
+  clip scuba: 3186 total samples including 60 Hz base + cut guards
+  clip scuba: Female_Emote_Scuba length 4.700s, 3186 frames at 60.00 Hz, loop seam 36.696 mm / 3.173 deg (last frame vs first), TRS recompose error 1.06E-006, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.407, -0.026, -1.000) max=(0.584, 1.666, 0.137)
+  clip thrust: 2399 total samples including 60 Hz base + cut guards
+  clip thrust: Female_Emote_Thrust length 3.500s, 2399 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 8.94E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.417, -0.026, -0.882) max=(0.421, 1.666, 0.472)
+  clip spike: 1723 total samples including 60 Hz base + cut guards
+  clip spike: Female_Emote_Spike length 3.200s, 1723 frames at 60.00 Hz, loop seam 0.002 mm / 0.000 deg (last frame vs first), TRS recompose error 1.01E-006, bone scale error 1.13E-006; mesh bounds (file space) min=(-0.393, -0.026, -1.176) max=(0.563, 2.180, 1.000)
+  clip wave: 301 total samples including 60 Hz base + cut guards
+  clip wave: Female_Intro_Wave length 2.000s, 301 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.83E-007, bone scale error 9.54E-007; mesh bounds (file space) min=(-0.476, -0.026, -0.643) max=(0.393, 1.664, 0.135)
+  clip bringIt: 222 total samples including 60 Hz base + cut guards
+  clip bringIt: Female_Intro_BringIt length 3.000s, 222 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.24E-007, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.393, -0.026, -1.004) max=(0.420, 1.671, 0.135)
+  clip pushups: 2382 total samples including 60 Hz base + cut guards
+  clip pushups: Female_Intro_Pushups length 3.000s, 2382 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 1.01E-006, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.393, -0.039, -1.671) max=(0.858, 1.662, 0.135)
+  clip idle: Female_Idle length 4.000s, 241 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 7.15E-007, bone scale error 7.15E-007; mesh bounds (file space) min=(-0.393, -0.026, -0.644) max=(0.393, 1.658, 0.135)
+  clip hitPerfect: 313 total samples including 60 Hz base + cut guards
+  clip hitPerfect: Female_Emote_FistPump length 1.567s, 313 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.07E-006, bone scale error 9.54E-007; mesh bounds (file space) min=(-0.432, -0.026, -0.753) max=(0.744, 1.695, 0.145)
+  clip missWhiff: 416 total samples including 60 Hz base + cut guards
+  clip missWhiff: Female_Emote_Shock length 2.167s, 416 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.54E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.461, -0.026, -0.658) max=(0.733, 2.102, 0.715)
+  clip celebratePoint: 611 total samples including 60 Hz base + cut guards
+  clip celebratePoint: Female_Emote_JumpJoy length 2.067s, 611 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.03E-006, bone scale error 1.13E-006; mesh bounds (file space) min=(-0.495, -0.026, -0.829) max=(0.768, 2.504, 0.704)
+  clip sadPointLost: 234 total samples including 60 Hz base + cut guards
+  clip sadPointLost: Female_Emote_Slump length 2.567s, 234 frames at 60.00 Hz, loop seam 2.015 mm / 0.968 deg (last frame vs first), TRS recompose error 9.83E-007, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.393, -0.026, -0.740) max=(0.393, 1.669, 0.177)
+  clip matchWin: 807 total samples including 60 Hz base + cut guards
+  clip matchWin: Female_Emote_Victory length 3.167s, 807 frames at 60.00 Hz, loop seam 0.004 mm / 0.000 deg (last frame vs first), TRS recompose error 1.04E-006, bone scale error 1.55E-006; mesh bounds (file space) min=(-0.623, -0.026, -0.643) max=(0.880, 2.205, 0.859)
+  clip matchLose: 335 total samples including 60 Hz base + cut guards
+  clip matchLose: Female_Emote_Defeat length 3.300s, 335 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.01E-006, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.393, -0.028, -1.241) max=(0.628, 1.662, 0.135)
+  clip jumpJoy: 611 total samples including 60 Hz base + cut guards
+  clip jumpJoy: Female_Emote_JumpJoy length 2.067s, 611 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.03E-006, bone scale error 1.13E-006; mesh bounds (file space) min=(-0.495, -0.026, -0.829) max=(0.768, 2.504, 0.704)
+  clip fistPump: 313 total samples including 60 Hz base + cut guards
+  clip fistPump: Female_Emote_FistPump length 1.567s, 313 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.07E-006, bone scale error 9.54E-007; mesh bounds (file space) min=(-0.432, -0.026, -0.753) max=(0.744, 1.695, 0.145)
+  clip stomp: 386 total samples including 60 Hz base + cut guards
+  clip stomp: Female_Emote_Stomp length 2.167s, 386 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.01E-006, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.424, -0.026, -0.768) max=(0.723, 1.729, 0.605)
+  clip slump: 234 total samples including 60 Hz base + cut guards
+  clip slump: Female_Emote_Slump length 2.567s, 234 frames at 60.00 Hz, loop seam 2.015 mm / 0.968 deg (last frame vs first), TRS recompose error 9.83E-007, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.393, -0.026, -0.740) max=(0.393, 1.669, 0.177)
+  clip shock: 416 total samples including 60 Hz base + cut guards
+  clip shock: Female_Emote_Shock length 2.167s, 416 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.54E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.461, -0.026, -0.658) max=(0.733, 2.102, 0.715)
+  clip victory: 807 total samples including 60 Hz base + cut guards
+  clip victory: Female_Emote_Victory length 3.167s, 807 frames at 60.00 Hz, loop seam 0.004 mm / 0.000 deg (last frame vs first), TRS recompose error 1.04E-006, bone scale error 1.55E-006; mesh bounds (file space) min=(-0.623, -0.026, -0.643) max=(0.880, 2.205, 0.859)
+  clip defeat: 335 total samples including 60 Hz base + cut guards
+  clip defeat: Female_Emote_Defeat length 3.300s, 335 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.01E-006, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.393, -0.028, -1.241) max=(0.628, 1.662, 0.135)
+  rig file MatchHero_Female_Rig: 126.66 MB decompressed
+  rig self check ready: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (ready frame 62 Body v9121)
+  rig self check serve: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (serve frame 150 Kit_Top v4886)
+  rig self check scuba: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (scuba frame 1497 Kit_Top v8295)
+  rig self check thrust: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0006 mm (thrust frame 1127 Body v763)
+  rig self check spike: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (spike frame 1722 Kit_Top v12740)
+  rig self check wave: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (wave frame 141 Body v9121)
+  rig self check bringIt: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (bringIt frame 183 Kit_Top v12033)
+  rig self check pushups: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (pushups frame 0 Body v9744)
+  rig self check idle: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0007 mm (idle frame 0 Body v9870)
+  rig self check hitPerfect: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (hitPerfect frame 66 Body v10206)
+  rig self check missWhiff: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (missWhiff frame 87 Kit_Top v12453)
+  rig self check celebratePoint: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (celebratePoint frame 287 Body v8701)
+  rig self check sadPointLost: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (sadPointLost frame 49 Kit_Top v18151)
+  rig self check matchWin: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (matchWin frame 669 Body v329)
+  rig self check matchLose: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (matchLose frame 277 Body v574)
+  rig self check jumpJoy: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (jumpJoy frame 287 Body v8701)
+  rig self check fistPump: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (fistPump frame 66 Body v10206)
+  rig self check stomp: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (stomp frame 81 Kit_Top v3416)
+  rig self check slump: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (slump frame 49 Kit_Top v18151)
+  rig self check shock: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (shock frame 87 Kit_Top v12453)
+  rig self check victory: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (victory frame 669 Body v329)
+  rig self check defeat: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0005 mm (defeat frame 277 Body v574)
+  wrote MatchHero_Female.json + .lzfse + 12 swing frames (27.6 MB compressed); triangles=230018; materials=Acc_Cap,Acc_CapMetal,Black_Grip,Kit_Buckle,Kit_Shirt,Kit_Shoe,Kit_Shorts,Kit_ShortsBand,Kit_Sock,Reference_Face_Brow,Reference_Face_Catch,Reference_Face_Iris,Reference_Face_IrisIn,Reference_Face_Limbal,Reference_Face_Pupil,Reference_Face_Sclera,Skin,White_Frame,White_Strings
+  maps copied: OriginalEye_RelativeIris.png, OriginalEye_RelativeSclera.png, OriginalSeam_RelativeSkinPigment.png, Acc_Female_tennis_cap_Cap_M.png, Acc_Female_tennis_cap_Cap_N.png, KitV2_Tennis_Female_Bottom_M.png, KitV2_Tennis_Female_Bottom_N.png, KitV2_Tennis_Female_ShoeL_M.png, KitV2_Tennis_Female_ShoeL_N.png, KitV2_Tennis_Female_ShoeR_M.png, KitV2_Tennis_Female_ShoeR_N.png, KitV2_Tennis_Female_SockL_M.png, KitV2_Tennis_Female_SockL_N.png, KitV2_Tennis_Female_SockR_M.png, KitV2_Tennis_Female_SockR_N.png, KitV2_Tennis_Female_Top_M.png, KitV2_Tennis_Female_Top_N.png, KitV2_FabricAtlas.png
+  swing clip Female_ForehandArmCorrected len=1.200s contact=0.667s sampled at [0.000, 0.150, 0.300, 0.420, 0.500, 0.560, 0.620, 0.667, 0.720, 0.780, 0.900, 1.200]
+  BUDGET Female: vertices 122896 (kit 79327), triangles 230018 (kit 153454); one swing frame = 2.81 MB decompressed (positions + normals), base file 7.52 MB; 12 morph targets resident = 33.8 MB
+  looks: Body/Skin=Character; Face/Reference_Face_Brow=Character; Face/Reference_Face_Sclera=Character; Face/Reference_Face_IrisIn=Character; Face/Reference_Face_Iris=Character; Face/Reference_Face_Limbal=Character; Face/Reference_Face_Pupil=Character; Face/Reference_Face_Catch=Character; Acc_Cap/Acc_Cap=Cloth; Acc_Cap/Acc_CapMetal=Character; Kit_Bottom/Kit_Shorts=Cloth; Kit_Bottom/Kit_ShortsBand=Cloth; Kit_Shoe_L/Kit_Shoe=Cloth; Kit_Shoe_L/Kit_Buckle=Character; Kit_Shoe_R/Kit_Shoe=Cloth; Kit_Shoe_R/Kit_Buckle=Character; Kit_Sock_L/Kit_Sock=Cloth; Kit_Sock_R/Kit_Sock=Cloth; Kit_Top/Kit_Shirt=Cloth; Racket_Racket_Classic/White_Frame=Character; Racket_ButtCap/Black_Grip=Cloth; Racket_Grip/Black_Grip=Cloth; Racket_StringBed/White_Strings=Character
+

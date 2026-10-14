@@ -1,0 +1,3 @@
+Run exit 0
+RunDistance exit 0
+RunGolf exit 0

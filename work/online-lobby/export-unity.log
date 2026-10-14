@@ -1,0 +1,1320 @@
+Unity Editor version:    6000.3.24f1 (4e7b9b5b6244)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 26.6.2 (Build 25G83)
+Darwin version:          25.6.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        16384 MB
+Date:                    2026-10-05T18:22:27Z
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan" at "2026-10-05T18:22:27.903354Z"
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-nographics
+-projectPath
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+-executeMethod
+GolfArcade.EditorTools.MatchHeroLockerExport.Run
+-logFile
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/export-unity.log
+Successfully changed project path to: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [8471536000]  Target information:
+
+Player connection [8471536000]  * "[IP] 172.31.249.188 [Port] 55504 [Flags] 2 [Guid] 2693425726 [EditorId] 2693425726 [Version] 1048832 [Id] OSXEditor(0,Adnans-MacBook-Air.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+
+Player connection [8471536000] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [8471536000] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              f92ee4c6feb8402aaa0caaf110b35603
+  Correlation Id:          04038a8f9e6fdd7d7004b1842956964d
+  External correlation Id: 1618161173877228246
+  Machine Id:              TX4XIvHnvxbItvrLF5vWHS2MyBM=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-adnanyonathan" (connect: 0.00s, validation: 0.00s, handshake: 0.21s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-adnanyonathan-notifications" at "2026-10-05T18:22:28.119131Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2476051264668-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.22s
+[Package Manager] Connected to IPC stream "Upm-44434" after 0.2 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Artifact Garbage Collection - Removed 7 unused hashed content files
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 1.65 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.24f1 (4e7b9b5b6244)
+[Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/Managed'
+Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
+Mono config path = '/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56434
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
+Registered in 0.000726 seconds.
+- Loaded All Assemblies, in  0.207 seconds
+[usbmuxd] Start listen thread
+[usbmuxd] Listen thread started
+[usbmuxd] Send listen message
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.226 seconds
+Domain Reload Profiling: 433ms
+	BeginReloadAssembly (78ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (4ms)
+	RebuildCommonClasses (18ms)
+	RebuildNativeTypeToScriptingClass (6ms)
+	initialDomainReloadingComplete (19ms)
+	LoadAllAssembliesAndSetupDomain (86ms)
+		LoadAssemblies (74ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (84ms)
+			TypeCache.Refresh (83ms)
+				TypeCache.ScanAssembly (75ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (226ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (207ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (77ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (34ms)
+			ProcessInitializeOnLoadAttributes (54ms)
+			ProcessInitializeOnLoadMethodAttributes (40ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 63 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.analytics@3.8.2 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.analytics@c9d14a6bdec6)
+    com.unity.collab-proxy@2.13.6 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.40 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.timeline@1.8.13 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.timeline@3a22918286f5)
+    com.unity.xr.legacyinputhelpers@2.1.13 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.xr.legacyinputhelpers@9535ff2c27ac)
+    com.unity.services.analytics@6.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.services.analytics@cde4e6cf92f9)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.searcher@4.9.5 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.searcher@a463122f2c00)
+    com.unity.burst@1.8.30 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.3 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.8 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.collections@84e8eb3fc12e)
+    com.unity.services.core@1.18.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.services.core@3464cb68d709)
+    com.unity.nuget.mono-cecil@1.11.6 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.2d.sprite@5b922524bd83)
+    com.unity.2d.tilemap@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.2d.tilemap@f666889fd587)
+    com.unity.multiplayer.center@1.0.1 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.test-framework@1.6.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ugui@b996e7548785)
+    com.unity.modules.accessibility@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.xr)
+    com.unity.render-pipelines.universal@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.universal@a8b4b2fc3560)
+    com.unity.render-pipelines.core@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.core@0bb36005e9ba)
+    com.unity.shadergraph@17.3.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.shadergraph@30c2e3926b79)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+    com.unity.modules.subsystems@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.unity.ext.nunit@d8c07649098d)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.2.0 (location: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Library/PackageCache/com.coplaydev.unity-mcp@045e809812a8)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://unix:/tmp/ilpp.sock-dfa510fc74c0655bd1610e65cf680718
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 30.3607ms
+Starting: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/BuildPipeline/bee_backend --ipc --defer-dag-verification --dagfile="Library/Bee/900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone
+DisplayProgressbar: Compiling Scripts
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly unityeditor.ios.extensions.xcode has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.iOS.Extensions.Xcode.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/Extensions/2.0.0/System.Runtime.InteropServices.WindowsRuntime.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/System.ComponentModel.Composition.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/Resources/Scripting/NetStandard/compat/2.1.0/shims/netfx/System.ComponentModel.Composition.dll"
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.burst@2f3d916873ea/Unity.Burst.CodeGen/Unity.Burst.Cecil.dll
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 17.9277ms
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      Processing assembly Library/Bee/artifacts/900b0aE.dag/GolfArcade.Editor.dll, with 141 defines and 292 references
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Jobs.CodeGen.JobsILPostProcessor
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc - - 200 - application/grpc 8.5459ms
+ExitCode: 0 Duration: 2s337ms
+[721/957    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[953/957    2s] Csc Library/Bee/artifacts/900b0aE.dag/GolfArcade.Editor.dll (+2 others)
+Assets/Editor/GolfLookSmoke.cs(1043,17): warning CS0219: The variable 'skyRows' is assigned but its value is never used
+Assets/Editor/HeroGameplayBuild.cs(194,98): warning CS0414: The field 'HeroGameplayBuild.prevRival' is assigned but its value is never used
+Assets/Editor/HeroGameplayBuild.cs(84,216): warning CS0414: The field 'HeroGameplayBuild.mode' is assigned but its value is never used
+[954/957    0s] ILPostProcess Library/Bee/artifacts/900b0aE.dag/post-processed/GolfArcade.Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/900b0aE.dag/GolfArcade.Editor.dll, with 141 defines and 292 references
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[955/957    0s] CopyFiles Library/ScriptAssemblies/GolfArcade.Editor.pdb
+[956/957    0s] CopyFiles Library/ScriptAssemblies/GolfArcade.Editor.dll
+*** Tundra build success (2.32 seconds), 5 items updated, 957 evaluated
+Assets/Editor/GolfLookSmoke.cs(1043,17): warning CS0219: The variable 'skyRows' is assigned but its value is never used
+Assets/Editor/HeroGameplayBuild.cs(194,98): warning CS0414: The field 'HeroGameplayBuild.prevRival' is assigned but its value is never used
+Assets/Editor/HeroGameplayBuild.cs(84,216): warning CS0414: The field 'HeroGameplayBuild.mode' is assigned but its value is never used
+AssetDatabase: script compilation time: 2.795208s
+Begin MonoManager ReloadAssembly
+Total cache size 143640108
+Total cache size after purge 143640108, took 00:00:00.1254009
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  0.427 seconds
+Refreshing native plugins compatible for Editor in 2.33 ms, found 2 plugins.
+Native extension for iOS target not found
+Native extension for OSXStandalone target not found
+Refreshing native plugins compatible for Editor in 1.05 ms, found 2 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.594 seconds
+Domain Reload Profiling: 2021ms
+	BeginReloadAssembly (101ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (37ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (20ms)
+	RebuildCommonClasses (16ms)
+	RebuildNativeTypeToScriptingClass (6ms)
+	initialDomainReloadingComplete (11ms)
+	LoadAllAssembliesAndSetupDomain (293ms)
+		LoadAssemblies (213ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (107ms)
+			TypeCache.Refresh (76ms)
+				TypeCache.ScanAssembly (67ms)
+			BuildScriptInfoCaches (26ms)
+			ResolveRequiredComponents (4ms)
+	FinalizeReload (1594ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (1522ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (13ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (58ms)
+			ProcessInitializeOnLoadAttributes (1334ms)
+			ProcessInitializeOnLoadMethodAttributes (113ms)
+			AfterProcessingInitializeOnLoad (1ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (8ms)
+Refreshing native plugins compatible for Editor in 0.73 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=789016b5595ad443aa7a6cdfefd23a05): Total: 5.718 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=2189 ms
+		Asset DB Callback time: managed=274 ms, native=11 ms
+		Scripting: domain reloads=1, domain reload time=427 ms, compile time=2796 ms, other=19 ms
+		Project Asset Count: scripts=1374, non-scripts=3115
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 1
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 8.860ms
+	ApplyChangesToAssetFolders: 0.236ms
+	Scan: 430.689ms
+	OnSourceAssetsModified: 0.385ms
+	CategorizeAssetsWithTransientArtifact: 22.245ms
+	ProcessAssetsWithTransientArtifactChanges: 24.578ms
+	CategorizeAssets: 45.837ms
+	ImportOutOfDateAssets: 1600.390ms (-1196.341ms without children)
+		CompileScripts: 2795.811ms
+		ReloadNativeAssets: 0.016ms
+		UnloadImportedAssets: 0.339ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.339ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.227ms
+	PostProcessAllAssets: 275.326ms
+	Hotreload: 2.353ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 1.161ms
+	PersistCurrentRevisions: 0.082ms
+	UnloadStreamsEnd: 0.000ms
+	GenerateScriptTypeHashes: 1.186ms
+	Untracked: 3305.884ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 0.097ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Golf Arcade
+Unloading 20 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 5835 unused Assets / (2.7 MB). Loaded Objects now: 6683.
+Memory consumption went from 212.3 MB to 209.5 MB.
+Total: 5.128167 ms (FindLiveObjects: 0.194959 ms CreateObjectMapping: 0.086666 ms MarkObjects: 3.862959 ms  DeleteObjects: 0.983375 ms)
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:679)
+GolfArcade.Tennis.MatchHeroLook:OnDestroy () (at Assets/Scripts/Tennis/MatchHeroLook.cs:369)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GolfArcade.EditorTools.MatchHeroLockerExport:ExportSex (string) (at Assets/Editor/MatchHeroLockerExport.cs:248)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:97)
+
+[Assets/Scripts/Tennis/MatchHeroLook.cs line 369]
+
+[MatchHeroLockerExport]
+== Male
+  parts: Body[body] v=33196 subs=1, Face[face] v=3578 subs=13, Kit_Bottom[kit] v=13425 subs=2, Kit_Shoe_L[kit] v=12868 subs=2, Kit_Shoe_R[kit] v=12868 subs=2, Kit_Sock_L[kit] v=4164 subs=1, Kit_Sock_R[kit] v=4197 subs=1, Kit_Top[kit] v=15273 subs=2, Racket_Racket_Classic[racket] v=2998 subs=1, Racket_ButtCap[racket] v=314 subs=1, Racket_Grip[racket] v=1442 subs=1, Racket_StringBed[racket] v=1368 subs=1
+  base pose Male_ReadyIdle t=0: body bounds min=(-0.392, 0.002, -0.101) max=(0.392, 1.658, 0.495) height=1.656 m; neck y=1.361 head bone y=1.464; head box centre y=1.520 top=1.658 size=(0.197, 0.277, 0.250)
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Body max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 33196
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Bottom max deviation 0.000 mm, mean 0.0001 mm, 0 verts over 1 mm, of 13425
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Shoe_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 12868
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Shoe_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 12868
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Sock_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 4164
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Sock_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 4197
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Top max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 15273
+  rig: 53 bones, 5 rigid parts (Face, Racket_Racket_Classic, Racket_ButtCap, Racket_Grip, Racket_StringBed), tracks 58; skinned parts 7
+  clip ready: Male_ReadyIdle length 2.200s, 133 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.71E-007, bone scale error 1.31E-006; mesh bounds (file space) min=(-0.411, -0.031, -0.741) max=(0.411, 1.658, 0.114)
+  clip serve: Male_Serve length 2.500s, 151 frames at 60.00 Hz, loop seam 478.249 mm / 177.459 deg (last frame vs first), TRS recompose error 1.97E-006, bone scale error 2.26E-006; mesh bounds (file space) min=(-0.854, -0.036, -1.131) max=(0.690, 2.419, 0.730)
+  clip scuba: 400 total samples including 60 Hz base + cut guards
+  clip scuba: Male_Emote_Scuba length 4.700s, 400 frames at 60.00 Hz, loop seam 5.969 mm / 2.091 deg (last frame vs first), TRS recompose error 1.88E-006, bone scale error 2.03E-006; mesh bounds (file space) min=(-0.420, -0.031, -1.083) max=(0.576, 1.658, 0.116)
+  clip thrust: 678 total samples including 60 Hz base + cut guards
+  clip thrust: Male_Emote_Thrust length 3.500s, 678 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.76E-006, bone scale error 1.91E-006; mesh bounds (file space) min=(-0.598, -0.032, -0.937) max=(0.462, 1.658, 0.196)
+  clip spike: 450 total samples including 60 Hz base + cut guards
+  clip spike: Male_Emote_Spike length 3.200s, 450 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.94E-006, bone scale error 2.26E-006; mesh bounds (file space) min=(-0.455, -0.031, -1.257) max=(0.612, 2.242, 0.978)
+  clip wave: 164 total samples including 60 Hz base + cut guards
+  clip wave: Male_Intro_Wave length 2.000s, 164 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 7.90E-007, bone scale error 1.43E-006; mesh bounds (file space) min=(-0.458, -0.031, -0.741) max=(0.411, 1.658, 0.114)
+  clip bringIt: 209 total samples including 60 Hz base + cut guards
+  clip bringIt: Male_Intro_BringIt length 3.000s, 209 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.46E-006, bone scale error 1.91E-006; mesh bounds (file space) min=(-0.411, -0.031, -1.071) max=(0.439, 1.665, 0.114)
+  clip pushups: 475 total samples including 60 Hz base + cut guards
+  clip pushups: Male_Intro_Pushups length 3.000s, 475 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.96E-006, bone scale error 2.74E-006; mesh bounds (file space) min=(-0.411, -0.031, -1.710) max=(0.968, 1.658, 0.114)
+  rig file MatchHero_Male_Rig: 9.94 MB decompressed
+  rig self check ready: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (ready frame 28 Kit_Top v4473)
+  rig self check serve: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0007 mm (serve frame 124 Body v7728)
+  rig self check scuba: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (scuba frame 188 Kit_Shoe_R v3276)
+  rig self check thrust: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0003 mm (thrust frame 318 Body v2296)
+  rig self check spike: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0006 mm (spike frame 211 Body v20867)
+  rig self check wave: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0003 mm (wave frame 77 Body v23933)
+  rig self check bringIt: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (bringIt frame 173 Body v24276)
+  rig self check pushups: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (pushups frame 393 Body v7238)
+  wrote MatchHero_Male.json + .lzfse + 12 swing frames (27.4 MB compressed); triangles=58010; materials=Black_Grip,Face_Brow,Face_BrowSoft,Face_Catch,Face_Iris,Face_LidCrease,Face_LidLine,Face_Limbal,Face_Lip,Face_LipUp,Face_Nostril,Face_Pupil,Face_Sclera,Face_Seam,Kit_Shirt,Kit_ShirtTrim,Kit_Shoe,Kit_Shorts,Kit_ShortsBand,Kit_Sock,Kit_Sole,Skin,White_Frame,White_Strings
+  maps copied: Cloth_Weave.png, Kit_Male_Bottom.png, Kit_Male_ShoeL.png, Kit_Male_ShoeR.png, Kit_Male_SockL.png, Kit_Male_SockR.png, Kit_Male_Top.png, Skin_Soft_N.png
+  swing clip Male_Forehand len=1.200s contact=0.667s sampled at [0.000, 0.150, 0.300, 0.420, 0.500, 0.560, 0.620, 0.667, 0.720, 0.780, 0.900, 1.200]
+  BUDGET Male: vertices 105691 (kit 62795), triangles 174032 (kit 91226); one swing frame = 2.42 MB decompressed (positions + normals), base file 5.27 MB; 12 morph targets resident = 29.0 MB
+  looks: Body/Skin=Character; Face/Face_Pupil=Character; Face/Face_Iris=Character; Face/Face_Limbal=Character; Face/Face_Sclera=Character; Face/Face_Catch=Character; Face/Face_BrowSoft=Character; Face/Face_Brow=Character; Face/Face_LidLine=Character; Face/Face_LidCrease=Character; Face/Face_Nostril=Character; Face/Face_LipUp=Character; Face/Face_Lip=Character; Face/Face_Seam=Character; Kit_Bottom/Kit_Shorts=Cloth; Kit_Bottom/Kit_ShortsBand=Cloth; Kit_Shoe_L/Kit_Shoe=Cloth; Kit_Shoe_L/Kit_Sole=Cloth; Kit_Shoe_R/Kit_Shoe=Cloth; Kit_Shoe_R/Kit_Sole=Cloth; Kit_Sock_L/Kit_Sock=Cloth; Kit_Sock_R/Kit_Sock=Cloth; Kit_Top/Kit_Shirt=Cloth; Kit_Top/Kit_ShirtTrim=Cloth; Racket_Racket_Classic/White_Frame=Character; Racket_ButtCap/Black_Grip=Cloth; Racket_Grip/Black_Grip=Cloth; Racket_StringBed/White_Strings=Character
+
+== Female
+  parts: Body[body] v=23683 subs=2, Face[face] v=3986 subs=14, Kit_Bottom[kit] v=16744 subs=2, Kit_Shoe_L[kit] v=9935 subs=2, Kit_Shoe_R[kit] v=9935 subs=2, Kit_Sock_L[kit] v=3426 subs=1, Kit_Sock_R[kit] v=3443 subs=1, Kit_Top[kit] v=13600 subs=2, Racket_Racket_Classic[racket] v=2998 subs=1, Racket_ButtCap[racket] v=314 subs=1, Racket_Grip[racket] v=1442 subs=1, Racket_StringBed[racket] v=1368 subs=1
+  base pose Female_ReadyIdle t=0: body bounds min=(-0.383, 0.001, -0.119) max=(0.383, 1.653, 0.400) height=1.652 m; neck y=1.336 head bone y=1.438; head box centre y=1.504 top=1.653 size=(0.236, 0.297, 0.256)
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Body max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 23683
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Bottom max deviation 0.000 mm, mean 0.0001 mm, 0 verts over 1 mm, of 16744
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Shoe_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 9935
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Shoe_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 9935
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Sock_L max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 3426
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Sock_R max deviation 0.000 mm, mean 0.0000 mm, 0 verts over 1 mm, of 3443
+  CPU skin vs Unity BakeMesh (tier skinWeights was TwoBones): Kit_Top max deviation 0.001 mm, mean 0.0002 mm, 0 verts over 1 mm, of 13600
+  rig: 53 bones, 5 rigid parts (Face, Racket_Racket_Classic, Racket_ButtCap, Racket_Grip, Racket_StringBed), tracks 58; skinned parts 7
+  clip ready: Female_ReadyIdle length 2.200s, 133 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.05E-006, bone scale error 8.94E-007; mesh bounds (file space) min=(-0.400, -0.026, -0.649) max=(0.400, 1.653, 0.137)
+  clip serve: Female_Serve length 2.500s, 151 frames at 60.00 Hz, loop seam 456.156 mm / 169.584 deg (last frame vs first), TRS recompose error 1.10E-006, bone scale error 1.31E-006; mesh bounds (file space) min=(-0.770, -0.026, -1.099) max=(0.710, 2.318, 0.692)
+  clip scuba: 385 total samples including 60 Hz base + cut guards
+  clip scuba: Female_Emote_Scuba length 4.700s, 385 frames at 60.00 Hz, loop seam 8.429 mm / 3.173 deg (last frame vs first), TRS recompose error 9.70E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.408, -0.026, -1.001) max=(0.584, 1.653, 0.137)
+  clip thrust: 675 total samples including 60 Hz base + cut guards
+  clip thrust: Female_Emote_Thrust length 3.500s, 675 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 1.10E-006, bone scale error 1.19E-006; mesh bounds (file space) min=(-0.564, -0.026, -0.920) max=(0.429, 1.653, 0.212)
+  clip spike: 451 total samples including 60 Hz base + cut guards
+  clip spike: Female_Emote_Spike length 3.200s, 451 frames at 60.00 Hz, loop seam 0.001 mm / 0.000 deg (last frame vs first), TRS recompose error 1.10E-006, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.400, -0.026, -1.175) max=(0.566, 2.181, 0.990)
+  clip wave: 146 total samples including 60 Hz base + cut guards
+  clip wave: Female_Intro_Wave length 2.000s, 146 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.24E-007, bone scale error 8.94E-007; mesh bounds (file space) min=(-0.427, -0.026, -0.649) max=(0.400, 1.653, 0.137)
+  clip bringIt: 209 total samples including 60 Hz base + cut guards
+  clip bringIt: Female_Intro_BringIt length 3.000s, 209 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.54E-007, bone scale error 1.07E-006; mesh bounds (file space) min=(-0.400, -0.026, -1.001) max=(0.402, 1.658, 0.137)
+  clip pushups: 465 total samples including 60 Hz base + cut guards
+  clip pushups: Female_Intro_Pushups length 3.000s, 465 frames at 60.00 Hz, loop seam 0.000 mm / 0.000 deg (last frame vs first), TRS recompose error 9.26E-007, bone scale error 1.43E-006; mesh bounds (file space) min=(-0.400, -0.026, -1.656) max=(0.881, 1.653, 0.137)
+  rig file MatchHero_Female_Rig: 9.20 MB decompressed
+  rig self check ready: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0003 mm (ready frame 110 Body v9905)
+  rig self check serve: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (serve frame 70 Body v12803)
+  rig self check scuba: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (scuba frame 81 Body v14)
+  rig self check thrust: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (thrust frame 142 Body v455)
+  rig self check spike: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (spike frame 0 Kit_Top v9499)
+  rig self check wave: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (wave frame 30 Body v8162)
+  rig self check bringIt: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0002 mm (bringIt frame 44 Body v9954)
+  rig self check pushups: exported tracks + bind mesh vs live CPU skinning, max deviation 0.0004 mm (pushups frame 218 Body v8785)
+  wrote MatchHero_Female.json + .lzfse + 12 swing frames (23.0 MB compressed); triangles=47280; materials=Black_Grip,Face_Brow,Face_BrowSoft,Face_Catch,Face_Iris,Face_IrisIn,Face_LidLine,Face_LidLower,Face_Limbal,Face_Lip,Face_LipUp,Face_Nostril,Face_Pupil,Face_Sclera,Face_Seam,Kit_Shirt,Kit_ShirtTrim,Kit_Shoe,Kit_Shorts,Kit_ShortsBand,Kit_Sock,Kit_Sole,Skin,White_Frame,White_Strings
+  maps copied: Cloth_Weave.png, Kit_Female_Bottom.png, Kit_Female_ShoeL.png, Kit_Female_ShoeR.png, Kit_Female_SockL.png, Kit_Female_SockR.png, Kit_Female_Top.png, Skin_Soft_N.png
+  swing clip Female_Forehand len=1.200s contact=0.667s sampled at [0.000, 0.150, 0.300, 0.420, 0.500, 0.560, 0.620, 0.667, 0.720, 0.780, 0.900, 1.200]
+  BUDGET Female: vertices 90874 (kit 57083), triangles 141840 (kit 81038); one swing frame = 2.08 MB decompressed (positions + normals), base file 4.41 MB; 12 morph targets resident = 25.0 MB
+  looks: Body/Skin=Character; Face/Face_Brow=Character; Face/Face_BrowSoft=Character; Face/Face_Pupil=Character; Face/Face_IrisIn=Character; Face/Face_Iris=Character; Face/Face_Limbal=Character; Face/Face_Sclera=Character; Face/Face_Catch=Character; Face/Face_LidLine=Character; Face/Face_LidLower=Character; Face/Face_Lip=Character; Face/Face_LipUp=Character; Face/Face_Nostril=Character; Face/Face_Seam=Character; Kit_Bottom/Kit_Shorts=Cloth; Kit_Bottom/Kit_ShortsBand=Cloth; Kit_Shoe_L/Kit_Shoe=Cloth; Kit_Shoe_L/Kit_Sole=Cloth; Kit_Shoe_R/Kit_Shoe=Cloth; Kit_Shoe_R/Kit_Sole=Cloth; Kit_Sock_L/Kit_Sock=Cloth; Kit_Sock_R/Kit_Sock=Cloth; Kit_Top/Kit_Shirt=Cloth; Kit_Top/Kit_ShirtTrim=Cloth; Racket_Racket_Classic/White_Frame=Character; Racket_ButtCap/Black_Grip=Cloth; Racket_Grip/Black_Grip=Cloth; Racket_StringBed/White_Strings=Character
+
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GolfArcade.EditorTools.MatchHeroLockerExport:Run () (at Assets/Editor/MatchHeroLockerExport.cs:102)
+
+(Filename: Assets/Editor/MatchHeroLockerExport.cs Line: 102)
+
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET application:
+      The application 'build-server' does not exist.
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+Download a .NET SDK:
+https://aka.ms/dotnet-download
+
+Learn about SDK resolution:
+https://aka.ms/dotnet/sdk-not-found
+Start importing ProjectSettings/QualitySettings.asset using Guid(00000000000000009000000000000000) (LibraryAssetImporter) -> (artifact id: '8308f4409516cddfdf975a1dffc63130') in 0.006127125 seconds
+Refreshing native plugins compatible for Editor in 0.90 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=da379a6e98d2e48a8b52343762a33eee): Total: 0.056 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Thread 0x16bad3000 may have been prematurely finalized
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+[Licensing::IpcConnector] LicenseClient-adnanyonathan-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-adnanyonathan channel disconnected successfully.
+Thread 0x16c90b000 may have been prematurely finalized
+Thread 0x16c997000 may have been prematurely finalized
+Thread 0x16c87f000 may have been prematurely finalized
+Thread 0x16ca23000 may have been prematurely finalized
+Thread 0x16caaf000 may have been prematurely finalized
+Thread 0x16cb3b000 may have been prematurely finalized
+Thread 0x16cbc7000 may have been prematurely finalized
+Thread 0x16cc53000 may have been prematurely finalized
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+Cleanup mono
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+debugger-agent: Unable to listen on 43
+[usbmuxd] Stop listen thread
+[usbmuxd] Error: 
+[usbmuxd] Listen thread exiting

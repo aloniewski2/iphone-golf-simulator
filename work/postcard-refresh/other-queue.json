@@ -1,0 +1,1 @@
+[{"name": "postcard-refresh-other-courses", "method": "GolfArcade.EditorTools.PostcardRefreshProof.Run", "env": {"POSTCARD_REFRESH_PROOF_HOLES": "7,8,13,14,15,19,20", "POSTCARD_REFRESH_PROOF_OUT": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/postcard-refresh/other-courses", "GOLF_VISUAL_PHYSICS_GATE": "1"}}]

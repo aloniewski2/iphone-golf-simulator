@@ -1,0 +1,245 @@
+[
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 232.48601398601397,
+"y": 272.66783216783216,
+"r": 19.0,
+"area": 286,
+"frac": 0.87,
+"img": "f00_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 162.0,
+"y": 278.5833333333333,
+"r": 10.0,
+"area": 12,
+"frac": 1.0,
+"img": "f00_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 213.5,
+"y": 280.72727272727275,
+"r": 11.850000000000001,
+"area": 22,
+"frac": 1.0,
+"img": "f00_left"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 201.58536585365854,
+"y": 417.1707317073171,
+"r": 15.75,
+"area": 41,
+"img": "f01_front"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 233.08839779005524,
+"y": 282.4088397790055,
+"r": 16.4,
+"area": 181,
+"frac": 0.79,
+"img": "f01_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 165.1304347826087,
+"y": 286.3478260869565,
+"r": 17.05,
+"area": 207,
+"frac": 1.0,
+"img": "f01_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 195.89166666666668,
+"y": 414.85,
+"r": 27.45,
+"area": 120,
+"img": "f01_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 214.4975845410628,
+"y": 288.55555555555554,
+"r": 17.05,
+"area": 207,
+"frac": 1.0,
+"img": "f01_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 191.2281879194631,
+"y": 284.4496644295302,
+"r": 21.6,
+"area": 298,
+"frac": 0.98,
+"img": "f01_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 166.48709677419356,
+"y": 273.9225806451613,
+"r": 19.65,
+"area": 310,
+"frac": 0.96,
+"img": "f02_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 211.75352112676057,
+"y": 275.4154929577465,
+"r": 20.950000000000003,
+"area": 284,
+"frac": 1.0,
+"img": "f02_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 167.1170568561873,
+"y": 278.8595317725752,
+"r": 19.0,
+"area": 299,
+"frac": 0.86,
+"img": "f03_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 234.52142857142857,
+"y": 282.1142857142857,
+"r": 15.75,
+"area": 140,
+"frac": 1.0,
+"img": "f03_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 208.81120943952803,
+"y": 280.25958702064895,
+"r": 22.25,
+"area": 339,
+"frac": 1.0,
+"img": "f03_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 184.35064935064935,
+"y": 284.1818181818182,
+"r": 15.75,
+"area": 154,
+"frac": 1.0,
+"img": "f03_right"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 194.86666666666667,
+"y": 389.46666666666664,
+"r": 11.2,
+"area": 15,
+"img": "f04_front"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 195.92857142857142,
+"y": 448.85714285714283,
+"r": 28.75,
+"area": 98,
+"img": "f04_front"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 232.95491803278688,
+"y": 281.6885245901639,
+"r": 18.35,
+"area": 244,
+"frac": 1.0,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 203.16666666666666,
+"y": 362.5,
+"r": 10.55,
+"area": 12,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 203.0,
+"y": 417.02222222222224,
+"r": 24.2,
+"area": 90,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Bottom",
+"x": 167.51612903225808,
+"y": 375.3225806451613,
+"r": 13.15,
+"area": 31,
+"img": "f04_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 185.4941634241245,
+"y": 284.1712062256809,
+"r": 18.35,
+"area": 257,
+"frac": 1.0,
+"img": "f04_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 232.48601398601397,
+"y": 272.66783216783216,
+"r": 19.0,
+"area": 286,
+"frac": 0.87,
+"img": "f05_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 162.0,
+"y": 278.5833333333333,
+"r": 10.0,
+"area": 12,
+"frac": 1.0,
+"img": "f05_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 213.5,
+"y": 280.72727272727275,
+"r": 11.850000000000001,
+"area": 22,
+"frac": 1.0,
+"img": "f05_left"
+}
+]

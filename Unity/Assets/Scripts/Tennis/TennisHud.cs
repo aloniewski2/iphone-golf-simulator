@@ -300,19 +300,28 @@ namespace GolfArcade.Tennis
 
         Vector2 Centre(RectTransform rt) => root.InverseTransformPoint(rt.TransformPoint(rt.rect.center));
 
-        public void Refresh(TennisGame game)
+        public void Refresh(TennisGame game) => RefreshAs(game.Match, game.SecondServe, game.Streak, game.ScoreOnlyText);
+
+        /// One TV shared by two players (versus split screen): this HUD keeps to one half, as single player's does to the whole screen.
+        public void ConfineTo(float xMin, float xMax)
         {
-            scoreOnly = game.ScoreOnlyText;
+            var layer = MatchLayer; if (!layer || layer == root) return;
+            layer.anchorMin = new Vector2(xMin, 0); layer.anchorMax = new Vector2(xMax, 1); layer.offsetMin = layer.offsetMax = Vector2.zero;
+        }
+
+        /// The HUD for a score seen from one side (the other half of a shared TV shows it from the other player's side).
+        public void RefreshAs(TennisMatch m, bool secondServe, int streak, bool scoreOnlyText)
+        {
+            scoreOnly = scoreOnlyText;
             if (scoreOnly) { badgeAt = -99; feedbackPanel.gameObject.SetActive(false); }
             meterLabel.enabled = tossLabel.enabled = !scoreOnly;
-            var m = game.Match;
             Points(m, out string pa, out string pb);
             // Multi-set matches show sets won ahead of the games in the current set.
             SetRow(rows[0], PlayerName, Digits(m.PlayerGames), pa);
             SetRow(rows[1], OpponentName, Digits(m.OpponentGames), pb);
             setsText.text = m.Tiebreak ? "TIEBREAK" : m.MultiSet ? $"SET {m.PlayerSets + m.OpponentSets + (m.Complete ? 0 : 1)}  ·  SETS {m.PlayerSets}–{m.OpponentSets}" : "SET 1";
             shownServer = m.PlayerServes ? 0 : 1;
-            string n = m.Complete ? null : TennisGame.IsMatchPoint(m) ? "MATCH POINT" : game.SecondServe ? "2ND SERVE"
+            string n = m.Complete ? null : TennisGame.IsMatchPoint(m) ? "MATCH POINT" : secondServe ? "2ND SERVE"
                 : m.PlayerPoints == m.OpponentPoints && m.PlayerPoints >= 3 ? "DEUCE" : null;
             if (n != shownNotice)
             {
@@ -325,10 +334,10 @@ namespace GolfArcade.Tennis
                     if (n != "2ND SERVE") ShowCall(n, null, n == "MATCH POINT" && m.PlayerPoints > m.OpponentPoints);
                 }
             }
-            if (game.Streak != shownStreak)
+            if (streak != shownStreak)
             {
-                shownStreak = game.Streak;
-                for (int i = 0; i < pips.Length; i++) pips[i].color = i < game.Streak ? SeaTop : new Color(1, 1, 1, .3f);
+                shownStreak = streak;
+                for (int i = 0; i < pips.Length; i++) pips[i].color = i < streak ? SeaTop : new Color(1, 1, 1, .3f);
             }
             Animate();
         }

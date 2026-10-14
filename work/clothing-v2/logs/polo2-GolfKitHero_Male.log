@@ -1,0 +1,9 @@
+POLO obstacle: V2 shorts, 3362 outer faces
+FIT worst move at [-0.     0.088  1.329] -> [0.    0.105 1.335]
+FIT moved 4085 verts, max 18.2 mm, min clearance 5.9 mm
+COLLAR bounds [-0.121 -0.148  1.351] [0.121 0.09  1.455] neck pts 128 [-0.093 -0.097  1.376] [0.093 0.064 1.426]
+Info: Saved as "polo_v2.blend"
+POLO parts: shell 19548 faces, collar 1065, placket 150, buttons 3, cuffs 1792
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

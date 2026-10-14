@@ -1,0 +1,6 @@
+Intro_Wave started=True seen=True frames=75
+Intro_BringIt started=True seen=True frames=105
+Intro_Pushups started=True seen=True frames=105
+Emote_Scuba started=True seen=True frames=156
+Emote_Thrust started=True seen=True frames=120
+Emote_Spike started=True seen=True frames=111

@@ -1,0 +1,142 @@
+[
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 187.23529411764707,
+"y": 244.76470588235293,
+"r": 11.2,
+"area": 17,
+"frac": 1.0,
+"img": "f00_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.36363636363637,
+"y": 303.54545454545456,
+"r": 10.0,
+"area": 11,
+"frac": 0.71,
+"img": "f01_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.54545454545453,
+"y": 305.45454545454544,
+"r": 10.0,
+"area": 11,
+"frac": 0.64,
+"img": "f02_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.54545454545453,
+"y": 305.45454545454544,
+"r": 10.0,
+"area": 11,
+"frac": 0.64,
+"img": "f04_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.54545454545453,
+"y": 305.45454545454544,
+"r": 10.0,
+"area": 11,
+"frac": 0.64,
+"img": "f05_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.36363636363637,
+"y": 299.90909090909093,
+"r": 10.0,
+"area": 11,
+"frac": 0.69,
+"img": "f10_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Bottom",
+"x": 166.7,
+"y": 293.4,
+"r": 10.0,
+"area": 10,
+"frac": 0.64,
+"img": "f11_front"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 186.69230769230768,
+"y": 248.69230769230768,
+"r": 10.0,
+"area": 13,
+"frac": 1.0,
+"img": "f11_left"
+},
+{
+"kind": "lining",
+"what": "Kit_Top",
+"x": 187.23529411764707,
+"y": 244.76470588235293,
+"r": 11.2,
+"area": 17,
+"frac": 1.0,
+"img": "f12_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 165.548,
+"y": 255.492,
+"r": 18,
+"depth": 29.422,
+"n": 9,
+"img": "f01_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 231.185,
+"y": 251.785,
+"r": 18,
+"depth": 29.422,
+"n": 9,
+"img": "f01_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 155.878,
+"y": 252.267,
+"r": 18,
+"depth": 29.422,
+"n": 9,
+"img": "f01_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 247.385,
+"y": 254.92,
+"r": 18,
+"depth": 29.422,
+"n": 9,
+"img": "f01_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 95.422,
+"y": 137.714,
+"r": 22,
+"depth": 29.422,
+"n": 9,
+"img": "f01_handR"
+}
+]

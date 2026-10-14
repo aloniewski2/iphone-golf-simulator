@@ -1,0 +1,11 @@
+golf_full_cliffside flyover=9.80 intro=3.25 start=1.00 hole=7
+golf_short_cliffside flyover=6.00 intro=3.25 start=0.60
+golf_skip_cliffside flyover=2.05 intro=3.20 start=1.00 (skip pressed at 2.00 s, again at 3.50 s)
+golf_full_wildisles flyover=9.80 intro=3.25 start=1.00 hole=13
+golf_short_wildisles flyover=6.00 intro=3.25 start=0.60
+golf_skip_wildisles flyover=2.05 intro=3.20 start=1.00 (skip pressed at 2.00 s, again at 3.50 s)
+golf_full_magma flyover=9.80 intro=3.25 start=1.00 hole=10
+golf_short_magma flyover=6.00 intro=3.25 start=0.60
+golf_skip_magma flyover=2.05 intro=3.20 start=1.00 (skip pressed at 2.00 s, again at 3.50 s)
+tennis_full drone=4.55 total=13.35
+tennis_skip drone=1.50 after_skip=8.80 (swing at 1.50 s, again at 3.50 s)

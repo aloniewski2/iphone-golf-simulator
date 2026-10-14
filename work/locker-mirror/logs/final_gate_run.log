@@ -1,0 +1,446 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project GolfArcade.xcodeproj -scheme GolfArcade -destination id=88A5F840-AF09-4E3F-AF23-089D85AF4F25 -derivedDataPath /private/tmp/claude-501/-Users-adnanyonathan-Documents-Codex-2026-09-20-wh-outputs-iphone-golf-simulator/b8c5974c-0658-48af-9507-14588d72a05b/scratchpad/DerivedData "-only-testing:GolfArcadeTests/LockerMirrorTests" "-only-testing:GolfArcadeTests/MatchHeroLockerTests" "-only-testing:GolfArcadeTests/DressedHeroSnapshotTests" "-only-testing:GolfArcadeTests/LockerTests" "-only-testing:GolfArcadeTests/TennisMenuSnapshotTests/testLoadingIdlesRespectReducedMotionAndSport" "-only-testing:GolfArcadeTests/TennisMenuSnapshotTests/testCharacterModelVariants" "-only-testing:GolfArcadeTests/TennisMenuSnapshotTests/testNewBaseLocker" "-only-testing:GolfArcadeTests/MotionClubReviewTests/testPreviewDoesNotChangeEquipment" "-only-testing:GolfArcadeTests/TennisCampaignTests" "-only-testing:GolfArcadeTests/NewMenuSnapshotTests/testLockerStates"
+
+2026-10-04 11:10:03.784070-0400 GolfArcade[87768:9870248] [Core] {"msg":"file does not exist... clearing", "file":/Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, "error":Error Domain=NSCocoaErrorDomain Code=260 "The file “com.apple.CoreMotion.plist” couldn’t be opened because there is no such file." UserInfo={NSFilePath=/Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, NSURL=file:///Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS%2026.5.simruntime/Contents/Resources/RuntimeRoot/private/var/Managed%20Preferences/kCFPreferencesCurrentUser/com.apple.CoreMotion.plist, NSUnderlyingError=0x10759d8c0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}}}
+2026-10-04 11:10:03.881004-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:03.943423-0400 GolfArcade[87768:9870069] [framework] CoreUI: CUIThemeStore: No theme registered with id=0
+2026-10-04 11:10:03.944242-0400 GolfArcade[87768:9870069] [framework] CoreUI: CUIThemeStore: No theme registered with id=0
+2026-10-04 11:10:04.054569-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:04.279653-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:10:04.280980-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:10:04.420106-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:10:04.432601-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+Test Suite 'Selected tests' started at 2026-10-04 11:10:04.522.
+Test Suite 'GolfArcadeTests.xctest' started at 2026-10-04 11:10:04.523.
+Test Suite 'DressedHeroSnapshotTests' started at 2026-10-04 11:10:04.523.
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testBothHeroesAreDressedInTheMirror]' started.
+2026-10-04 11:10:04.745903-0400 GolfArcade[87768:9870069] [DressedHero] Male: triangles on stage 174032 (kit 91226), vertices 105691
+2026-10-04 11:10:04.797294-0400 GolfArcade[87768:9870069] [DressedHero] Female: triangles on stage 141840 (kit 81038), vertices 90874
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testBothHeroesAreDressedInTheMirror]' passed (0.273 seconds).
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testDefaultKitIsTheAuthoredWhiteKit]' started.
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testDefaultKitIsTheAuthoredWhiteKit]' passed (0.129 seconds).
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testPicksRecolourOnlyTheirRoles]' started.
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testPicksRecolourOnlyTheirRoles]' passed (0.286 seconds).
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testRecordDressedSnapshots]' started.
+objc[87768]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x116864398) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x11cd38310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-10-04 11:10:05.854305-0400 GolfArcade[87768:9870069] [DressedHero] male ready: kit pixels 75028, pixels changed by the picks 66128, outside the kit mask 0
+2026-10-04 11:10:06.551062-0400 GolfArcade[87768:9870069] [DressedHero] male contact: kit pixels 71511, pixels changed by the picks 62267, outside the kit mask 0
+2026-10-04 11:10:06.969102-0400 GolfArcade[87768:9870069] [DressedHero] female ready: kit pixels 54846, pixels changed by the picks 48365, outside the kit mask 0
+2026-10-04 11:10:07.631110-0400 GolfArcade[87768:9870069] [DressedHero] female contact: kit pixels 50692, pixels changed by the picks 44175, outside the kit mask 0
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testRecordDressedSnapshots]' passed (2.437 seconds).
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testRecordHostedDressedView]' started.
+2026-10-04 11:10:07.742071-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:09.069074-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.DressedHeroSnapshotTests testRecordHostedDressedView] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:10:10.369494-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:11.645667-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testRecordHostedDressedView]' passed (5.264 seconds).
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testTintMathsMatchesTheUnitySide]' started.
+Test Case '-[GolfArcadeTests.DressedHeroSnapshotTests testTintMathsMatchesTheUnitySide]' passed (0.001 seconds).
+Test Suite 'DressedHeroSnapshotTests' passed at 2026-10-04 11:10:12.921.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 8.391 (8.397) seconds
+Test Suite 'LockerMirrorTests' started at 2026-10-04 11:10:12.921.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testBothMenuViewsRunAt60fpsAndMoveTheHeroForReal]' started.
+2026-10-04 11:10:12.929353-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:13.052180-0400 GolfArcade[87768:9870069] [SceneKit] Warning: C3DBaseTypeFromDescription - signed/unsigned ambiguity
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcadeTests/LockerMirrorTests.swift:644: warning: -[GolfArcadeTests.LockerMirrorTests testBothMenuViewsRunAt60fpsAndMoveTheHeroForReal] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:10:15.056656-0400 GolfArcade[87768:9870069] [LockerMirror] club locker tile: 106410 pixels of the real view changed in 0.7 s
+2026-10-04 11:10:15.064000-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:18.237970-0400 GolfArcade[87768:9870069] [LockerMirror] club play tile: 188991 pixels of the real view changed in 0.7 s
+2026-10-04 11:10:18.245439-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:20.259970-0400 GolfArcade[87768:9870069] [LockerMirror] tennis idle view: 176226 pixels of the real view changed in 0.7 s
+2026-10-04 11:10:20.269349-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:21.387505-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:21.419948-0400 GolfArcade[87768:9870069] Unbalanced calls to begin/end appearance transitions for <_TtGC7SwiftUI19UIHostingControllerVS_7AnyView_: 0x11f6d5400>.
+2026-10-04 11:10:22.225071-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testBothMenuViewsRunAt60fpsAndMoveTheHeroForReal]' passed (10.137 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testClothHasASheenAndNoHighlightDot]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testClothHasASheenAndNoHighlightDot]' passed (0.016 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testDefaultTrimIsTheAuthoredDarkAndAPickedShirtStillDerivesItsTrim]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testDefaultTrimIsTheAuthoredDarkAndAPickedShirtStillDerivesItsTrim]' passed (0.058 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testKitMaterialsSampleTheWeaveTheThreadMapAndTheSeamMap]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testKitMaterialsSampleTheWeaveTheThreadMapAndTheSeamMap]' passed (0.036 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLeftHandedHeroPlaysTheSameClipsMirrored]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLeftHandedHeroPlaysTheSameClipsMirrored]' passed (0.402 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLoadingScreenIdlesBetweenPracticeSwingsAndHandsOverCleanly]' started.
+2026-10-04 11:10:23.604212-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:23.651332-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:23.909932-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:23.912861-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcadeTests/LockerMirrorTests.swift:591: warning: -[GolfArcadeTests.LockerMirrorTests testLoadingScreenIdlesBetweenPracticeSwingsAndHandsOverCleanly] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:10:29.879273-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:29.914825-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLoadingScreenIdlesBetweenPracticeSwingsAndHandsOverCleanly]' passed (6.392 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLockerTileAndTennisIdlePlayReadyIdleInPlace]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testLockerTileAndTennisIdlePlayReadyIdleInPlace]' passed (0.334 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testOnlyTheKitHasUVsInTheExport]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testOnlyTheKitHasUVsInTheExport]' passed (0.001 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testPlayTilePlaysOneServeThenReady]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testPlayTilePlaysOneServeThenReady]' passed (0.419 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testReducedMotionStaysAStillReadyPose]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testReducedMotionStaysAStillReadyPose]' passed (0.146 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSeamMapOrientationPutsTheDarkeningOnTheHemsAndCollar]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSeamMapOrientationPutsTheDarkeningOnTheHemsAndCollar]' passed (0.298 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testShippedRigReproducesUnitysPoses]' started.
+2026-10-04 11:10:31.704847-0400 GolfArcade[87768:9870069] [LockerMirror] Male: 25260 golden vertices, worst deviation from Unity's CPU skinning 0.0011391351 mm
+2026-10-04 11:10:32.169744-0400 GolfArcade[87768:9870069] [LockerMirror] Female: 25344 golden vertices, worst deviation from Unity's CPU skinning 0.0009840409 mm
+Test Case '-[GolfArcadeTests.LockerMirrorTests testShippedRigReproducesUnitysPoses]' passed (1.005 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testShirtIsNotOneFlatWhite]' started.
+2026-10-04 11:10:36.596782-0400 GolfArcade[87768:9870069] [LockerMirror] male shirt close-up: 72956 shirt px, detail 0.014918502 (flat look 0.004871824), mean luma 0.83472407 (flat look 0.7877122)
+2026-10-04 11:10:39.177659-0400 GolfArcade[87768:9870069] [LockerMirror] male shirt: luma change (mean / 99th pct) with the weave normal off (mean: 0.043180987, p99: 0.12457329), thread break off (mean: 0.03235231, p99: 0.08038193), seam map off (mean: 0.0027088, p99: 0.07506043)
+2026-10-04 11:10:42.610348-0400 GolfArcade[87768:9870069] [LockerMirror] female shirt close-up: 53102 shirt px, detail 0.022649316 (flat look 0.0068922085), mean luma 0.75557506 (flat look 0.7690645)
+2026-10-04 11:10:45.066852-0400 GolfArcade[87768:9870069] [LockerMirror] female shirt: luma change (mean / 99th pct) with the weave normal off (mean: 0.035852406, p99: 0.10725099), thread break off (mean: 0.051255144, p99: 0.08682501), seam map off (mean: 0.007047179, p99: 0.11007136)
+Test Case '-[GolfArcadeTests.LockerMirrorTests testShirtIsNotOneFlatWhite]' passed (12.909 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSkinIsAboutSmoothness02WithAWeakNormalAndNoWeaveOnSkinOrEyes]' started.
+2026-10-04 11:10:45.942180-0400 GolfArcade[87768:9870069] [LockerMirror] male skin normal on vs off: mean luma change 0.004547319 over 32815 skin px
+2026-10-04 11:10:46.754700-0400 GolfArcade[87768:9870069] [LockerMirror] female skin normal on vs off: mean luma change 0.0069428296 over 27397 skin px
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSkinIsAboutSmoothness02WithAWeakNormalAndNoWeaveOnSkinOrEyes]' passed (1.678 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSkinnedHeroAtReadyFrameZeroIsTheStaticHero]' started.
+2026-10-04 11:10:47.560078-0400 GolfArcade[87768:9870069] [LockerMirror] Male: static vs skinned at ReadyIdle[0]: mean abs diff 0.17059212962962964 / 255, channels over 24: 0
+2026-10-04 11:10:48.340662-0400 GolfArcade[87768:9870069] [LockerMirror] Female: static vs skinned at ReadyIdle[0]: mean abs diff 0.13322824074074074 / 255, channels over 24: 0
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSkinnedHeroAtReadyFrameZeroIsTheStaticHero]' passed (1.583 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSoleIsDarkerAndRougherThanTheUpperAndIsNotRecoloured]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testSoleIsDarkerAndRougherThanTheUpperAndIsNotRecoloured]' passed (0.057 seconds).
+Test Case '-[GolfArcadeTests.LockerMirrorTests testWeaveTileIsMetresPerUvOverTheRolesTileSize]' started.
+Test Case '-[GolfArcadeTests.LockerMirrorTests testWeaveTileIsMetresPerUvOverTheRolesTileSize]' passed (0.396 seconds).
+Test Suite 'LockerMirrorTests' passed at 2026-10-04 11:10:48.800.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 35.868 (35.879) seconds
+Test Suite 'LockerTests' started at 2026-10-04 11:10:48.801.
+Test Case '-[GolfArcadeTests.LockerTests testAnUnreadableRosterIsKeptNotOverwritten]' started.
+2026-10-04 11:10:48.810640-0400 GolfArcade[87768:9870069] [PlayerRosterStore] players.v1 was unreadable; 14 bytes kept under players.v1.unreadable.1791126648
+Test Case '-[GolfArcadeTests.LockerTests testAnUnreadableRosterIsKeptNotOverwritten]' passed (0.014 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testClickingAlongSwatchesChangesColourAndRevertRestores]' started.
+2026-10-04 11:10:48.870857-0400 GolfArcade[87768:9870069] [plugin] AddInstanceForFactory: No factory registered for id <CFUUID 0x132376140> F8BB1C28-BAE8-11D6-9C31-00039315CD46
+2026-10-04 11:10:49.110869-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1755  ReadPListFile: unable to open stream for LoudnessManager plist
+2026-10-04 11:10:49.111082-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1261  GetHardwarePlatformKey: cannot get acoustic ID
+2026-10-04 11:10:49.111218-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:10:49.111405-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+Test Case '-[GolfArcadeTests.LockerTests testClickingAlongSwatchesChangesColourAndRevertRestores]' passed (0.341 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testCustomRangeOpensClosesAndBackLeavesItBeforeTheLocker]' started.
+2026-10-04 11:10:49.205079-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:10:49.205284-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+Test Case '-[GolfArcadeTests.LockerTests testCustomRangeOpensClosesAndBackLeavesItBeforeTheLocker]' passed (0.068 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testHomeContinuesAndHasNoStore]' started.
+Test Case '-[GolfArcadeTests.LockerTests testHomeContinuesAndHasNoStore]' passed (0.001 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testLoadoutSurvivesSavingAndOldProfilesStillDecode]' started.
+Test Case '-[GolfArcadeTests.LockerTests testLoadoutSurvivesSavingAndOldProfilesStillDecode]' passed (0.001 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testLockerOpensOnTheShelfAndTheGridFollowsTheTab]' started.
+Test Case '-[GolfArcadeTests.LockerTests testLockerOpensOnTheShelfAndTheGridFollowsTheTab]' passed (0.042 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testNoGearShipsYetOnlyStandardItems]' started.
+Test Case '-[GolfArcadeTests.LockerTests testNoGearShipsYetOnlyStandardItems]' passed (0.002 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testShuffleChangesColoursButNeverGear]' started.
+Test Case '-[GolfArcadeTests.LockerTests testShuffleChangesColoursButNeverGear]' passed (0.022 seconds).
+Test Case '-[GolfArcadeTests.LockerTests testSportToggleSwapsRacketForClubAndBack]' started.
+Test Case '-[GolfArcadeTests.LockerTests testSportToggleSwapsRacketForClubAndBack]' passed (0.068 seconds).
+Test Suite 'LockerTests' passed at 2026-10-04 11:10:49.365.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.559 (0.564) seconds
+Test Suite 'MatchHeroLockerTests' started at 2026-10-04 11:10:49.365.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testBothMatchHeroesShipAndTheOldHeroDoesNot]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testBothMatchHeroesShipAndTheOldHeroDoesNot]' passed (0.004 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testHairHeadwearAndBuildPicksDoNotChangeTheMesh]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testHairHeadwearAndBuildPicksDoNotChangeTheMesh]' passed (0.159 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLeftHandedLockerMirrorsTheHero]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLeftHandedLockerMirrorsTheHero]' passed (0.029 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLoadingPracticeAndClubActivitiesUseTheMatchHero]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLoadingPracticeAndClubActivitiesUseTheMatchHero]' passed (0.129 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLockerMirrorShowsTheMatchHeroForTheLockersSex]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testLockerMirrorShowsTheMatchHeroForTheLockersSex]' passed (0.029 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testPracticeSwingPlaysTheMatchForehand]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testPracticeSwingPlaysTheMatchForehand]' passed (1.005 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRacketHidesInCloseUpsAndForGolf]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRacketHidesInCloseUpsAndForGolf]' passed (0.016 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRecordHostedLockerView]' started.
+2026-10-04 11:10:50.791268-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:52.091624-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRecordHostedLockerView]' passed (2.630 seconds).
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRecordLockerMirrorProof]' started.
+Test Case '-[GolfArcadeTests.MatchHeroLockerTests testRecordLockerMirrorProof]' passed (1.073 seconds).
+Test Suite 'MatchHeroLockerTests' passed at 2026-10-04 11:10:54.445.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 5.074 (5.080) seconds
+Test Suite 'MotionClubReviewTests' started at 2026-10-04 11:10:54.445.
+Test Case '-[GolfArcadeTests.MotionClubReviewTests testPreviewDoesNotChangeEquipment]' started.
+Test Case '-[GolfArcadeTests.MotionClubReviewTests testPreviewDoesNotChangeEquipment]' passed (0.042 seconds).
+Test Suite 'MotionClubReviewTests' passed at 2026-10-04 11:10:54.489.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.042 (0.043) seconds
+Test Suite 'NewMenuSnapshotTests' started at 2026-10-04 11:10:54.489.
+Test Case '-[GolfArcadeTests.NewMenuSnapshotTests testLockerStates]' started.
+2026-10-04 11:10:54.532218-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:54.576824-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.NewMenuSnapshotTests testLockerStates] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:10:54.801256-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:55.521400-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:55.873017-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:55.877801-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:57.531461-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:10:57.639464-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:00.383978-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:00.384369-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:00.400569-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:00.405452-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:02.193699-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:02.300431-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:04.988297-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:04.988522-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:05.009334-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:05.014076-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:06.838091-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:07.452945-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:10.148386-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:10.148633-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:10.166919-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:10.170998-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:12.089030-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:12.194898-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:15.153247-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:15.153507-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:15.167546-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:15.171429-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:16.835734-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:17.455024-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:20.081672-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:20.081901-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:20.097600-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:20.097747-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:20.113362-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:20.118256-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:21.965035-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:22.074112-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:24.885746-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:24.921482-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.NewMenuSnapshotTests testLockerStates]' passed (30.556 seconds).
+Test Suite 'NewMenuSnapshotTests' passed at 2026-10-04 11:11:25.047.
+	 Executed 1 test, with 0 failures (0 unexpected) in 30.556 (30.558) seconds
+Test Suite 'TennisCampaignTests' started at 2026-10-04 11:11:25.047.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testAfterAMatchThePhoneOffersNextAndReplay]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testAfterAMatchThePhoneOffersNextAndReplay] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:25.110917-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch next: launching round 1
+2026-10-04 11:11:25.111215-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:25.111316-0400 GolfArcade[87768:9870069] [SportsSession] launch sport=tennis mode=phone-preview touch=0
+2026-10-04 11:11:25.111452-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:25.116287-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:25.116472-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:25.135097-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:25.135309-0400 GolfArcade[87768:9870069] [SportsSession] launch sport=tennis mode=phone-preview touch=1
+2026-10-04 11:11:25.135472-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:25.187649-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.222650-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.315767-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.330612-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testAfterAMatchThePhoneOffersNextAndReplay]' passed (0.315 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testChangeCourtReachesTheCourtPickerForTheSameMatch]' started.
+2026-10-04 11:11:25.367398-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:25.367591-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:25.429818-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.532113-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.546663-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testChangeCourtReachesTheCourtPickerForTheSameMatch] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testChangeCourtReachesTheCourtPickerForTheSameMatch]' passed (0.232 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testCharacterAppearanceSurvivesSavingAndOldProfilesStillLoad]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testCharacterAppearanceSurvivesSavingAndOldProfilesStillLoad]' passed (0.012 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testChoicesChangeSideways]' started.
+2026-10-04 11:11:25.650271-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.696577-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.784107-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:25.799142-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testChoicesChangeSideways] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testChoicesChangeSideways]' passed (0.227 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testContinuousBodySizeMigrationAndSaving]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testContinuousBodySizeMigrationAndSaving] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testContinuousBodySizeMigrationAndSaving]' passed (0.036 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testDPadMovesAcrossTheDrawAndRefusesLockedRounds]' started.
+2026-10-04 11:11:25.878570-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:25.878785-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.111373-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.111574-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.122837-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.122993-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.162099-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testDPadMovesAcrossTheDrawAndRefusesLockedRounds] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:26.301428-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:26.317542-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testDPadMovesAcrossTheDrawAndRefusesLockedRounds]' passed (0.497 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testDrawAscendsInDifficultyAndEndsWithTheBoss]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testDrawAscendsInDifficultyAndEndsWithTheBoss]' passed (0.011 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testEveryRoundHasAStoryAndCoachingLines]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testEveryRoundHasAStoryAndCoachingLines]' passed (0.005 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testEveryScreenIsReachableFromTheTitle]' started.
+2026-10-04 11:11:26.402104-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:26.402438-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:28.162297-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:28.259599-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:28.274023-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testEveryScreenIsReachableFromTheTitle]' passed (1.930 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testFinishWaitsForContinueAndDuplicateEventsDoNotAdvanceAgain]' started.
+2026-10-04 11:11:28.326330-0400 GolfArcade[87768:9870069] [SportsDiagnostic] match finished: phone Next enabled; classic=false external=false
+2026-10-04 11:11:28.329252-0400 GolfArcade[87768:9870069] [SportsSession] command=end value=0.00
+2026-10-04 11:11:28.352228-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:28.352417-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:28.389795-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testFinishWaitsForContinueAndDuplicateEventsDoNotAdvanceAgain] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:29.166641-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.166792-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.176593-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.176717-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.273123-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.275157-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.502090-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.516009-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testFinishWaitsForContinueAndDuplicateEventsDoNotAdvanceAgain]' passed (1.229 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testGameSelectOffersTheTwoPlayableSports]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testGameSelectOffersTheTwoPlayableSports] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:29.570832-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.571001-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:29.682454-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.696127-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.920091-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:29.936168-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testGameSelectOffersTheTwoPlayableSports]' passed (0.424 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testHeartbeatCompletesControllerWithoutResultEventAndActionsPersist]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testHeartbeatCompletesControllerWithoutResultEventAndActionsPersist] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:29.998103-0400 GolfArcade[87768:9870069] [SportsDiagnostic] match finished: phone Next enabled; classic=false external=false
+2026-10-04 11:11:30.075573-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:30.090011-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:30.553293-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:30.556135-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:33.619456-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch tapped: menu mode=campaign round=0
+2026-10-04 11:11:33.619693-0400 GolfArcade[87768:9870069] [SportsSession] command=end value=0.00
+2026-10-04 11:11:33.621354-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:33.621468-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:33.668666-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:33.680340-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:33.983890-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:33.998932-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testHeartbeatCompletesControllerWithoutResultEventAndActionsPersist]' passed (4.062 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testLoadingCompletesPromptlyWhenReadyAndExplainsStalls]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testLoadingCompletesPromptlyWhenReadyAndExplainsStalls] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testLoadingCompletesPromptlyWhenReadyAndExplainsStalls]' passed (0.030 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testLobbyRemoteReachesEveryActionAndRoutesSports]' started.
+2026-10-04 11:11:34.075735-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.075952-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.087879-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.088095-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.303574-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testLobbyRemoteReachesEveryActionAndRoutesSports] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:34.390719-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:34.404832-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testLobbyRemoteReachesEveryActionAndRoutesSports]' passed (0.383 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testMainMenuReachesEverySection]' started.
+2026-10-04 11:11:34.461303-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.461524-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.470676-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.470906-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.604016-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:34.711392-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:34.726406-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testMainMenuReachesEverySection] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testMainMenuReachesEverySection]' passed (0.327 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testNewTournamentAsksBeforeErasingTheDraw]' started.
+2026-10-04 11:11:34.789174-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:34.789384-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testNewTournamentAsksBeforeErasingTheDraw] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:35.021923-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.036459-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testNewTournamentAsksBeforeErasingTheDraw]' passed (0.308 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testNextMatchStartsNextRoundWithoutUnseenStoryOrDoubleAdvance]' started.
+2026-10-04 11:11:35.091369-0400 GolfArcade[87768:9870069] [SportsDiagnostic] match finished: phone Next enabled; classic=false external=false
+2026-10-04 11:11:35.093610-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch tapped: next mode=campaign round=0
+2026-10-04 11:11:35.093753-0400 GolfArcade[87768:9870069] [SportsSession] command=end value=0.00
+2026-10-04 11:11:35.094552-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch next: launching round 1
+2026-10-04 11:11:35.094728-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:35.094819-0400 GolfArcade[87768:9870069] [SportsSession] launch sport=tennis mode=phone-preview touch=1
+2026-10-04 11:11:35.094936-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:35.098681-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:35.098860-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:35.107522-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch ignored: active=false finished=false
+2026-10-04 11:11:35.133869-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.147073-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.386542-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.402525-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testNextMatchStartsNextRoundWithoutUnseenStoryOrDoubleAdvance] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testNextMatchStartsNextRoundWithoutUnseenStoryOrDoubleAdvance]' passed (0.355 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testOldPlayersLoadWithKitColours]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testOldPlayersLoadWithKitColours] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testOldPlayersLoadWithKitColours]' passed (0.024 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testPhoneReplayKeepsTheSameRoundAfterLoss]' started.
+2026-10-04 11:11:35.468500-0400 GolfArcade[87768:9870069] [SportsDiagnostic] match finished: phone Next enabled; classic=false external=false
+2026-10-04 11:11:35.470199-0400 GolfArcade[87768:9870069] [SportsDiagnostic] postMatch tapped: replay mode=campaign round=0
+2026-10-04 11:11:35.470391-0400 GolfArcade[87768:9870069] [SportsSession] command=end value=0.00
+2026-10-04 11:11:35.470948-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:35.471042-0400 GolfArcade[87768:9870069] [SportsSession] launch sport=tennis mode=phone-preview touch=1
+2026-10-04 11:11:35.471164-0400 GolfArcade[87768:9870069] [SportsDisplay] refresh scenes=UIWindowSceneSessionRoleApplication external=0
+2026-10-04 11:11:35.516662-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.529671-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testPhoneReplayKeepsTheSameRoundAfterLoss] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:35.753233-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.767718-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testPhoneReplayKeepsTheSameRoundAfterLoss]' passed (0.333 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testPickingARoundSelectsItAndPlayRoundLaunchesIt]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testPickingARoundSelectsItAndPlayRoundLaunchesIt] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:35.828487-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:35.828705-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:35.911297-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:35.994142-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.007887-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testPickingARoundSelectsItAndPlayRoundLaunchesIt]' passed (0.254 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testSettingsTabsAndCharacterColours]' started.
+2026-10-04 11:11:36.063546-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.063703-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.073077-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.073231-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.113101-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.154457-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.283973-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.298177-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testSettingsTabsAndCharacterColours]' passed (0.281 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTheBriefingPlaysOnceBeforeARound]' started.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testTheBriefingPlaysOnceBeforeARound] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:36.372969-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.373189-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.462337-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.540781-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.555266-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTheBriefingPlaysOnceBeforeARound]' passed (0.264 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTheTutorialUnlocksEverythingElseInASport]' started.
+2026-10-04 11:11:36.612572-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.612760-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.630109-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.630290-0400 GolfArcade[87768:9870069] [AQ]        LoudnessManager.mm:1215  IsHardwareSupported: no plist loaded, returning false
+2026-10-04 11:11:36.779807-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:36.793821-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisCampaignTests testTheTutorialUnlocksEverythingElseInASport] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTheTutorialUnlocksEverythingElseInASport]' passed (0.240 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTimingCheckIsKeptPerTV]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testTimingCheckIsKeptPerTV]' passed (0.014 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testUnityEventsParse]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testUnityEventsParse]' passed (0.003 seconds).
+Test Case '-[GolfArcadeTests.TennisCampaignTests testWinningAdvancesAndLosingReplaysTheRound]' started.
+Test Case '-[GolfArcadeTests.TennisCampaignTests testWinningAdvancesAndLosingReplaysTheRound]' passed (0.007 seconds).
+Test Suite 'TennisCampaignTests' passed at 2026-10-04 11:11:36.867.
+	 Executed 26 tests, with 0 failures (0 unexpected) in 11.805 (11.820) seconds
+Test Suite 'TennisMenuSnapshotTests' started at 2026-10-04 11:11:36.868.
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testCharacterModelVariants]' started.
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testCharacterModelVariants]' passed (0.256 seconds).
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testLoadingIdlesRespectReducedMotionAndSport]' started.
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testLoadingIdlesRespectReducedMotionAndSport]' passed (0.016 seconds).
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testNewBaseLocker]' started.
+2026-10-04 11:11:37.155475-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:37.169611-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:37.308845-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:37.314315-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+<unknown>:0: warning: -[GolfArcadeTests.TennisMenuSnapshotTests testNewBaseLocker] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions
+2026-10-04 11:11:38.792817-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:38.901155-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:41.509681-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:41.516506-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:43.139242-0400 GolfArcade[87768:9870069] [UIFocus] _TtC10GolfArcadeP33_523E9BD7C16A71AFBA43C21269D1D19424ClubEnvironmentSceneView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:43.244618-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:45.790801-0400 GolfArcade[87768:9870069] [UIFocus] GolfArcade.LivingClubView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+2026-10-04 11:11:45.826518-0400 GolfArcade[87768:9870069] [UIFocus] SCNView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testNewBaseLocker]' passed (8.726 seconds).
+Test Suite 'TennisMenuSnapshotTests' passed at 2026-10-04 11:11:45.868.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 8.998 (9.000) seconds
+Test Suite 'GolfArcadeTests.xctest' passed at 2026-10-04 11:11:45.868.
+	 Executed 72 tests, with 0 failures (0 unexpected) in 101.295 (101.345) seconds
+Test Suite 'Selected tests' passed at 2026-10-04 11:11:45.869.
+	 Executed 72 tests, with 0 failures (0 unexpected) in 101.295 (101.346) seconds
+** BUILD INTERRUPTED **

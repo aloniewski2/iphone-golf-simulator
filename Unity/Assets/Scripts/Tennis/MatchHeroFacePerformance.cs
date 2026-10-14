@@ -9,6 +9,9 @@ namespace GolfArcade.Tennis
         public MatchHeroLook look;
         public float ForcedBlink = -1;
         public Vector2 ForcedGaze;
+        /// A mood asked for by a figure that has no tennis driver (the golfer playing an emote): Happy, Sad, Angry or Shock.
+        public enum Mood { None, Happy, Sad, Angry, Shock }
+        public Mood ForcedMood;
         HeroTennisDriver driver;
         float clock, blinkClock = -1, nextBlink = 2.7f, blink, brow;
         void LateUpdate()
@@ -21,11 +24,15 @@ namespace GolfArcade.Tennis
             float pulse = 0;
             if (blinkClock >= 0) { blinkClock += dt; pulse = Mathf.Sin(Mathf.Clamp01(blinkClock / .16f) * Mathf.PI); if (blinkClock >= .16f) blinkClock = -1; }
             var c = driver ? driver.CurrentAction : HeroTennisDriver.Clip.Ready;
-            bool happy = c == HeroTennisDriver.Clip.CelebratePoint || c == HeroTennisDriver.Clip.MatchWin || c == HeroTennisDriver.Clip.HitPerfect;
-            bool sad = c == HeroTennisDriver.Clip.SadPointLost || c == HeroTennisDriver.Clip.MatchLose;
+            bool happy = ForcedMood == Mood.Happy || c == HeroTennisDriver.Clip.CelebratePoint || c == HeroTennisDriver.Clip.MatchWin || c == HeroTennisDriver.Clip.HitPerfect
+                         || c == HeroTennisDriver.Clip.EmoteJumpJoy || c == HeroTennisDriver.Clip.EmoteFistPump || c == HeroTennisDriver.Clip.EmoteVictory;
+            bool sad = ForcedMood == Mood.Sad || c == HeroTennisDriver.Clip.SadPointLost || c == HeroTennisDriver.Clip.MatchLose || c == HeroTennisDriver.Clip.EmoteSlump || c == HeroTennisDriver.Clip.EmoteDefeat;
+            bool angry = ForcedMood == Mood.Angry || c == HeroTennisDriver.Clip.EmoteStomp;
+            bool shock = ForcedMood == Mood.Shock || c == HeroTennisDriver.Clip.EmoteShock || c == HeroTennisDriver.Clip.MissWhiff;
             bool effort = c == HeroTennisDriver.Clip.Serve || c == HeroTennisDriver.Clip.Smash;
-            blink = Mathf.MoveTowards(blink, happy ? .16f : effort ? .12f : 0, dt * 3);
-            brow = Mathf.MoveTowards(brow, happy ? .00065f : sad ? -.0006f : effort ? -.0004f : 0, dt * .006f);
+            // EMOTE STANDARD moods: angry = a hard squint under a low brow, shock = eyes wide open under a high one
+            blink = Mathf.MoveTowards(blink, happy ? .16f : angry ? .24f : effort ? .12f : sad ? .1f : 0, dt * 3);
+            brow = Mathf.MoveTowards(brow, happy ? .00065f : shock ? .0011f : angry ? -.0009f : sad ? -.0006f : effort ? -.0004f : 0, dt * .006f);
             Vector2 gaze = ForcedGaze;
             if (driver && driver.game) {
                 var head = look.Bone(HumanBodyBones.Head);

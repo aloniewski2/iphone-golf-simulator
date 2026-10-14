@@ -1,0 +1,26 @@
+free_Emote_Defeat 16 frames | g0 hand/hand in body L: f2-11 x30; g1 lining/Kit_Top: f0-15 x17; g2 lining/Kit_Bottom: f2-12 x4
+free_Emote_FistPump 10 frames | g0 lining/Kit_Bottom: f2-5 x5; g1 lining/Kit_Top: f0-9 x4
+free_Emote_JumpJoy 13 frames | g0 lining/Kit_Bottom: f2-9 x7; g1 skin/skin through clothes: f4-5 x5; g2 hand/hand under cloth R: f1-1 x5; g3 lining/Kit_Top: f0-12 x4
+free_Emote_Shock 14 frames | g0 hand/hand in body L: f2-8 x35; g1 hand/hand in body R: f2-8 x35; g2 skin/skin through clothes: f1-8 x29; g3 lining/Kit_Top: f0-13 x4; g4 lining/Kit_Bottom: f10-10 x1
+free_Emote_Slump 16 frames | g0 hand/hand under cloth R: f1-12 x60; g1 hand/hand in body L: f2-12 x55; g2 hand/hand in body R: f2-12 x45; g3 lining/Kit_Top: f0-15 x3
+free_Emote_Stomp 14 frames | g0 hand/hand in body L: f5-10 x30; g1 lining/Kit_Bottom: f2-10 x10; g2 hand/hand under cloth R: f3-10 x10; g3 hand/hand in body R: f10-10 x5; g4 lining/Kit_Top: f0-13 x3
+free_Emote_Victory 16 frames | g0 skin/skin through clothes: f6-11 x14; g1 lining/Kit_Top: f0-15 x6; g2 lining/Kit_Bottom: f5-13 x2
+free_Run 6 frames | g0 hand/hand in body R: f0-5 x20; g1 hand/hand under cloth R: f0-5 x20; g2 hand/hand in body L: f2-3 x10; g3 lining/Kit_Top: f0-5 x6; g4 lining/Kit_Bottom: f2-4 x2; g5 skin/skin through clothes: f3-3 x1
+free_Walk 7 frames | g0 hand/hand in body R: f0-6 x20; g1 hand/hand under cloth R: f0-6 x20; g2 hand/hand in body L: f2-4 x15; g3 lining/Kit_Top: f0-6 x2
+golf_Cheer 13 frames | g0 hole/see-through Kit_Glove_L: f0-12 x13
+golf_Chip 16 frames | g0 hand/hands overlap L: f0-15 x80; g1 hand/hand under cloth R: f1-10 x45; g2 skin/skin through clothes: f1-15 x25; g3 lining/Kit_Top: f0-13 x16; g4 hand/hands overlap R: f8-8 x5
+golf_Drive 16 frames | g0 hand/hand under cloth R: f0-11 x40; g1 hand/hands overlap L: f0-11 x35; g2 lining/Kit_Top: f0-15 x27; g3 hand/hands overlap R: f1-11 x20; g4 skin/skin through clothes: f4-15 x15; g5 lining/Kit_Bottom: f2-2 x1
+golf_Emote_Scuba 13 frames | g0 lining/Kit_Top: f0-12 x26; g1 lining/Kit_Bottom: f1-11 x10; g2 skin/skin through clothes: f2-10 x8
+golf_Emote_Spike 13 frames | g0 hand/hand in body R: f8-11 x20; g1 hand/hand under cloth R: f8-11 x20; g2 lining/Kit_Bottom: f2-11 x18; g3 lining/Kit_Top: f0-12 x6; g4 skin/skin through clothes: f3-4 x2
+golf_Emote_Thrust 13 frames | g0 lining/Kit_Bottom: f1-11 x6; g1 hand/hand under cloth R: f1-1 x5; g2 lining/Kit_Top: f0-12 x3
+golf_FistPump 16 frames | g0 skin/skin through clothes: f0-15 x51; g1 lining/Kit_Bottom: f0-15 x32; g2 lining/Kit_Top: f3-13 x28; g3 hole/see-through Kit_Glove_L: f0-15 x5
+golf_HalfSwing 16 frames | g0 hand/hands overlap L: f0-15 x65; g1 hand/hand under cloth R: f0-13 x50; g2 skin/skin through clothes: f2-14 x15; g3 lining/Kit_Top: f0-11 x13; g4 hand/hands overlap R: f2-5 x10; g5 lining/Kit_Bottom: f3-4 x2
+golf_Idle 13 frames | g0 hand/hand under cloth R: f8-10 x15; g1 hole/see-through Kit_Glove_L: f0-12 x13
+golf_Intro_BringIt 16 frames | g0 lining/Kit_Top: f0-15 x30; g1 lining/Kit_Bottom: f1-14 x5; g2 hole/see-through Kit_Glove_L: f10-13 x3
+golf_Intro_Pushups 16 frames | g0 lining/Kit_Top: f0-15 x22; g1 lining/Kit_Bottom: f1-13 x3
+golf_Intro_Wave 13 frames | g0 lining/Kit_Bottom: f1-10 x10; g1 hand/hand under cloth R: f1-11 x10; g2 lining/Kit_Top: f0-12 x4
+golf_IronSwing 16 frames | g0 hand/hands overlap L: f0-11 x35; g1 hand/hand under cloth R: f1-11 x30; g2 hand/hands overlap R: f3-11 x20; g3 lining/Kit_Top: f0-9 x19; g4 skin/skin through clothes: f4-15 x15; g5 lining/Kit_Bottom: f3-3 x1
+golf_Putt 15 frames | g0 hand/hands overlap L: f0-14 x75; g1 hand/hand under cloth R: f0-14 x55; g2 hand/hands overlap R: f2-9 x30; g3 lining/Kit_Top: f0-14 x19; g4 lining/Kit_Bottom: f0-14 x11; g5 skin/skin through clothes: f0-1 x2
+golf_RunForward 6 frames | g0 hand/hand under cloth R: f0-5 x20; g1 lining/Kit_Top: f2-3 x2; g2 skin/skin through clothes: f2-4 x2
+golf_Walk 8 frames | g0 lining/Kit_Top: f0-7 x4; g1 hole/see-through Kit_Glove_L: f2-5 x4
+golf_Wave 13 frames | g0 hole/see-through Kit_Glove_L: f0-12 x13

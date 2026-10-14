@@ -13,10 +13,12 @@ final class TennisMenuSnapshotTests: XCTestCase {
         let oldPlayers = session.players, oldIndex = session.playerIndex
         let oldActive = session.active, oldReady = session.ready, oldPaused = session.paused
         let oldSport = session.sport, oldWindow = session.emoteWindow
+        let oldStage = session.setupStage, oldPhase = session.tennisPhase
         defer {
             session.players = oldPlayers; session.playerIndex = oldIndex
             session.active = oldActive; session.ready = oldReady; session.paused = oldPaused
             session.sport = oldSport; session.emoteWindow = oldWindow
+            session.setupStage = oldStage; session.tennisPhase = oldPhase
             session.loading.cancel(); menu.debugShow(.title)
         }
         var p = Player(name: "Adnan", colorIndex: 0)
@@ -42,10 +44,11 @@ final class TennisMenuSnapshotTests: XCTestCase {
         try await capture(IslandLockerScreen(menu: menu, compact: false), size: CGSize(width: 1280, height: 720), name: "locker_tv")
         session.active = true; session.ready = true; session.paused = false; session.sport = "tennis"
         session.loading.begin(now: Date()); session.loading.markReady(); session.loading.skip()
+        session.setupStage = .playing; session.tennisPhase = "intro"
         session.emoteWindow = "intro"
-        XCTAssertTrue(session.canPlayEmote)
+        XCTAssertTrue(session.canPlayEmote, "the intro's emote window lets the player pick their intro emote")
         try await capture(TennisEmoteControls(session: session).padding(20).background(IslandUI.navy), size: CGSize(width: 402, height: 180), name: "controller_intro_layout")
-        session.emoteWindow = "point"
+        session.tennisPhase = "point"; session.emoteWindow = "point"
         XCTAssertTrue(session.canPlayEmote)
         session.emoteWindow = ""
         XCTAssertFalse(session.canPlayEmote)
@@ -227,7 +230,6 @@ final class TennisMenuSnapshotTests: XCTestCase {
             ("lobby-mac", CGSize(width: 1440, height: 900), false, .main, nil),
             ("lobby-phone", CGSize(width: 402, height: 874), true, .main, nil),
             ("party-phone", CGSize(width: 402, height: 874), true, .party, nil),
-            ("quick-play-tv", CGSize(width: 1280, height: 720), false, .quickPlay, nil),
             ("loading-tennis", CGSize(width: 1280, height: 720), false, .loading, MenuLaunch(mode: .exhibition, round: 0)),
             ("loading-golf-phone", CGSize(width: 402, height: 874), true, .loading, MenuLaunch(sport: .golf, mode: .round)),
             ("loading-stalled-phone", CGSize(width: 402, height: 874), true, .loading, MenuLaunch(mode: .training)),
@@ -365,7 +367,6 @@ final class TennisMenuSnapshotTests: XCTestCase {
             ("exhibition", .exhibition, nil, nil, 0, 0),
             ("character", .character, nil, nil, 4, 0),
             ("howto", .howTo, nil, nil, 0, 1),
-            ("golf-lesson", .golfLesson, nil, nil, 0, 1),
             ("connect", .connect, nil, nil, 1, 0),
             ("loading-tutorial", .loading, MenuLaunch(mode: .tutorial), nil, 0, 0),
             ("loading-golf", .loading, MenuLaunch(sport: .golf, mode: .round), nil, 0, 0),

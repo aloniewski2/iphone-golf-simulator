@@ -1,0 +1,3 @@
+golf_full_cliffside flyover=7.90 intro=4.25 start=1.00 hole=7 pick=1
+golf_full_magma flyover=7.90 intro=4.25 start=1.00 hole=10 pick=1
+tennis_full drone=3.25 total=13.55 pick=2

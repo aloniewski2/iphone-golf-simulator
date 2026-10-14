@@ -1,0 +1,10 @@
+{
+  "host": {
+    "lookDoneToRemoteHeroSeconds": 0.33692179166246206,
+    "emoteSelectionToRemoteHeroSeconds": 0.060317541705444455
+  },
+  "guest": {
+    "lookDoneToRemoteHeroSeconds": 0.006716333329677582,
+    "emoteSelectionToRemoteHeroSeconds": 0.2649939999682829
+  }
+}

@@ -40,8 +40,9 @@ unity network stats: {"role":"host","compact":true,"stampRejects":0,"maxSnapshot
 Write down: time from "friend joined" to the first serve; anything either phone says that is confusing; what the TV shows during setup.
 
 Pass if:
-- The TV shows **both players, one in each half**, each player at the bottom of their half with their name, the whole court and both players visible, nothing blank or stretched, the grandstand crowd in both halves.
-- **Both players can serve, receive and swing**, and each phone's serve/receive prompts appear on the right phone. The toss meter shows under the server.
+- The TV shows **both players, one in each half**, each player at the bottom of their half with their name, the whole court and both players visible, nothing blank or stretched, the grandstand crowd in both halves. The divider line and the two names are **on the TV, not on the phone's own screen**.
+- Each phone's own score line is from **its own player's side**: on the controller of the player in the right-hand half, "YOUR SERVE" appears when *that* player serves and the games read with their games first.
+- **Both players can serve, receive and swing**, and each phone's serve/receive prompts appear on the right phone. The toss meter shows under the server, turned to read left to right from that player's half (check it with each player serving).
 - Phone B (no TV) does not get hot in ten minutes and is still showing its racket controller.
 - The ball and both players move smoothly and a swing that looks on time on the TV scores as on time.
 - Lock phone B's screen / switch apps for 5 seconds: the match pauses, then recovers; a player who returns is asked to aim again.

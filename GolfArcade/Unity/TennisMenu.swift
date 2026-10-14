@@ -4,8 +4,8 @@ import UIKit
 /// Where the front end is. The same state drives the menu on the TV (steered from the phone's
 /// remote) and on the phone itself when no TV is connected.
 enum MenuScreen: Hashable {
-    case title, main, party, multiplayer, localChoice, localPlayers, onlineChoice, homeEmotes, quickPlay, gameSelect, hub(Sport), locked(Sport)
-    case campaign, training, exhibition, character, settings, howTo, golfLesson
+    case title, main, party, multiplayer, localChoice, localPlayers, onlineChoice, homeEmotes, gameSelect, hub(Sport), locked(Sport)
+    case campaign, training, exhibition, character, settings, howTo
     case connect, loading, results, story
     /// Choose the court or course before the game loads.
     case map
@@ -49,7 +49,7 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, guide, display
     var title: String {
         switch self {
         case .gameplay: "Gameplay"; case .controls: "Controls"; case .guide: "Guide"; case .display: "Display"
-        case .audio: "Audio"; case .access: "Accessibility"; case .developer: "Developer"
+        case .audio: "Audio & voice"; case .access: "Accessibility"; case .developer: "Developer"
         }
     }
 }
@@ -96,6 +96,12 @@ final class TennisMenu {
     private(set) var launch: MenuLaunch?
     /// A match waiting on the court or course picker.
     private var pendingPick: (launch: MenuLaunch, onPhone: Bool)?
+    /// Local golf (pass the phone): the number of golfers, held while the course is chosen on the map screen.
+    private var pendingPassPhone: Int?
+    func chooseCourseForPassThePhone(_ players: Int) {
+        launch = MenuLaunch(sport: .golf, mode: .round); launchOrigin = screen
+        pendingPassPhone = players; show(.map)
+    }
     /// The XP screen after a match. Its buttons only work once the show is over (or skipped).
     private(set) var postMatch: PostMatchSummary?
     private(set) var postMatchDone = false
@@ -106,6 +112,9 @@ final class TennisMenu {
     /// Bumped when a selection is refused (a locked item), to shake the focused item.
     private(set) var refusals = 0
     private(set) var notice = ""
+    /// Settings → Audio → Feel test: which entry was played last, and its name.
+    private(set) var feelTestLabel = ""
+    private var feelTestShown = 0
     /// The classic multi-sport form (every raw option), from Settings → Developer.
     var classic = false
     private(set) var settingsTab: SettingsTab = .gameplay
@@ -149,17 +158,15 @@ final class TennisMenu {
     static func hubItems(_ sport: Sport) -> [String] {
         sport == .tennis ? ["exhibition", "campaign", "training"] : ["round"]
     }
-    /// Hero V4 identity only (HeroKit.cs / HeroV4 in CharacterModelPreview.swift): the rows the locked hero supports.
-    static let characterRows = ["body", "haircut", "skin", "hair", "hairColor", "hand", "shirt", "shorts", "accent", "racket"]
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
         case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "golfTwists", "golfWeather", "golfBounties", "resetProgress"]
-        case .controls: ["controls", "range", "hand", "relock", "timing"]
+        case .controls: ["controls", "swingPrediction", "fastInput", "range", "hand", "relock", "timing"]
         case .guide: GuideDeck.allCases.map(\.rowID)
         case .display: ["fps", "overscan"]
-        case .audio: ["sound", "haptics"]
+        case .audio: ["sound", "haptics", "hapticStrength", "racketSound", "feelTest", "partyVoice", "partyRecording"]
         case .access: ["bigText", "reduceMotion"]
-        case .developer: ["classic", "bench"]
+        case .developer: ["bench"]
         }
     }
 
@@ -178,7 +185,6 @@ final class TennisMenu {
         case .onlineChoice: return [["onlineQuick"], ["homeInvite"], ["back"]]
         case .homeEmotes: return homeEmotes.map { ["home-emote-\($0)"] } + [["back"]]
         case .online(let route): return online.rows(route, menu: self)
-        case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
         case .gameSelect: return [Sport.allCases.filter(\.playable).map { "sport-\($0.rawValue)" }, ["back"]]
         case .hub(let sport): return Self.hubItems(sport).map { [$0] } + [["back"]]
         case .locked: return [["back"]]
@@ -194,7 +200,6 @@ final class TennisMenu {
         case .settings:
             return [SettingsTab.visible.map { "tab-\($0.rawValue)" }] + Self.settingsRows(settingsTab).map { [$0] } + [["back"]]
         case .howTo: return [["prev", "nextPage", "back"]]
-        case .golfLesson: return [["round", "back"]]
         case .connect: return [["back"]]
         case .loading: return (SportsSession.shared.loading.isStalled || SportsSession.shared.loading.phase == .failed) ? [["loadingBack", "loadingRetry"]] : [["loadingBack"]]
         case .results:
@@ -303,15 +308,13 @@ final class TennisMenu {
 
     func select() {
         let id = focused
-        if screen.isOnline || id == "partyNearby" {
+        if screen.isOnline || id == "partyNearby" || id.hasPrefix("net-") {
             online.select(id, menu: self); return
         }
         if session.haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
         ClubSound.play("pop", volume: 0.5)
         switch id {
         case "start" where screen == .title: show(.main)
-        case "store": refuse("Store · Coming soon")
-        case "homeContinue": continueJourney()
         case "campaignMore": confirmingRestart = true; row = 0; column = 0
         case "restartNo": confirmingRestart = false; _ = focus("campaignPlay")
         case "restartYes": confirmingRestart = false; campaign.restart(); result = nil; show(.campaign)
@@ -334,14 +337,12 @@ final class TennisMenu {
         case "partyLocal": show(.localChoice)
         case "partyOnline": show(.onlineChoice)
         case "onlineQuick": online.select("partyOnline", menu: self)
-        case "homeInvite": online.select("net-invite", menu: self)
+        // Play with Friends opens the online hub (friends, invites); its "Invite from Game Center" is the old sheet
+        case "homeInvite": HubSession.shared.inviteFriends()
         case "homeEmotes": homeEmote = nil; show(.homeEmotes)
         case let emote where emote.hasPrefix("home-emote-"):
             homeEmote = String(emote.dropFirst(11)); homeEmoteSequence += 1
         case "betaFeedback": BetaFeedback.open()
-        case "homeCampaign": show(.campaign)
-        case "quickTennis": begin(MenuLaunch(mode: .exhibition, round: 0))
-        case "quickGolf": begin(MenuLaunch(sport: .golf, mode: .round))
         case "loadingBack": back()
         case "loadingRetry":
             guard let retry = launch else { return }
@@ -362,10 +363,7 @@ final class TennisMenu {
         case let t where t.hasPrefix("tab-"):
             settingsTab = SettingsTab(rawValue: String(t.dropFirst(4))) ?? .gameplay
         // Hubs.
-        case "tutorial", "replayTutorial":
-            guard case .hub(let sport) = screen else { return }
-            startTutorial(sport)
-        case "campaign", "training", "exhibition", "round", "golfCampaign", "golfTraining":
+        case "campaign", "training", "exhibition", "round":
             guard case .hub(let sport) = screen else {
                 if id == "campaign" { show(.campaign) }; return
             }
@@ -392,19 +390,12 @@ final class TennisMenu {
             campaign.restart(); result = nil
             show(.campaign)
         case "start" where screen == .training: begin(MenuLaunch(mode: .training))
-        case "randomize": randomize()
-        case "reset":
-            for slot in Player.outfitSlots { session.players[session.playerIndex].clearOutfit(slot) }
-            session.savePlayers()
         case "resetProgress":
             if confirmingReset {
                 confirmingReset = false; progress.resetTutorials(); campaign.restart(); notice = "Progress reset"
             } else { confirmingReset = true; notice = "Press again to erase campaign progress" }
-        case "resetTips": notice = "Coaching is disabled"
-        case "replayOnboarding": OnboardingFlow.shared.replay()
         case "relock": notice = "The court direction is set again at the start of your next match"; session.motion.clearAxis()
         case "timing": session.forceTimingCheckNextMatch(); notice = "The timing check runs at the start of your next match"
-        case "classic": classic = true
         case let l where l.hasPrefix("lk-"): lockerSelect(l)
         case "prev": if screen == .howTo { howToPage = max(0, howToPage - 1) } else { lessonCard = max(0, lessonCard - 1) }
         case "nextPage": howToPage = min(guideDeck.cards.count - 1, howToPage + 1)
@@ -420,6 +411,11 @@ final class TennisMenu {
             // The court is chosen: remember it and go on to the match that was waiting.
             if mapSport == .golf { session.golfCourse = String(m.dropFirst(4)) }
             else { session.tennisVenue = String(m.dropFirst(4)) }
+            if let players = pendingPassPhone {
+                pendingPassPhone = nil; launch = nil
+                do { try online.startPassThePhone(players, menu: self) } catch { show(.localPlayers); notice = error.localizedDescription }
+                return
+            }
             // (a course picked is an ordinary round, even after the day's forecast round)
             if let pick = pendingPick { pendingPick = nil; var launch = pick.launch; launch.daily = nil; begin(launch, onPhone: pick.onPhone, skipMap: true) }
         // golf's daily forecast round: the day's course, twists and weather, the same for everyone
@@ -431,7 +427,6 @@ final class TennisMenu {
         case "golf-twists": session.golfTwists.toggle()
         case "golf-weather": session.golfWeather.toggle()
         case "golf-challenges": session.golfChallenges.toggle()
-        case "phone": show(.connect)
         case "continue":
             if let result, !campaign.champion, result.won { play(round: campaign.nextRound) } else { show(.campaign) }
         case "retry": if let launch { begin(launch, skipMap: true) }
@@ -460,12 +455,11 @@ final class TennisMenu {
         case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
         case .howTo: show(.settings); _ = focus(guideDeck.rowID)   // back on the topic just read
         case .party, .settings, .homeEmotes: show(.main)
-        case .multiplayer, .quickPlay, .gameSelect, .onlineChoice, .localChoice: show(.party)
+        case .multiplayer, .gameSelect, .onlineChoice, .localChoice: show(.party)
         case .localPlayers: show(.localChoice)
         case .hub, .locked: show(.gameSelect)
         case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
         case .training, .exhibition: show(.hub(.tennis))
-        case .golfLesson: show(.hub(.golf))
         case .connect: show(launch.map(hubAfter) ?? .main)
         case .results: show(.campaign)
         case .story:
@@ -476,14 +470,13 @@ final class TennisMenu {
             case .results: show(.results)
             case .hub(let sport): show(.hub(sport))
             }
-        case .map: pendingPick = nil; show(launchOrigin ?? .main)
+        case .map: pendingPick = nil; if pendingPassPhone != nil { pendingPassPhone = nil; launch = nil }; show(launchOrigin ?? .main)
         case .postMatch: if postMatchDone { if Date().timeIntervalSince(postMatchDoneAt) > 0.7 { leavePostMatch(.menu) } } else { postMatchSkips += 1 }
         }
     }
 
     /// Where the menu goes back to after a launch.
     private func hubAfter(_ launch: MenuLaunch) -> MenuScreen {
-        if launchOrigin == .quickPlay { return .quickPlay }
         return switch launch.mode {
         case .campaign: .campaign
         case .training: .training
@@ -495,15 +488,8 @@ final class TennisMenu {
     /// Sideways on a choice; returns false for items that are not choices.
     func adjust(_ id: String, by step: Int) -> Bool {
         let s = session
-        let playerItems = ["body", "haircut", "skin", "hair", "hairColor", "face", "height", "build", "hand", "shirt", "shorts", "accent", "racket"]
-        guard s.players.indices.contains(s.playerIndex) || !playerItems.contains(id) else { return false }
+        guard s.players.indices.contains(s.playerIndex) || id != "hand" else { return false }
         func cycle(_ value: Int, _ count: Int) -> Int { (value + step + count) % count }
-        /// Colours cycle through the palette and "kit colour" (nil).
-        func cycleColor(_ value: Int?) -> Int? {
-            let n = Outfit.palette.count + 1
-            let next = cycle((value ?? -1) + 1, n) - 1
-            return next < 0 ? nil : next
-        }
         let p = s.playerIndex
         if id.hasPrefix("lk-") { return lockerAdjust(id, by: step) }
         switch id {
@@ -511,20 +497,10 @@ final class TennisMenu {
         case "quickDifficulty": quickDifficulty = cycle(quickDifficulty, Self.trainingLevels.count)
         case "quickLength": quickLength = cycle(quickLength, 3)
         case "level": trainingLevel = cycle(trainingLevel, Self.trainingLevels.count); s.tennisDifficulty = Self.trainingLevels[trainingLevel].difficulty
-        case "body": s.players[p].standardFemale.toggle(); s.savePlayers()
-        // colour ranges: the remote walks along the range in small steps (the phone locker has sliders)
-        case "skin": s.players[p].setSkin(min(1, max(0, s.players[p].skinT + Double(step) * 0.05))); s.savePlayers()
-        case "hair": s.players[p].hairStyle = cycle(s.players[p].hairStyle, 4); s.savePlayers()
-        case "haircut": s.players[p].haircut = cycle(min(s.players[p].haircut, HeroV4.offered - 1), HeroV4.offered); s.savePlayers()
-        case "hairColor": s.players[p].setHair(natural: min(1, max(0, s.players[p].hairT + Double(step) * 0.05))); s.savePlayers()
-        case "face": s.players[p].faceShape = cycle(s.players[p].faceShape, 4); s.savePlayers()
-        case "height": s.players[p].heightChoice = cycle(s.players[p].heightChoice, 5); s.savePlayers()
-        case "build": setBodySize(s.players[p].bodySize + Double(step) * 0.05)
         case "hand": s.players[p].handedness = s.players[p].handedness == .left ? .right : .left; s.savePlayers()
-        case "shirt", "shorts", "accent", "racket":
-            let (h, sh) = s.players[p].hueShade(id)
-            s.players[p].setOutfit(id, hue: h + Double(step) / 24, shade: sh); s.savePlayers()
         case "controls": s.touch.toggle()
+        case "swingPrediction": s.swingPrediction.toggle()
+        case "fastInput": s.fastInput.toggle()
         case "presentationIntros":
             let values = ["full", "short", "off"]
             s.presentationIntros = values[cycle(values.firstIndex(of: s.presentationIntros) ?? 0, values.count)]
@@ -536,7 +512,16 @@ final class TennisMenu {
         case "presentationBigMoments": s.presentationBigMoments.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()
-        case "coaching": s.coachingTips.toggle()
+        // A strength or sound change plays a hit straight away, so the player feels (and hears) what they chose.
+        case "hapticStrength":
+            s.hapticStrength = RacketFeel.strengths[cycle(RacketFeel.strengthIndex(s.hapticStrength), RacketFeel.strengths.count)].level
+            _ = RacketFeel.playDemo(2)
+        case "racketSound": s.racketSound.toggle(); _ = RacketFeel.playDemo(2)
+        case "feelTest":
+            let i = feelTestLabel.isEmpty ? 0 : feelTestShown + step
+            feelTestShown = i
+            feelTestLabel = RacketFeel.playDemo(i) ?? "Open the plaza or a match first: the feel test plays through the game."
+        case "partyVoice", "partyRecording": PartyUI.shared.settingsOpen = true
         case "fps": s.highFrameRate.toggle()
         case "range": s.travel = min(1.2, max(0.3, s.travel + Double(step) * 0.1))
         case "overscan": s.overscan = min(0.1, max(0, s.overscan + Double(step) * 0.02))
@@ -575,7 +560,10 @@ final class TennisMenu {
 
     // MARK: Tutorials
 
-    func finishOnboarding(_ sport: Sport) { show(.hub(sport)) }
+    /// After onboarding: with a TV, the Plaza (the menu); otherwise that sport's screen on the phone.
+    func finishOnboarding(_ sport: Sport) {
+        if session.displayConnected { show(.main) } else { show(.hub(sport)) }
+    }
 
     /// Compatibility for saved routes and older UI: choose a map for a normal game.
     func startTutorial(_ sport: Sport) {
@@ -617,6 +605,12 @@ final class TennisMenu {
 
     func openCharacterEditor() { classic = false; show(.character) }
     /// Leave the current local screen or game and return to the main menu.
+    /// The Plaza (HubSession) opens a destination directly: a station or bay is that room's way into the screen.
+    func openFromPlaza(_ next: MenuScreen) {
+        if next == .howTo { howToPage = 0 }
+        launchOrigin = nil; show(next)
+    }
+
     func goHome() {
         if screen.isOnline {
             if online.service.lobby != nil { showOnline(.leave); return }
@@ -817,7 +811,7 @@ final class TennisMenu {
     }
 
     func returnFromNetworkEntry(_ route: OnlineLobbyScreen) {
-        show(route == .entry ? .onlineChoice : .party)
+        show(route == .entry ? .onlineChoice : .localChoice)   // Quick Match came from Online; the Nearby list comes from Local → Join a Friend
     }
 
     var loadingOpponent: TennisOpponent? {
@@ -883,9 +877,10 @@ extension TennisMenu {
         case .customize:
             return [tabs, ["lk-body"], ["lk-hand"], ["lk-skin"], ["lk-shirt"], ["lk-shorts"], actions]
         case .emotes:
-            return [tabs, (0..<3).map { "lk-emote-slot-\($0)" },
-                    Array(EmoteCatalog.ids.prefix(3)).map { "lk-emote-\($0)" },
-                    Array(EmoteCatalog.ids.suffix(3)).map { "lk-emote-\($0)" }, actions]
+            // one focus row per three emotes, in the locker grid's own order (three columns)
+            let emoteRows = stride(from: 0, to: EmoteCatalog.ids.count, by: 3).map { start in
+                EmoteCatalog.ids[start..<min(start + 3, EmoteCatalog.ids.count)].map { "lk-emote-\($0)" } }
+            return [tabs, (0..<3).map { "lk-emote-slot-\($0)" }] + emoteRows + [actions]
         }
     }
 
@@ -1103,10 +1098,11 @@ struct OnlineAppleSheet: Identifiable {
     }
     /// Pass the phone (golf): the course last picked, the guests already in and ready, and straight into loading. The only press the
     /// players made after choosing Local is how many of them there are.
-    private func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
-        identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
+    func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
+        // one phone, no network: a lobby only this phone is in
+        identity(menu); try service.host(using: SharedPhoneTransport(), sharedPhone: true)
         let course = SportsSession.shared.golfCourse
-        try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "postcards")
+        try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "cliffside")
         for _ in 1..<players { try service.addLocalGuest() }
         try? service.setReady(true)
         // The round is shown on the TV: with none connected there is nothing to start yet, so wait in the lobby and say so.
@@ -1122,7 +1118,12 @@ struct OnlineAppleSheet: Identifiable {
     func rows(_ route: OnlineLobbyScreen, menu: TennisMenu) -> [[String]] {
         switch route {
         case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["back"]]
-        case .nearby: return (service.localNetworkDenied ? [["net-open-settings"]] : []) + nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-join-code"],["net-host"],["back"]]
+        case .nearby:
+            var list: [[String]] = []
+            if service.localNetworkDenied { list.append(["net-open-settings"]) }
+            list += nearbyItems.map { ["net-join-\($0.id)"] }
+            if service.discoveredLobbies.count > 4 { list.append(["net-page-prev","net-page-next"]) }
+            return list + [["net-join-code"],["net-host"],["back"]]
         case .searching: return [["net-cancel"]]
         case .lobby: return (service.isNearby && service.isOwner && service.lobby?.sport == .golf ? [["net-add-guest","net-remove-guest"]] : []) + [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
         case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
@@ -1150,7 +1151,7 @@ struct OnlineAppleSheet: Identifiable {
                 identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends", quick: .tennis); menu.showOnline(.lobby)
             case let count where count.hasPrefix("localPlayers"):
                 guard let players = Int(count.dropFirst("localPlayers".count)), (2...4).contains(players) else { return }
-                try startPassThePhone(players, menu: menu)
+                menu.chooseCourseForPassThePhone(players)
             case "net-add-guest": try service.addLocalGuest()
             case "net-remove-guest": try service.removeLocalGuest()
             case "net-join-code":
@@ -1171,13 +1172,9 @@ struct OnlineAppleSheet: Identifiable {
                 guard let found = service.discoveredLobbies.first(where: { $0.id == String(id.dropFirst(9)) }) else { return }
                 identity(menu); try service.joinLocal(found); searchStarted = Date(); menu.showOnline(.searching)
             case "net-invite":
-                identity(menu)
+                // friends are invited from the Friends list (the Club Hub), never Apple's invite sheet
                 if service.isNearby { menu.onlineNotice("Ask your friend to open Nearby on the same Wi-Fi."); return }
-                run(menu) { [self] in
-                    if !service.authenticated { try await service.authenticate { [weak self] vc in self?.sheet = OnlineAppleSheet(controller: vc) } }
-                    sheet = OnlineAppleSheet(controller: try service.inviteFriends())
-                    menu.showOnline(.lobby)
-                }
+                HubSession.shared.inviteFriends()
             case "net-find":
                 if service.isNearby { menu.onlineNotice("Your lobby is visible in Nearby. Ask a friend to join."); return }
                 run(menu) { [self] in try await service.findMorePlayers() }
@@ -1193,7 +1190,7 @@ struct OnlineAppleSheet: Identifiable {
             case "net-settings-match": settingsSeats = false; menu.showOnline(.settings)
             case "net-sport-tennis","net-sport-golf":
                 let sport: MultiplayerSport = id == "net-sport-golf" ? .golf : .tennis
-                try service.configure(sport,venue:sport == .golf ? "postcards" : "resort")
+                try service.configure(sport,venue:sport == .golf ? "cliffside" : "resort")
                 _ = menu.focus(id)
             case let id where id.hasPrefix("net-venue-"):
                 guard let l = service.lobby else { return }; try service.configure(l.sport,venue:String(id.dropFirst(10)),sets:l.sets,games:l.games)
@@ -1209,7 +1206,8 @@ struct OnlineAppleSheet: Identifiable {
                 if p.seat >= 0 { try service.assignSeat(p.id,seat:-1) }
                 else if let seat = (0..<l.capacity).first(where: { n in !l.participants.contains { $0.seat == n } }) { try service.assignSeat(p.id,seat:seat) }
                 else if let outgoing = l.participants.last(where: { $0.seat >= 0 && $0.id != l.ownerID }) { try service.swapSeat(p.id,with:outgoing.id) }
-            case "net-leave": SportsDisplays.shared.showMatchControls(); menu.showOnline(.leave)
+            // leaving an online match goes back to the Plaza (a party to its bench together); never a confirm screen
+            case "net-leave": cancel(); HubSession.shared.leaveOnlineMatch(service); if menu.screen.isOnline { menu.openFromPlaza(.main) }
             case "net-stay": sync(menu,force:true)
             case "net-confirm-leave": cancel(); service.leave(); menu.openOnlineParty()
             case "net-return": try service.requestReturnToLobby(); sync(menu,force:true)
@@ -1244,41 +1242,39 @@ struct OnlineAppleSheet: Identifiable {
         case .lobby,.loading,.match,.results: menu.showOnline(.leave)
         }
     }
+    /// The lobby changed. The Plaza is the only menu: a party lives in it and its matches start from its benches, so the lobby never
+    /// opens a screen of its own on the phone or the TV. Only the match's own controls are brought to the front once it plays.
     func sync(_ menu: TennisMenu, force: Bool = false) {
         guard let l = service.lobby else { return }
-        switch l.phase {
-        case .lobby:
-            if force || !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen) { menu.showOnline(.lobby) }
-        case .loading: if menu.screen != .online(.leave) { menu.showOnline(.loading) }
-        case .results: if menu.screen != .online(.leave) { SportsDisplays.shared.showMatchControls(); menu.showOnline(.results) }
-        case .calibrating, .playing: if menu.screen != .online(.leave) { menu.showOnline(.match); SportsDisplays.shared.restorePhoneControls() }
-        case .interrupted: if menu.screen != .online(.leave) { menu.showOnline(.lobby) }
-        }
+        if menu.screen.isOnline { menu.openFromPlaza(.main) }
+        if l.phase == .calibrating || l.phase == .playing { SportsDisplays.shared.restorePhoneControls() }
+        // the host went or the match broke: the phone offers the way back to the Plaza
+        if l.phase == .interrupted, SportsSession.shared.multiplayerMatchID != nil, HubSession.shared.matchOver == nil { HubSession.shared.onlineMatchFinished("The match stopped") }
     }
-    func acceptInvite(_ menu: TennisMenu) {
-        guard service.pendingInvite != nil else { return }
-        do {
-            if service.lobby != nil || SportsSession.shared.active { service.leave(); SportsSession.shared.end() }
-            identity(menu); sheet = OnlineAppleSheet(controller:try service.acceptInvitation()); menu.showOnline(.searching)
-        } catch { menu.onlineNotice(error.localizedDescription) }
-    }
+    /// Apple's sign-in sheet went away.
+    func sheetDismissed() {}
 }
 
 extension OnlineLobbyMenu {
     func installCallbacks(_ menu: TennisMenu) {
-        service.onResult = { [weak self, weak menu] payload in
-            guard let self, let menu else { return }
+        // The result stays on the TV (Unity draws it); the phone offers Back to the Plaza. No lobby or results screen opens.
+        service.onResult = { [weak self] payload in
+            guard let self else { return }
             self.winnerID = nil
+            var line = "Match over"
             if let data = payload.data(using:.utf8), let result = try? JSONSerialization.jsonObject(with:data) as? [String:Any], result["reason"] as? String == "complete", let seat = result["winner"] as? Int, seat >= 0 {
                 self.winnerID = self.service.lobby?.participants.first { $0.seat == seat }?.id
+                if let winner = self.service.lobby?.participants.first(where: { $0.id == self.winnerID }) { line = winner.id == self.service.localID ? "You won!" : "\(winner.name) won" }
             }
-            SportsDisplays.shared.showMatchControls(); SportsDisplays.shared.showMenu(); menu.showOnline(.results)
+            SportsDisplays.shared.showMatchControls()
+            HubSession.shared.onlineMatchFinished(line)
         }
+        // The match stopped (back to the party, or ended): the session closes and the Plaza opens again on its bench.
         service.onReturnToLobby = { [weak menu] in
-            guard let menu else { return }
             if SportsSession.shared.multiplayerMatchID != nil { SportsSession.shared.end() }
-            SportsDisplays.shared.showMatchControls(); SportsDisplays.shared.showMenu()
-            if menu.online.service.lobby != nil { menu.showOnline(.lobby) }
+            SportsDisplays.shared.showMatchControls()
+            HubSession.shared.onlineMatchEnded()
+            if let menu, menu.screen.isOnline { menu.openFromPlaza(.main) }
         }
     }
 }
@@ -1366,13 +1362,14 @@ extension OnlineLobbyMenu {
     }
     private static func requireValue<T>(_ value:T?) throws -> T { guard let value else { throw MultiplayerError.unavailable("Nearby proof host not found") };return value }
     /// What the proof player needs from a tennis update, whichever form it arrived in: the full one, or the compact one the host sends
-    /// at 30 Hz (arrays: n = tick/point/contact, d = time/phaseAt, i = server/receiver, f = ball x/y/z; see NetworkTennisWire.cs).
+    /// at 30 Hz (arrays: n = tick/point/contact, d = time/phaseAt in ms, i = server/receiver, f = ball x/y/z in mm; see NetworkTennisWire.cs).
+    /// Returns seconds and metres, as the full form has them.
     private static func proofFields(_ s:[String:Any]) -> (phase:String,time:Double,point:Int64,contact:Int64,server:Int,phaseAt:Double,receiver:Int?,ballZ:Double?)? {
         if let phase=s["phase"] as? String,let time=s["time"] as? Double,let point=s["point"] as? Int64,let contact=s["contact"] as? Int64 {
             return (phase,time,point,contact,s["server"] as? Int ?? 0,s["phaseAt"] as? Double ?? 0,s["receiver"] as? Int,(s["ball"] as? [String:Double])?["z"])
         }
         if s["v"] as? Int == 2,let phase=s["ph"] as? String,let n=s["n"] as? [Int64],n.count == 3,let d=s["d"] as? [Double],d.count >= 2,let i=s["i"] as? [Int],i.count >= 2,let f=s["f"] as? [Double],f.count >= 3 {
-            return (phase,d[0],n[1],n[2],i[0],d[1],i[1],f[2])
+            return (phase,d[0] / 1000,n[1],n[2],i[0],d[1] / 1000,i[1],f[2] / 1000)   // milliseconds and millimetres on the wire
         }
         return nil
     }

@@ -1,0 +1,1388 @@
+diff --git a/Unity/Assets/Scripts/Course/Wind.cs b/Unity/Assets/Scripts/Course/Wind.cs
+--- a/Unity/Assets/Scripts/Course/Wind.cs
++++ b/Unity/Assets/Scripts/Course/Wind.cs
+@@ -11,6 +11,9 @@
+         public readonly double DirectionDegrees;
+ 
+         public const double MaxMPH = 20;
++        /// From here up the wind is strong (a 7-iron drifts 20 yards and more across it); from ModerateMPH it is worth
++        /// aiming off.
++        public const double ModerateMPH = 10, StrongMPH = 15;
+ 
+         public Wind(double speedMPH, double directionDegrees)
+         {
+@@ -21,11 +24,20 @@
+         public static readonly Wind Calm = new(0, 0);
+ 
+         public bool IsCalm => SpeedMPH < 0.5;
++        public bool IsStrong => SpeedMPH >= StrongMPH;
+ 
+-        /// A hole's wind: any direction, mostly light, sometimes a proper blow.
++        /// Calm, Light, Moderate or Strong, for the HUD.
++        public string Strength => IsCalm ? "Calm" : SpeedMPH < ModerateMPH ? "Light" : IsStrong ? "Strong" : "Moderate";
++
++        /// A hole's wind, from any direction: a quarter of holes near calm (0–3 mph), most light (4–9), a quarter
++        /// moderate (10–14) and only one in ten strong (15–20), so a big blow is an event, not the weather.
+         public static Wind Random(System.Random rng)
+         {
+-            double speed = Math.Round(MaxMPH * Math.Pow(rng.NextDouble(), 1.6));
++            double band = rng.NextDouble(), within = rng.NextDouble();
++            double speed = band < 0.25 ? Math.Round(3 * within)
++                : band < 0.65 ? 4 + Math.Round(5 * within)
++                : band < 0.90 ? ModerateMPH + Math.Round(4 * within)
++                : StrongMPH + Math.Round(5 * within);
+             return new Wind(speed, Math.Round(rng.NextDouble() * 360 - 180));
+         }
+ 
+diff --git a/Unity/Assets/Scripts/Course/Hole.cs b/Unity/Assets/Scripts/Course/Hole.cs
+--- a/Unity/Assets/Scripts/Course/Hole.cs
++++ b/Unity/Assets/Scripts/Course/Hole.cs
+@@ -1,6 +1,7 @@
+ using System;
+ using System.Collections.Generic;
+ using GolfArcade.Shot;
++using GolfArcade.Swing;
+ 
+ namespace GolfArcade.Course
+ {
+@@ -36,33 +37,42 @@
+             _ => "Out of bounds",
+         };
+ 
+-        /// What the lie costs in club speed. The sand wedge is made for the sand and cuts through
+-        /// the rough; long clubs lose far more to both; a putt off the fringe barely notices.
++        /// The share of the club's distance the lie keeps: the fairway and the tee all of it, the
++        /// rough nine tenths, the sand three quarters (the wedges, made for it, 85 %); a putt off
++        /// the fringe barely notices.
+         public static double PowerFactor(this CourseLie lie, GolfClub club = GolfClub.Iron) => lie switch
+         {
+-            CourseLie.Rough => club.Family() == ClubFamily.Wedge ? 0.9 : club == GolfClub.Putter ? 0.7 : 0.85,
+-            CourseLie.Bunker => club.Family() == ClubFamily.Wedge ? 0.85 : club == GolfClub.Putter ? 0.4 : 0.6,
++            CourseLie.Rough => club == GolfClub.Putter ? 0.7 : 0.9,
++            CourseLie.Bunker => club == GolfClub.Putter ? 0.4 : club.Family() == ClubFamily.Wedge ? 0.85 : 0.75,
+             CourseLie.Fringe => club == GolfClub.Putter ? 1 : 0.97,
+             _ => 1,
+         };
+ 
+-        /// Backspin kept from the lie. Grass trapped between the face and the ball in the rough
+-        /// kills the spin (a flyer: it comes out hot, won't stop and runs on); sand takes some too.
+-        public static double SpinFactor(this CourseLie lie) => lie switch
+-        {
+-            CourseLie.Rough => 0.55,
+-            CourseLie.Bunker => 0.8,
+-            CourseLie.Fringe => 0.9,
+-            _ => 1,
+-        };
+-
+-        /// Degrees added to the launch: the club is picked steeply out of the grass or the sand.
+-        public static double LaunchChange(this CourseLie lie) => lie switch
+-        {
+-            CourseLie.Rough => 1.5,
+-            CourseLie.Bunker => 3,
+-            _ => 0,
+-        };
++        /// Backspin kept from the lie: the fringe's longer grass takes a little.
++        public static double SpinFactor(this CourseLie lie) => lie == CourseLie.Fringe ? 0.9 : 1;
++
++        /// How far off a real swing from this lie can come out, at most: degrees off the line it
++        /// started on and the share of its ball speed, either way. The rough a little, the sand
++        /// twice that; a clean lie nothing.
++        public static (double degrees, double speed) Scatter(this CourseLie lie) => lie switch
++        {
++            CourseLie.Rough => (2.5, 0.04),
++            CourseLie.Bunker => (5, 0.07),
++            _ => (0, 0),
++        };
++
++        /// A real swing out of this lie: the grass or the sand knocks it off its line and off its
++        /// pace by a random amount within Scatter (`line` and `pace` are 0–1 draws, 0.5 clean).
++        /// Applied once, when the ball is struck, so the shot that flies is the one every phone sees.
++        public static SwingImpact Scattered(this CourseLie lie, SwingImpact impact, double line, double pace)
++        {
++            var (degrees, speed) = lie.Scatter();
++            if (degrees <= 0) return impact;
++            double Spread(double u) => (Math.Max(0, Math.Min(1, double.IsFinite(u) ? u : 0.5)) - 0.5) * 2;
++            impact.StartLineDegrees += degrees * Spread(line);
++            impact.SpeedBonus += speed * Spread(pace);
++            return impact;
++        }
+ 
+         /// How the ground takes a ball coming down on it: `soft` soaks up the bounce (0 fairway,
+         /// 1 dead) and `grab` takes the run out of it. Greens are receptive, rough smothers the
+@@ -81,13 +91,13 @@
+         /// Where a putter is the club: the green, and its fringe.
+         public static bool IsPuttingSurface(this CourseLie lie) => lie is CourseLie.Green or CourseLie.Fringe;
+ 
+-        /// The launch of a strike from this lie: the club's launch for the meter reading, then
+-        /// what the lie does to it — speed, spin, launch — and a thin strike's low, hot flight.
++        /// The launch of a strike from this lie: the club's launch for the meter reading, with
++        /// the share of the distance the lie keeps taken off the reading (a full swing from the
++        /// rough flies as a nine-tenths one from the fairway), then a thin strike's low, hot flight.
+         public static BallFlight.Launch LaunchFrom(this CourseLie lie, GolfClub club, double power, double startLine, double curve, double thin = 0, double speed = 1)
+         {
+-            var l = club.Launch(power, startLine, curve, lie.PowerFactor(club) * speed);
++            var l = club.Launch(power * lie.PowerFactor(club), startLine, curve, speed);
+             l.SpinRPM *= lie.SpinFactor();
+-            l.LaunchAngleDegrees += lie.LaunchChange();
+             double t = double.IsFinite(thin) ? Math.Max(0, Math.Min(1, thin)) : 0;
+             l.LaunchAngleDegrees *= 1 - 0.45 * t;
+             l.SpinRPM *= 1 - 0.5 * t;
+diff --git a/Unity/Assets/Scripts/Course/Surface.cs b/Unity/Assets/Scripts/Course/Surface.cs
+--- a/Unity/Assets/Scripts/Course/Surface.cs
++++ b/Unity/Assets/Scripts/Course/Surface.cs
+@@ -4,8 +4,8 @@
+ namespace GolfArcade.Course
+ {
+     /// The shape of the ground a ball rolls over, in yards. The roll accelerates down its
+-    /// gradient, the green-reading grid is draped over its height and coloured by its slope, so
+-    /// what the player sees is exactly what the putt will do.
++    /// gradient and the green read's grain points down it, so what the player reads in the grass
++    /// is what the putt will do.
+     public interface ISurface
+     {
+         /// Height above the hole's datum.
+diff --git a/Unity/Assets/Scripts/Game/AimDots.cs b/Unity/Assets/Scripts/Game/AimDots.cs
+--- a/Unity/Assets/Scripts/Game/AimDots.cs
++++ b/Unity/Assets/Scripts/Game/AimDots.cs
+@@ -3,19 +3,23 @@
+ 
+ namespace GolfArcade.Game
+ {
+-    /// Wii Sports Golf's aim: a row of white dots along the arc a full swing would fly from
+-    /// here, out to the landing ring — and, as the backswing loads, one amber dot on the ground
+-    /// sliding out to where a swing with this much load would come down, so you gauge the shot
+-    /// before you commit. Soft discs facing the camera, sized against the view so they read
+-    /// from behind the ball and out at the landing alike.
++    /// The aim: a row of white dots from the ball along the start of the shot — which way it
++    /// leaves and how it climbs, fading out about half way, so the player sees the line it
++    /// starts on but not where it comes down — and, as the backswing loads, one amber dot on the
++    /// ground sliding out to where a swing with this much load would come down in still air, so
++    /// you gauge the shot before you commit. Soft discs facing the camera, sized against the view.
+     public sealed class AimDots : MonoBehaviour
+     {
+         const int Max = 40;
++        const float DotAlpha = 0.74f;
++        static readonly Color Shade = new(0.04f, 0.1f, 0.16f, 0.5f);
+         readonly List<Transform> dots = new();
++        readonly List<float> fades = new();
+         readonly List<Vector3> path = new();
++        MaterialPropertyBlock tint;
+         Transform mark;
+         Camera view;
+-        float markAt = -1f;
++        float markAt = -1f, least = 0.16f;
+ 
+         public static AimDots Create(Transform parent, Camera view)
+         {
+@@ -23,8 +27,19 @@
+             go.transform.SetParent(parent, false);
+             var a = go.AddComponent<AimDots>();
+             a.view = view;
+-            var white = new Material(ShotEffects.ParticleMaterial()) { color = new Color(1, 1, 1, 0.74f) };
+-            for (int i = 0; i < Max; i++) a.dots.Add(Disc(go.transform, "Dot", white));
++            var white = new Material(ShotEffects.ParticleMaterial()) { color = new Color(1, 1, 1, DotAlpha) };
++            // each dot sits on a faint dark halo, so it still reads against pale sand, rock or cloud
++            var shade = new Material(ShotEffects.ParticleMaterial()) { color = Shade };
++            a.tint = new MaterialPropertyBlock();
++            for (int i = 0; i < Max; i++)
++            {
++                var dot = Disc(go.transform, "Dot", white);
++                var halo = Disc(dot, "Halo", shade);
++                halo.localPosition = new Vector3(0, 0, 0.02f);   // just behind it, as the dot faces the camera
++                halo.localScale = Vector3.one * 1.8f;
++                halo.gameObject.SetActive(true);
++                a.dots.Add(dot); a.fades.Add(1f);
++            }
+             var amber = new Material(ShotEffects.ParticleMaterial()) { color = new Color(LandingZone.Amber.r, LandingZone.Amber.g, LandingZone.Amber.b, 0.98f) };
+             a.mark = Disc(go.transform, "Load mark", amber);
+             a.Hide();
+@@ -44,19 +59,31 @@
+             return q.transform;
+         }
+ 
+-        /// Dots along `arc` (world points, in order), one every `spacing` yards of it.
+-        public void Lay(List<Vector3> arc, float spacing = 4f)
++        /// Dots along `arc` (world points, in order), one every `spacing` yards of it: whole to
++        /// `fadeFrom` of its length, then fading and shrinking away to nothing at its end.
++        /// `smallest` is the least a dot shrinks to with distance, yards (a putt's are finer).
++        public void Lay(List<Vector3> arc, float spacing = 4f, float fadeFrom = 0.45f, float smallest = 0.16f)
+         {
+             path.Clear(); path.AddRange(arc);
+             gameObject.SetActive(true);
++            least = smallest;
++            float length = 0;
++            for (int i = 1; i < arc.Count; i++) length += Vector3.Distance(arc[i - 1], arc[i]);
+             int n = 0;
+-            float since = 0; // Leave the actual ball and club head free of an overlapping glow.
++            float since = 0, along = 0; // Leave the actual ball and club head free of an overlapping glow.
+             for (int i = 0; i < arc.Count && n < Max; i++)
+             {
+-                if (i > 0) since += Vector3.Distance(arc[i - 1], arc[i]);
++                if (i > 0) { float step = Vector3.Distance(arc[i - 1], arc[i]); since += step; along += step; }
+                 if (since < spacing) continue;
+                 since = 0;
++                float fade = 1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(fadeFrom, 1f, length > 0 ? along / length : 1f));
++                if (fade < 0.04f) break;
++                fades[n] = fade;
+                 dots[n].position = arc[i];
++                tint.SetColor("_Color", new Color(1, 1, 1, DotAlpha * fade));
++                dots[n].GetComponent<Renderer>().SetPropertyBlock(tint);
++                tint.SetColor("_Color", new Color(Shade.r, Shade.g, Shade.b, Shade.a * fade));
++                dots[n].GetChild(0).GetComponent<Renderer>().SetPropertyBlock(tint);
+                 dots[n].gameObject.SetActive(true);
+                 n++;
+             }
+@@ -82,16 +109,17 @@
+         {
+             if (!view) return;
+             var rot = view.transform.rotation;
+-            foreach (var d in dots) if (d.gameObject.activeSelf) Face(d, rot, 0.006f, 0.16f);
++            for (int i = 0; i < dots.Count; i++)
++                if (dots[i].gameObject.activeSelf) Face(dots[i], rot, 0.006f, least, Mathf.Lerp(0.55f, 1f, fades[i]));
+             if (mark.gameObject.activeSelf) Face(mark, rot, 0.014f, 0.35f);
+         }
+ 
+-        void Face(Transform t, Quaternion rot, float share, float least)
++        void Face(Transform t, Quaternion rot, float share, float smallest, float scale = 1f)
+         {
+             t.rotation = rot;
+             float d = Vector3.Distance(view.transform.position, t.position);
+             float viewHeight = 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f);
+-            t.localScale = Vector3.one * Mathf.Max(least, share * viewHeight);
++            t.localScale = Vector3.one * Mathf.Max(smallest, share * viewHeight) * scale;
+         }
+     }
+ }
+diff --git a/Unity/Assets/Scripts/Game/GreenRead.cs b/Unity/Assets/Scripts/Game/GreenRead.cs
+--- a/Unity/Assets/Scripts/Game/GreenRead.cs
++++ b/Unity/Assets/Scripts/Game/GreenRead.cs
+@@ -4,51 +4,45 @@
+ 
+ namespace GolfArcade.Game
+ {
+-    /// The read, the way the golf games show it: a grid of lines draped over the green's every
+-    /// bump, a line each yard each way, coloured by how steeply the ground tips there (white
+-    /// flat, through yellow and amber to red, as PGA TOUR 2K colours its grid), with beads
+-    /// riding on top that drift down the fall line, faster where it is steeper (Wii Sports'
+-    /// and Mario Golf's sliding lights). Both come from the same surface the roll uses, so what
+-    /// the player sees is exactly what the putt will do.
++    /// The read, left in the grass: faint chevrons — the grain — scattered over the green, each
++    /// pointing down the fall line and drifting slowly that way. Where the green tips harder they
++    /// stand out more, are longer and drift faster; where it is flat there is nothing to see. No
++    /// line and no colours: the player reads which way and how much the ground falls and plays
++    /// the break themselves. They come from the same surface the roll uses, so the read is honest.
+     public sealed class GreenRead : MonoBehaviour
+     {
+-        const float LineSpacing = 1f, LineWidth = 0.05f, Sample = 0.5f, Lift = 0.035f;
+-        const float BeadSpacing = 2f, BeadSize = 0.16f, BeadRun = 2f;
++        const float Spacing = 1.4f, Jitter = 0.45f, Lift = 0.035f, Run = 0.8f, Stroke = 0.04f;
++        /// Steeper than this (2.5 %) the grain is as strong as it gets; flatter than FlatSlope it doesn't show.
++        const float FullSlope = 0.025f, FlatSlope = 0.004f;
++        static readonly Color Grain = new(0.94f, 1f, 0.88f);
+ 
+         Hole hole;
+         ISurface surface;
+         float radius;
+         Vector3 centre;
+-        Mesh beadMesh;
+-        MeshRenderer lines, beads;
+-        readonly List<Vector3> beadVerts = new();
+-        readonly List<Color> beadColors = new();
+-        struct Bead { public Vector3 Home; public float Along; }
+-        readonly List<Bead> beadList = new();
++        Mesh mesh;
++        readonly List<Vector3> verts = new();
++        readonly List<Color> colors = new();
++        readonly List<int> tris = new();
++        struct Mark { public Vector3 Home, Down; public float Strength, Along; }
++        readonly List<Mark> marks = new();
+ 
+         public static GreenRead Create(Transform parent)
+         {
+             var go = new GameObject("Green read");
+             go.transform.SetParent(parent, false);
+             var read = go.AddComponent<GreenRead>();
+-            read.lines = Renderer(go.transform, "Contours");
+-            read.beads = Renderer(go.transform, "Beads");
+-            read.beadMesh = read.beads.GetComponent<MeshFilter>().mesh;
+-            read.beadMesh.MarkDynamic();
+-            go.SetActive(false);
+-            return read;
+-        }
+-
+-        static MeshRenderer Renderer(Transform parent, string name)
+-        {
+-            var go = new GameObject(name);
+-            go.transform.SetParent(parent, false);
+-            go.AddComponent<MeshFilter>().mesh = new Mesh { name = name };
+-            var mr = go.AddComponent<MeshRenderer>();
++            var grain = new GameObject("Grain");
++            grain.transform.SetParent(go.transform, false);
++            read.mesh = new Mesh { name = "Grain" };
++            read.mesh.MarkDynamic();
++            grain.AddComponent<MeshFilter>().mesh = read.mesh;
++            var mr = grain.AddComponent<MeshRenderer>();
+             mr.sharedMaterial = Material();
+             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+             mr.receiveShadows = false;
+-            return mr;
++            go.SetActive(false);
++            return read;
+         }
+ 
+         static Material material;
+@@ -60,114 +54,90 @@
+             return material = new Material(shader ?? Shader.Find("Unlit/Color"));
+         }
+ 
+-        /// Lay the read over `hole`'s green (the green and its fringe), on the ground as drawn.
++        /// Lay the grain over `hole`'s green (the green and its fringe), on the ground as drawn.
+         public void Show(Hole hole)
+         {
+             this.hole = hole;
+             surface = hole.Surface ?? FlatSurface.Instance;
+-            radius = (float)hole.GreenRadius + 2.5f;
++            radius = (float)hole.GreenRadius + 1.5f;
+             centre = new Vector3((float)hole.Pin.X, 0, (float)hole.Pin.D);
+             gameObject.SetActive(true);
+-            BuildContours();
+-            SeedBeads();
++            Seed();
+         }
+ 
+         public void Hide() => gameObject.SetActive(false);
+ 
+-        /// White on the flat, yellow at about 1½ %, red from 3½ % up.
+-        public static Color SlopeColor(double slope, float alpha = 0.85f)
+-        {
+-            float s = Mathf.Clamp01((float)slope / 0.035f);
+-            Color c = s < 0.45f ? Color.Lerp(new Color(1, 1, 1), new Color(1, 0.92f, 0.35f), s / 0.45f)
+-                    : Color.Lerp(new Color(1, 0.92f, 0.35f), new Color(1, 0.25f, 0.2f), (s - 0.45f) / 0.55f);
+-            c.a = alpha;
+-            return c;
+-        }
++        /// How plainly the ground at a slope shows: nothing on the flat, all of it from FullSlope up.
++        public static float Strength(double slope) => Mathf.Clamp01(((float)slope - FlatSlope) / (FullSlope - FlatSlope));
+ 
+         Vector3 Ground(float x, float d) => new(x, (float)HoleView.GroundHeight(new CoursePoint(x, d)) + Lift, d);
+         bool OnGreen(float x, float d) => (x - centre.x) * (x - centre.x) + (d - centre.z) * (d - centre.z) <= radius * radius;
+ 
+-        void BuildContours()
++        /// A mark every Spacing yards or so (a jittered grid, so it reads as grass, not graph paper),
++        /// each with the fall line and the steepness where it sits.
++        void Seed()
+         {
+-            var verts = new List<Vector3>(); var colors = new List<Color>(); var tris = new List<int>();
+-            float first = Mathf.Ceil((centre.x - radius) / LineSpacing) * LineSpacing;
+-            for (float x = first; x <= centre.x + radius; x += LineSpacing) Strip(verts, colors, tris, x, true);
+-            first = Mathf.Ceil((centre.z - radius) / LineSpacing) * LineSpacing;
+-            for (float d = first; d <= centre.z + radius; d += LineSpacing) Strip(verts, colors, tris, d, false);
+-            var mesh = lines.GetComponent<MeshFilter>().mesh;
++            marks.Clear();
++            var rng = new System.Random(hole.Number * 7919);
++            for (float x = centre.x - radius; x <= centre.x + radius; x += Spacing)
++                for (float d = centre.z - radius; d <= centre.z + radius; d += Spacing)
++                {
++                    float jx = x + (float)(rng.NextDouble() - 0.5) * 2 * Jitter, jd = d + (float)(rng.NextDouble() - 0.5) * 2 * Jitter;
++                    if (!OnGreen(jx, jd)) continue;
++                    var g = surface.Gradient(new CoursePoint(jx, jd));
++                    double slope = System.Math.Sqrt(g.dx * g.dx + g.dd * g.dd);
++                    float strength = Strength(slope);
++                    if (strength <= 0) continue;
++                    marks.Add(new Mark
++                    {
++                        Home = new Vector3(jx, 0, jd),
++                        Down = new Vector3((float)(-g.dx / slope), 0, (float)(-g.dd / slope)),
++                        Strength = strength,
++                        Along = (float)rng.NextDouble() * Run,
++                    });
++                }
++            Lay();
++        }
++
++        void Update() { if (surface != null) Lay(); }
++
++        /// Every chevron creeps down its fall line, faster on steeper ground, fading in and out over
++        /// its short run so the green seems to shimmer downhill.
++        void Lay()
++        {
++            verts.Clear(); colors.Clear(); tris.Clear();
++            for (int i = 0; i < marks.Count; i++)
++            {
++                var m = marks[i];
++                m.Along += (0.12f + 0.35f * m.Strength) * Time.deltaTime;
++                if (m.Along > Run) m.Along -= Run;
++                marks[i] = m;
++                var tip = m.Home + m.Down * m.Along;
++                if (!OnGreen(tip.x, tip.z)) continue;
++                float fade = Mathf.Sin(m.Along / Run * Mathf.PI);
++                var c = Grain; c.a = (0.07f + 0.23f * m.Strength) * fade;
++                float arm = 0.16f + 0.2f * m.Strength;
++                var side = new Vector3(-m.Down.z, 0, m.Down.x);
++                // a "V" whose point leads downhill
++                Arm(tip, tip - m.Down * arm * 0.8f + side * arm * 0.6f, c);
++                Arm(tip, tip - m.Down * arm * 0.8f - side * arm * 0.6f, c);
++            }
+             mesh.Clear();
+             mesh.SetVertices(verts); mesh.SetColors(colors); mesh.SetTriangles(tris, 0);
+             mesh.RecalculateBounds();
+         }
+ 
+-        /// One grid line as a thin flat ribbon, a vertex pair every half yard, each pair
+-        /// coloured by the slope there.
+-        void Strip(List<Vector3> verts, List<Color> colors, List<int> tris, float at, bool alongD)
++        /// One stroke of a chevron, a thin ribbon on the ground from `a` to `b`.
++        void Arm(Vector3 a, Vector3 b, Color c)
+         {
+-            float half = Mathf.Sqrt(Mathf.Max(0, radius * radius - (at - (alongD ? centre.x : centre.z)) * (at - (alongD ? centre.x : centre.z))));
+-            float from = (alongD ? centre.z : centre.x) - half, to = (alongD ? centre.z : centre.x) + half;
+-            if (to - from < Sample) return;
+-            var across = alongD ? new Vector3(LineWidth / 2, 0, 0) : new Vector3(0, 0, LineWidth / 2);
+-            int start = verts.Count, n = 0;
+-            for (float s = from; s <= to + 1e-3f; s += Sample, n++)
+-            {
+-                float x = alongD ? at : s, d = alongD ? s : at;
+-                var p = Ground(x, d);
+-                var c = SlopeColor(surface.Slope(new CoursePoint(x, d)));
+-                verts.Add(p - across); verts.Add(p + across);
+-                colors.Add(c); colors.Add(c);
+-                if (n > 0)
+-                {
+-                    int v = start + 2 * n;
+-                    tris.AddRange(new[] { v - 2, v - 1, v, v - 1, v + 1, v });
+-                }
+-            }
+-        }
+-
+-        void SeedBeads()
+-        {
+-            beadList.Clear();
+-            for (float x = centre.x - radius; x <= centre.x + radius; x += BeadSpacing)
+-                for (float d = centre.z - radius; d <= centre.z + radius; d += BeadSpacing)
+-                {
+-                    if (!OnGreen(x, d)) continue;
+-                    beadList.Add(new Bead { Home = new Vector3(x, 0, d), Along = Random.value * BeadRun });
+-                }
+-            LayBeads();
+-        }
+-
+-        void Update() { if (surface != null) LayBeads(); }
+-
+-        /// Every bead slides down the fall line from its home, faster on steeper ground, and
+-        /// starts over after a couple of yards; on the flat it sits still.
+-        void LayBeads()
+-        {
+-            beadVerts.Clear(); beadColors.Clear();
+-            var tris = new List<int>(beadList.Count * 6);
+-            for (int i = 0; i < beadList.Count; i++)
+-            {
+-                var b = beadList[i];
+-                var g = surface.Gradient(new CoursePoint(b.Home.x, b.Home.z));
+-                double slope = System.Math.Sqrt(g.dx * g.dx + g.dd * g.dd);
+-                float speed = slope < 0.002 ? 0 : 0.4f + (float)slope * 45f; // yd/s: 2 % drifts at ~1.3 yd/s
+-                b.Along += speed * Time.deltaTime;
+-                if (b.Along > BeadRun) b.Along -= BeadRun;
+-                var downhill = slope > 1e-6 ? new Vector3((float)(-g.dx / slope), 0, (float)(-g.dd / slope)) : Vector3.zero;
+-                var at = b.Home + downhill * b.Along;
+-                if (!OnGreen(at.x, at.z)) { b.Along = 0; at = b.Home; }
+-                beadList[i] = b;
+-                float fade = speed > 0 ? Mathf.Sin(b.Along / BeadRun * Mathf.PI) : 0.6f; // in and out at the ends of its run
+-                var c = SlopeColor(slope, 0.25f + 0.75f * fade);
+-                var p = Ground(at.x, at.z) + Vector3.up * 0.01f;
+-                int v = beadVerts.Count;
+-                beadVerts.Add(p + new Vector3(-BeadSize / 2, 0, -BeadSize / 2)); beadVerts.Add(p + new Vector3(BeadSize / 2, 0, -BeadSize / 2));
+-                beadVerts.Add(p + new Vector3(BeadSize / 2, 0, BeadSize / 2)); beadVerts.Add(p + new Vector3(-BeadSize / 2, 0, BeadSize / 2));
+-                beadColors.Add(c); beadColors.Add(c); beadColors.Add(c); beadColors.Add(c);
+-                tris.AddRange(new[] { v, v + 2, v + 1, v, v + 3, v + 2 });
+-            }
+-            beadMesh.Clear();
+-            beadMesh.SetVertices(beadVerts); beadMesh.SetColors(beadColors); beadMesh.SetTriangles(tris, 0);
+-            beadMesh.RecalculateBounds();
++            var along = b - a; along.y = 0;
++            var across = new Vector3(-along.z, 0, along.x).normalized * (Stroke / 2);
++            var pa = Ground(a.x, a.z); var pb = Ground(b.x, b.z);
++            int v = verts.Count;
++            verts.Add(pa - across); verts.Add(pa + across); verts.Add(pb + across); verts.Add(pb - across);
++            var tail = c; tail.a *= 0.35f;
++            colors.Add(c); colors.Add(c); colors.Add(tail); colors.Add(tail);
++            tris.AddRange(new[] { v, v + 1, v + 2, v, v + 2, v + 3 });
+         }
+     }
+ }
+diff --git a/Unity/Assets/Scripts/Game/GolfGame.cs b/Unity/Assets/Scripts/Game/GolfGame.cs
+--- a/Unity/Assets/Scripts/Game/GolfGame.cs
++++ b/Unity/Assets/Scripts/Game/GolfGame.cs
+@@ -224,7 +224,7 @@
+             aimLine.transform.SetParent(transform, false);
+             aimLine.material = HoleView.UnlitMat(Color.white);
+             aimLine.startWidth = aimLine.endWidth = 0.18f;
+-            aimLine.positionCount = AimLineSamples;
++            aimLine.positionCount = 0;
+             aimLine.useWorldSpace = true;
+             aimDots = AimDots.Create(transform, rig.Camera);
+ 
+@@ -1311,8 +1311,6 @@
+ 
+         Vector3 AimDirection() => new((float)Math.Sin(heading * Math.PI / 180), 0, (float)Math.Cos(heading * Math.PI / 180));
+ 
+-        /// The aim line is drawn as short segments laid on the ground, so it follows the terrain.
+-        const int AimLineSamples = 24;
+         /// Yards from the cup at which a putt's camera cuts to the hole cam.
+         /// The hole's showcase before the first shot, seconds: the aerial and the walkthrough — or,
+         /// on a hole with a signature shot, the aerial and then that shot.
+@@ -1463,28 +1461,25 @@
+         }
+         void LayAimLine(double length)
+         {
+-            if (club == GolfClub.Putter) { LayPuttRibbon(); return; }
+-            // A full, square swing's flight in today's wind: the arc the games draw to the
+-            // target ring, level with the ground it leaves, so it shows in the course view and on
+-            // the minimap alike.
++            aimLine.positionCount = 0;   // no line: dots, and only the start of the shot
++            if (club == GolfClub.Putter) { LayPuttStart(); return; }
++            // The first half of a full, square swing's flight in still air — the line it starts
++            // on and how it climbs, level with the ground it leaves — fading out on the way up,
++            // so where it comes down (and what the wind does to it) is the player's to judge.
+             var lie = hole.LieAt(ballAt);
+-            var launch = lie.LaunchFrom(club, 1, 0, 0);
+-            launch.WindMPH = Wind.SpeedMPH;
+-            launch.WindDegrees = Wind.RelativeTo(heading);
+-            var flight = BallFlight.Simulate(launch);
++            var flight = BallFlight.Simulate(lie.LaunchFrom(club, 1, 0, 0));
+             double sinH = Math.Sin(heading * Math.PI / 180), cosH = Math.Cos(heading * Math.PI / 180);
+             double ground = HoleView.GroundHeight(ballAt);
+-            const double step = 0.12;
+-            int samples = Math.Max(2, (int)(flight.RollStartTime / step) + 2);
+-            aimLine.positionCount = 0;   // full shots are the Wii's dots, not a line
++            double half = flight.CarryPoint.DistanceYards * AimArcShare;
++            const double step = 0.06;
+             aimPath.Clear();
+-            for (int i = 0; i < samples; i++)
+-            {
+-                var p = flight.PositionAt(Math.Min(flight.RollStartTime, i * step));
++            for (double t = 0; t <= flight.CarryTime; t += step)
++            {
++                var p = flight.PositionAt(t);
++                if (p.DistanceYards > half) break;
+                 var at = new CoursePoint(ballAt.X + p.LateralYards * cosH + p.DistanceYards * sinH, ballAt.D - p.LateralYards * sinH + p.DistanceYards * cosH);
+                 double under = HoleView.GroundHeight(at);
+-                var world = new Vector3((float)at.X, (float)(Math.Max(ground, under) + p.HeightYards + 0.1), (float)at.D);
+-                aimPath.Add(world);
++                aimPath.Add(new Vector3((float)at.X, (float)(Math.Max(ground, under) + p.HeightYards + 0.1), (float)at.D));
+             }
+             aimDots.Lay(aimPath);
+             PlanShotOnMap(lie);
+@@ -1528,23 +1523,21 @@
+             landingZone.SetZone(across, along, (float)heading);
+         }
+ 
+-        /// Where a full swing with this club comes down in today's wind, and how far round that
+-        /// a slightly-off one still lands: pushed or pulled a couple of degrees with the curve
+-        /// that goes with it (across the line), an eighth less speed (short of it).
++        /// Where a full swing with this club comes down in still air, and how far round that a
++        /// slightly-off one still lands: pushed or pulled a couple of degrees with the curve that
++        /// goes with it (across the line), an eighth less speed (short of it) — and from the rough
++        /// or the sand, wider and longer by as far as the lie can knock it off (CourseLies.Scatter).
+         void ShotZone(CourseLie lie, out CoursePoint centre, out float across, out float along)
+         {
+-            BallFlight.Launch L(double power, double start, double curve)
+-            {
+-                var l = lie.LaunchFrom(club, power, start, curve);
+-                l.WindMPH = Wind.SpeedMPH; l.WindDegrees = Wind.RelativeTo(heading);
+-                return l;
+-            }
++            BallFlight.Launch L(double power, double start, double curve) => lie.LaunchFrom(club, power, start, curve);
+             var square = BallFlight.Simulate(L(1, 0, 0)).CarryPoint;
+             var push = BallFlight.Simulate(L(1, 3, 5)).CarryPoint;
+             var pull = BallFlight.Simulate(L(1, -3, -5)).CarryPoint;
+             var soft = BallFlight.Simulate(L(0.88, 0, 0)).CarryPoint;
+-            across = Mathf.Max(3f, (float)Math.Max(Math.Abs(push.LateralYards - square.LateralYards), Math.Abs(pull.LateralYards - square.LateralYards)));
+-            along = Mathf.Max(3f, (float)Math.Abs(square.DistanceYards - soft.DistanceYards));
++            var (wild, pace) = lie.Scatter();
++            across = Mathf.Max(3f, (float)Math.Max(Math.Abs(push.LateralYards - square.LateralYards), Math.Abs(pull.LateralYards - square.LateralYards)))
++                + (float)(Math.Tan(wild * Math.PI / 180) * square.DistanceYards);
++            along = Mathf.Max(3f, (float)Math.Abs(square.DistanceYards - soft.DistanceYards)) + (float)(pace * 1.3 * square.DistanceYards);
+             centre = FullShotCarry(lie);
+         }
+ 
+@@ -1557,7 +1550,7 @@
+         /// The three targets around the pin, in `powers` (and where they finish, in `yards`): the
+         /// pin's own distance with one a tenth of it (5 to 20 yd) short and one as far past, each
+         /// at the power whose ball comes to rest there — it lands short and runs up, as much as
+-        /// that club runs on the grass it comes down on — on this aim in today's wind. Past the
++        /// that club runs on the grass it comes down on — on this aim in still air. Past the
+         /// club's reach the long one stops at a full swing; with the pin out of reach altogether
+         /// all three stand short of it, the last at a full swing. Returns which one is the pin's,
+         /// or -1.
+@@ -1578,13 +1571,13 @@
+             return onPin;
+         }
+ 
+-        /// How far down the aim this power's ball comes to rest in today's wind, yards: its
++        /// How far down the aim this power's ball comes to rest in still air, yards: its
+         /// flight, then its bounce and run on the grass it comes down on.
+         double FinishedFor(double power, CourseLie lie) => Finished(power, lie).DistanceYards;
+ 
+         FlightPoint Finished(double power, CourseLie lie)
+         {
+-            var launch = TodaysLaunch(power, lie);
++            var launch = PreviewLaunch(power, lie);
+             var land = BallFlight.Simulate(launch).CarryPoint;
+             double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+             var down = new CoursePoint(ballAt.X + land.LateralYards * cosH + land.DistanceYards * sinH, ballAt.D - land.LateralYards * sinH + land.DistanceYards * cosH);
+@@ -1593,7 +1586,7 @@
+             return flight.PositionAt(flight.Duration);
+         }
+ 
+-        /// The power whose ball comes to rest `yards` down the aim in today's wind (it only goes
++        /// The power whose ball comes to rest `yards` down the aim in still air (it only goes
+         /// further with more power, so a halving search finds it).
+         double PowerFor(double yards, CourseLie lie)
+         {
+@@ -1616,52 +1609,34 @@
+                                    ballAt.D - end.LateralYards * sinH + end.DistanceYards * cosH);
+         }
+ 
+-        BallFlight.Launch TodaysLaunch(double power, CourseLie lie)
+-        {
+-            var launch = lie.LaunchFrom(club, Math.Clamp(power, 0, 1), 0, 0);
+-            launch.WindMPH = Wind.SpeedMPH;
+-            launch.WindDegrees = Wind.RelativeTo(heading);
+-            return launch;
+-        }
+-
+-        /// Where a shot of this power (the meter's reading) comes down in today's wind, square on
++        /// A square swing of this power from this lie, as every aiming aid draws it: in still air.
++        /// The hole's wind is shown as an arrow and a number and left to the player to play.
++        BallFlight.Launch PreviewLaunch(double power, CourseLie lie) => lie.LaunchFrom(club, Math.Clamp(power, 0, 1), 0, 0);
++
++        /// Where a shot of this power (the meter's reading) comes down in still air, square on
+         /// the aim.
+         CoursePoint LandingFor(double power, CourseLie lie)
+         {
+-            var carry = BallFlight.Simulate(TodaysLaunch(power, lie)).CarryPoint;
++            var carry = BallFlight.Simulate(PreviewLaunch(power, lie)).CarryPoint;
+             double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+             return new CoursePoint(ballAt.X + carry.LateralYards * cosH + carry.DistanceYards * sinH,
+                                    ballAt.D - carry.LateralYards * sinH + carry.DistanceYards * cosH);
+         }
+ 
+-        /// The putt's predicted roll as one smooth ribbon, break and all: the line a putt hit
+-        /// with just enough pace to reach the hole would take from here on the current aim, so
+-        /// the player turns the aim until the ribbon finds the cup and then judges the pace.
+-        static readonly Color RibbonColor = new(0.55f, 1f, 0.8f);
+-        bool puttRibbonPending;
+-        float nextPuttRibbon;
+-        /// The ribbon is a whole putt simulated over the green's slopes: while the aim sweeps it is
+-        /// redrawn at most 15 times a second, and once more where the sweep stops.
+-        void LayPuttRibbon()
+-        {
+-            if (Time.unscaledTime < nextPuttRibbon) { puttRibbonPending = true; return; }
+-            puttRibbonPending = false;
+-            nextPuttRibbon = Time.unscaledTime + 1f / 15f;
+-            double toPin = ballAt.DistanceTo(hole.Pin) + 0.5;
+-            double meter = Math.Pow(Math.Min(1, toPin / GolfClub.Putter.ReferenceDistanceYards()), 1 / GolfClub.Putter.MeterExponent());
+-            var preview = new CourseShot(GolfClub.Putter, new SwingImpact { Power = meter }, heading, ballAt, hole, 1, Wind);
+-            int samples = Math.Max(2, (int)(preview.Duration / CourseShot.SampleInterval) + 1);
+-            aimDots.Hide();
+-            aimLine.material = HoleView.UnlitMat(RibbonColor);
+-            aimLine.positionCount = samples;
++        /// How much of the shot the aiming dots show: from the ball out to about half way, fading.
++        const double AimArcShare = 0.5;
++
++        /// A putt's aim: a few fine dots straight down the line, out to about half way to the
++        /// hole and fading — which way the ball starts, not where the green takes it or how far
++        /// it runs. The break is read off the grass (GreenRead).
++        void LayPuttStart()
++        {
++            double reach = Math.Max(0.9, ballAt.DistanceTo(hole.Pin) * AimArcShare);
++            double sinH = Math.Sin(heading * Math.PI / 180), cosH = Math.Cos(heading * Math.PI / 180);
+             aimPath.Clear();
+-            for (int i = 0; i < samples; i++)
+-            {
+-                var p = preview.PositionAt(Math.Min(preview.Duration, i * CourseShot.SampleInterval));
+-                var world = HoleView.ToWorld(new CoursePoint(p.x, p.d), 0.05);
+-                aimLine.SetPosition(i, world);
+-                aimPath.Add(world);
+-            }
++            for (double s = 0; s <= reach + 1e-6; s += 0.05)
++                aimPath.Add(HoleView.ToWorld(new CoursePoint(ballAt.X + s * sinH, ballAt.D + s * cosH), 0.05));
++            aimDots.Lay(aimPath, spacing: 0.3f, fadeFrom: 0.25f, smallest: 0.06f);
+             var plan = hud.Map;
+             plan.Path.Clear(); plan.Path.AddRange(aimPath);
+             plan.Reach.Clear(); plan.ShowZone = false; plan.Targets.Clear();
+@@ -1787,10 +1762,12 @@
+                 string note = rise >= 1.5 ? $"+{rise:F0}" : null;
+                 hud.SetClub($"{club.DisplayName()}  ·  {rated:F0}");
+                 hud.SetCardRow(0, "elevation", "Plays", $"{toPin + Math.Max(0, rise):F0}", note);
+-                hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm, Wind.SpeedMPH);
+-            }
++            }
++            // the wind's arrow turns with the aim (a putt barely feels it, but it is the hole's wind)
++            hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm, Wind.SpeedMPH);
+             hud.SetClubSelection(club);
+-            hud.SetCardRow(2, "grass", "Lie", lie == CourseLie.Rough ? "Rough (flyer)" : lie.Label());
++            hud.SetCardRow(2, "grass", "Lie", lie.Label());
++            hud.SetLie(lie, club);
+             if (hud.Controller != null)
+             {
+                 var yards = new string[GolfClubs.All.Length];
+@@ -1826,8 +1803,8 @@
+             return (float)(100 * Math.Max(0, line) * lie);
+         }
+ 
+-        /// Where a full, square swing with this club lands in today's wind: the yellow ring
+-        /// moves with the wind, so the player aims off it the way the Wii teaches.
++        /// Where a full, square swing with this club lands in still air: the yellow ring shows the
++        /// club's carry from this lie, and the player aims off it for the wind.
+         CoursePoint FullShotCarry(CourseLie lie) => LandingFor(1, lie);
+ 
+         /// Where the line points, degrees (for tests).
+@@ -1976,8 +1953,13 @@
+             if (Current != State.Aim) return;
+             if (NativeControlled) RequireNativeReady();
+             if (networkConfigured && !networkMine) return;
+-            // a real swing: how purely and how fast it was struck, and a little of its own luck
+-            if (!plannedShot && club != GolfClub.Putter) impact = Strikes.Pure(impact, Strikes.Judge(impact), UnityEngine.Random.value, UnityEngine.Random.value);
++            // a real swing: how purely and how fast it was struck, and a little of its own luck —
++            // and out of the rough or the sand, knocked off its line and its pace by the lie
++            if (!plannedShot && club != GolfClub.Putter)
++            {
++                impact = Strikes.Pure(impact, Strikes.Judge(impact), UnityEngine.Random.value, UnityEngine.Random.value);
++                impact = hole.LieAt(ballAt).Scattered(impact, UnityEngine.Random.value, UnityEngine.Random.value);
++            }
+             plannedShot = false;
+             // A multiplayer round's host rules on the shot; every phone, this one too, then flies it with Launch (NetworkFrame).
+             if (NetworkShot(impact)) { Swing.Armed = false; Haptics.Release(); sounds.Release(); hud.SetStatus(""); return; }
+@@ -2187,7 +2169,6 @@
+                     float lookWanted = !SteersHere ? networkLook : Mathf.Clamp(hud.LookStick + LookHeld + (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0), -1f, 1f);
+                     float looked = Mathf.MoveTowards(aimLook, lookWanted, Time.deltaTime * 2.5f);
+                     if (looked != aimLook) { aimLook = looked; FrameAim(); }
+-                    if (puttRibbonPending && Time.unscaledTime >= nextPuttRibbon) LayPuttRibbon();
+                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
+                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
+                     if (!networkConfigured && Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }
+@@ -2885,7 +2866,7 @@
+             hole.Windmill?.Drive(null);
+             var shot = LastShot;
+             effects.EndFlight();
+-            aimLine.positionCount = AimLineSamples;
++            aimLine.positionCount = 0;
+             string result;
+             if (shot.IsHoled)
+             {
+diff --git a/Unity/Assets/Scripts/Game/GolfGame.Network.cs b/Unity/Assets/Scripts/Game/GolfGame.Network.cs
+--- a/Unity/Assets/Scripts/Game/GolfGame.Network.cs
++++ b/Unity/Assets/Scripts/Game/GolfGame.Network.cs
+@@ -267,7 +267,7 @@
+             if(wasNetworkResult){wasNetworkResult=false;if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);hud.ShowPlayHud(true);}
+             replayFirst=false;
+             if(Current==State.Replay){Time.timeScale=1;hud.ShowReplay(false);rig.ResetZoom();rig.RestoreFov();effects.EndFlight();hole.Windmill?.Drive(null);}
+-            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=AimLineSamples;}
++            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=0;}
+             Haptics.Release();sounds.Release();
+         }
+ 
+diff --git a/Unity/Assets/Scripts/UI/Hud.cs b/Unity/Assets/Scripts/UI/Hud.cs
+--- a/Unity/Assets/Scripts/UI/Hud.cs
++++ b/Unity/Assets/Scripts/UI/Hud.cs
+@@ -1037,6 +1037,8 @@
+         /// The club and what it carries, on the yellow pill.
+         public void SetClubSelection(GolfArcade.Shot.GolfClub club, bool announce = false) { if (simple) simple.SetClubSelection(club, announce); }
+         public void SetClub(string text, bool putter = false) { yardage.SetClub(text, putter); if (simple) simple.SetClub(text); }
++        /// Where the ball lies and what that costs the club in hand, on its own chip under the shot info.
++        public void SetLie(GolfArcade.Course.CourseLie lie, GolfArcade.Shot.GolfClub club) { if (simple) simple.SetLie(lie, club); }
+ 
+         /// One of the yardage card's rows (0 plays / slope, 1 wind / break, 2 lie).
+         public void SetCardRow(int row, string icon, string label, string value, string note = null, float? arrowDegrees = null)
+diff --git a/Unity/Assets/Scripts/UI/GolfShotHud.cs b/Unity/Assets/Scripts/UI/GolfShotHud.cs
+--- a/Unity/Assets/Scripts/UI/GolfShotHud.cs
++++ b/Unity/Assets/Scripts/UI/GolfShotHud.cs
+@@ -1,3 +1,4 @@
++using GolfArcade.Course;
+ using GolfArcade.Shot;
+ using UnityEngine;
+ using UnityEngine.UI;
+@@ -6,6 +7,9 @@
+ {
+     /// Small shared broadcast vocabulary: distance, club, wind, and matching power/landing colours.
+     /// The map positions come from GolfGame's actual launch simulation, never screen estimates.
++    /// The wind is an arrow (which way it blows, against the aim: up the screen is helping) and
++    /// its speed; the lie has its own chip under the shot info — what the ball sits in and what
++    /// that costs the club in hand.
+     public sealed class GolfShotHud : MonoBehaviour
+     {
+         public static readonly Vector2 MapSize = new Vector2(360,440);
+@@ -13,29 +17,47 @@
+         public static readonly Color Mint = UiKit.Hex("D7F044");
+         public static readonly Color[] Stops = { new(.52f,.85f,1), new(.5f,.95f,.78f), new(1,.88f,.42f), new(1,.61f,.36f) };
+         Camera view; Canvas canvas; CanvasScaler scaler;
+-        Text hole, distance, club, wind, contact, liveYards, clubChange;
++        Text hole, distance, club, wind, contact, liveYards, clubChange, lieName, lieCost;
+         Text[] clubOptions = new Text[3];
+-        RectTransform clubRoot;
++        RectTransform clubRoot, windArrow, lieRoot;
++        Image lieSwatch; Image[] lieMarks = new Image[3];
+         GolfMapPath projection;
+         GolfClub? selectedClub; float clubChangedAt;
+         RawImage mapImage; RectTransform infoRoot, mapRoot, meterRoot, contactRoot, tip;
+         RectTransform ball, pin, live;
+         readonly RectTransform[] targets = new RectTransform[4];
+         readonly RectTransform[] segments = new RectTransform[4];
+-        const float MeterHeight = 288, SegmentHeight = 69;
+-        bool flight;
++        const float MeterHeight = 288, SegmentHeight = 69, InfoHeight = 216, LieHeight = 100;
++        bool flight, lieSet;
+         public static GolfShotHud Create(Camera camera)
+         {
+             var go = new GameObject("Golf broadcast",typeof(RectTransform));
+             var h=go.AddComponent<GolfShotHud>();h.view=camera;
+             h.canvas=UiKit.Canvas(go);h.canvas.renderMode=RenderMode.ScreenSpaceCamera;h.canvas.worldCamera=camera;h.canvas.planeDistance=.6f;h.canvas.sortingOrder=35;
+             h.scaler=go.GetComponent<CanvasScaler>();h.scaler.referenceResolution=new Vector2(1920,1080);h.scaler.matchWidthOrHeight=1;
+-            var info=Panel(go.transform,"Shot info",new Vector2(0,1),new Vector2(40,-40),new Vector2(300,216));
++            var info=Panel(go.transform,"Shot info",new Vector2(0,1),new Vector2(40,-40),new Vector2(300,InfoHeight));
+             h.infoRoot=info;
+             h.hole=Label(info,"Hole",22,new Vector2(24,-24),new Vector2(250,28));
+             h.distance=Label(info,"Distance",46,new Vector2(24,-64),new Vector2(260,56));
+             h.club=Label(info,"Club",24,new Vector2(24,-126),new Vector2(250,32));h.club.color=Mint;
+-            h.wind=Label(info,"Wind",22,new Vector2(24,-174),new Vector2(250,28));
++            // the wind: an arrow turned the way it blows, then its speed and how strong that is
++            var arrow=UiKit.Panel(info,"Wind arrow",Color.white,new Vector2(0,1),new Vector2(0,1),new Vector2(41,-186),new Vector2(32,32),false);
++            arrow.sprite=Arrow;arrow.raycastTarget=false;h.windArrow=arrow.rectTransform;h.windArrow.pivot=new Vector2(.5f,.5f);
++            h.wind=Label(info,"Wind",22,new Vector2(66,-170),new Vector2(222,34));h.wind.supportRichText=true;
++            // the lie: a swatch of what the ball sits in, its name, and what it costs
++            var lie=Panel(go.transform,"Lie",new Vector2(0,1),new Vector2(40,-40-InfoHeight-12),new Vector2(300,LieHeight));
++            h.lieRoot=lie;
++            h.lieSwatch=UiKit.Panel(lie,"Swatch",Color.white,new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(20,0),new Vector2(52,52),false);
++            h.lieSwatch.sprite=UiKit.Circle;h.lieSwatch.raycastTarget=false;
++            h.lieSwatch.gameObject.AddComponent<Mask>().showMaskGraphic=true;   // the marks stay inside the disc
++            for(int i=0;i<h.lieMarks.Length;i++){
++                h.lieMarks[i]=UiKit.Panel(h.lieSwatch.transform,"Mark",Color.white,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,Vector2.one,false);
++                h.lieMarks[i].raycastTarget=false;
++            }
++            h.lieName=Label(lie,"Lie name",26,new Vector2(86,-12),new Vector2(204,32));
++            h.lieCost=Label(lie,"Lie cost",16,new Vector2(86,-46),new Vector2(204,44));h.lieCost.color=new Color(1,1,1,.8f);
++            h.lieCost.resizeTextForBestFit=true;h.lieCost.resizeTextMinSize=12;h.lieCost.resizeTextMaxSize=16;
++            lie.gameObject.SetActive(false);
+             h.mapRoot=Panel(go.transform,"Hole map",new Vector2(1,1),new Vector2(-40,-40),new Vector2(380,498));
+             var title=Label(h.mapRoot,"Map title",20,new Vector2(18,-14),new Vector2(250,28));title.text="SHOT MAP";
+             var mapGo=new GameObject("Course",typeof(RectTransform),typeof(RawImage));mapGo.transform.SetParent(h.mapRoot,false);
+@@ -125,6 +147,7 @@
+                 left+=safe.xMin/scale;right+=Mathf.Max(0,Screen.width-safe.xMax)/scale;
+             }
+             infoRoot.anchoredPosition=new Vector2(left,-top);
++            lieRoot.anchoredPosition=new Vector2(left,-top-InfoHeight-12);
+             mapRoot.anchoredPosition=new Vector2(-right,-top);
+             mapRoot.sizeDelta=portrait?new Vector2(344,454):new Vector2(380,498);
+             meterRoot.anchorMin=meterRoot.anchorMax=new Vector2(0,portrait?.38f:.29f);
+@@ -147,9 +170,70 @@
+                 clubOptions[i].text=$"<size=28>{choice.Label()}</size>\n{choice.DisplayName()}";
+             }
+         }
+-        public void SetWind(float angle,double mph,bool calm){wind.text=calm?"WIND  ·  CALM":$"WIND  {mph:F0} mph  ↗";if(!calm)wind.text=$"WIND  {mph:F0} mph  {Direction(angle)}";}
+-        static string Direction(float degrees){var dirs=new[]{"↑","↗","→","↘","↓","↙","←","↖"};return dirs[Mathf.RoundToInt(Mathf.Repeat(degrees,360)/45)%8];}
+-        public void SetFlight(bool on){flight=on;clubRoot.gameObject.SetActive(!on);meterRoot.gameObject.SetActive(!on);contact.transform.parent.gameObject.SetActive(on);}
++        /// `angle` is where the wind blows toward, degrees right of the aim: the arrow points that way on the screen.
++        public void SetWind(float angle,double mph,bool calm)
++        {
++            var w=new Wind(mph,0);
++            var colour=calm||mph<Wind.ModerateMPH?Color.white:w.IsStrong?Stops[3]:Stops[2];
++            wind.color=colour;
++            windArrow.gameObject.SetActive(!calm);
++            windArrow.localRotation=Quaternion.Euler(0,0,-angle);
++            windArrow.GetComponent<Image>().color=colour;
++            wind.text=calm?"CALM":$"<size=30>{mph:F0}</size> MPH  <size=18>{w.Strength.ToUpperInvariant()}</size>";
++        }
++        public void SetFlight(bool on){flight=on;clubRoot.gameObject.SetActive(!on);meterRoot.gameObject.SetActive(!on);lieRoot.gameObject.SetActive(!on&&lieSet);contact.transform.parent.gameObject.SetActive(on);}
++
++        /// The ball's lie, before the shot: its name on a swatch of it, and what it costs the club in hand — the distance it
++        /// keeps (CourseLies.PowerFactor) and whether it costs accuracy (CourseLies.Scatter).
++        public void SetLie(CourseLie lie,GolfClub inHand)
++        {
++            lieSet=true;lieRoot.gameObject.SetActive(!flight);
++            lieName.text=lie==CourseLie.Bunker?"SAND":lie==CourseLie.OutOfBounds?"OUT":lie.Label().ToUpperInvariant();
++            int cost=inHand==GolfClub.Putter?0:Mathf.RoundToInt((float)(1-lie.PowerFactor(inHand))*100);
++            double wild=lie.Scatter().degrees;
++            string aim=wild>=5?"MUCH LESS ACCURATE":wild>0?"LESS ACCURATE":null;
++            lieCost.text=cost>0&&aim!=null?$"-{cost}% DISTANCE\n{aim}":cost>0?$"-{cost}% DISTANCE":aim??(lie.IsPuttingSurface()?"PUTTING SURFACE":"CLEAN LIE");
++            lieCost.color=cost>0||aim!=null?Stops[2]:new Color(1,1,1,.8f);
++            var (fill,mark)=lie switch{
++                CourseLie.Rough=>(UiKit.Hex("3E7A2E"),UiKit.Hex("1F4A18")),
++                CourseLie.Bunker=>(UiKit.Hex("EED39A"),UiKit.Hex("B8955A")),
++                CourseLie.Green or CourseLie.Fringe=>(UiKit.Hex("8FDB6A"),UiKit.Hex("B9EE98")),
++                CourseLie.Ice=>(UiKit.Hex("D8F1FF"),UiKit.Hex("9CCBE6")),
++                _=>(UiKit.Hex("6CC24A"),UiKit.Hex("8ED66C")),
++            };
++            lieSwatch.color=fill;
++            // a hint of the surface on the swatch: blades of long grass, grains of sand, mown stripes
++            for(int i=0;i<lieMarks.Length;i++){
++                var r=lieMarks[i].rectTransform;lieMarks[i].color=mark;lieMarks[i].sprite=null;
++                if(lie==CourseLie.Rough){r.sizeDelta=new Vector2(5,20);r.anchoredPosition=new Vector2(-11+11*i,i==1?2:-2);r.localRotation=Quaternion.Euler(0,0,12-12*i);}
++                else if(lie==CourseLie.Bunker){lieMarks[i].sprite=UiKit.Circle;r.sizeDelta=new Vector2(7,7);r.anchoredPosition=new Vector2(-10+10*i,i==1?8:-5);r.localRotation=Quaternion.identity;}
++                else{r.sizeDelta=new Vector2(10,44);r.anchoredPosition=new Vector2(-14+14*i,0);r.localRotation=Quaternion.Euler(0,0,30);lieMarks[i].color=i==1?fill:mark;}
++            }
++        }
++
++        static Sprite arrowSprite;
++        /// A plain arrow pointing up the screen, white, for tinting and turning.
++        static Sprite Arrow
++        {
++            get
++            {
++                if(arrowSprite)return arrowSprite;
++                const int n=64;var tex=new Texture2D(n,n,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp,name="Wind arrow"};
++                var px=new Color32[n*n];
++                for(int y=0;y<n;y++)for(int x=0;x<n;x++){
++                    int inside=0;
++                    for(int sy=0;sy<4;sy++)for(int sx=0;sx<4;sx++){
++                        float u=(x+(sx+.5f)/4)/n-.5f,v=(y+(sy+.5f)/4)/n;
++                        bool head=v>=.5f&&v<=.97f&&Mathf.Abs(u)<=.42f*(.97f-v)/.47f;
++                        bool shaft=v>=.04f&&v<.5f&&Mathf.Abs(u)<=.1f;
++                        if(head||shaft)inside++;
++                    }
++                    px[y*n+x]=new Color32(255,255,255,(byte)(inside*255/16));
++                }
++                tex.SetPixels32(px);tex.Apply();
++                return arrowSprite=Sprite.Create(tex,new Rect(0,0,n,n),new Vector2(.5f,.5f),100);
++            }
++        }
+         public void SetContact(string quality)=>contact.text=quality.TrimEnd('!')+" CONTACT";
+         public void SetPower(float load,string yards){
+             load=Mathf.Clamp01(load);
+diff --git a/Unity/Assets/Tests/EditMode/StrikeAndLieTests.cs b/Unity/Assets/Tests/EditMode/StrikeAndLieTests.cs
+--- a/Unity/Assets/Tests/EditMode/StrikeAndLieTests.cs
++++ b/Unity/Assets/Tests/EditMode/StrikeAndLieTests.cs
+@@ -93,12 +93,19 @@
+         }
+ 
+         [Test]
+-        public void RoughIsAFlyerThatWontStop()
++        public void RoughCostsSomeDistanceAndSandMore()
+         {
+-            var fair = Fly(CourseLie.Fairway, GolfClub.Iron);
+-            var rough = Fly(CourseLie.Rough, GolfClub.Iron);
+-            Assert.Less(rough.Carry, fair.Carry, "the grass costs club speed");
+-            Assert.Greater(rough.Roll, fair.Roll * 1.5, "and the spin: it runs on");
++            foreach (var club in new[] { GolfClub.Driver, GolfClub.Iron5, GolfClub.Iron, GolfClub.Iron9, GolfClub.PitchingWedge })
++            {
++                var fair = Fly(CourseLie.Fairway, club);
++                var rough = Fly(CourseLie.Rough, club);
++                var sand = Fly(CourseLie.Bunker, club);
++                Assert.That(rough.Carry / fair.Carry, Is.InRange(0.87, 0.93), $"{club}: the rough keeps about nine tenths of the carry");
++                Assert.That(rough.Total / fair.Total, Is.InRange(0.87, 0.94), $"{club}: and of where it finishes (no flyer running on)");
++                Assert.Less(sand.Carry, rough.Carry - 0.04 * fair.Carry, $"{club}: the sand costs more than the rough");
++            }
++            double iron = Fly(CourseLie.Bunker, GolfClub.Iron).Carry / Fly(CourseLie.Fairway, GolfClub.Iron).Carry;
++            Assert.That(iron, Is.InRange(0.72, 0.78), "a 7-iron from the sand keeps about three quarters");
+         }
+ 
+         [Test]
+@@ -106,7 +113,35 @@
+         {
+             double wedge = Fly(CourseLie.Bunker, GolfClub.Wedge).Carry / Fly(CourseLie.Fairway, GolfClub.Wedge).Carry;
+             double iron = Fly(CourseLie.Bunker, GolfClub.Iron).Carry / Fly(CourseLie.Fairway, GolfClub.Iron).Carry;
+-            Assert.Greater(wedge, iron + 0.15);
++            Assert.Greater(wedge, iron + 0.08);
++        }
++
++        [Test]
++        public void RoughAndSandKnockTheShotOffLine()
++        {
++            var swing = new SwingImpact { Power = 1, StartLineDegrees = 1, SpeedBonus = 0.02 };
++            foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Green, CourseLie.Fringe })
++            {
++                var same = lie.Scattered(swing, 0, 1);
++                Assert.AreEqual(1, same.StartLineDegrees, 1e-12, $"{lie} is a clean lie");
++                Assert.AreEqual(0.02, same.SpeedBonus, 1e-12);
++            }
++            Assert.AreEqual(1, CourseLie.Rough.Scattered(swing, 0.5, 0.5).StartLineDegrees, 1e-12, "the middle draw is the clean strike");
++            double roughWorst = 0, sandWorst = 0;
++            for (int i = 0; i <= 20; i++)
++            {
++                double u = i / 20.0;
++                roughWorst = Math.Max(roughWorst, Math.Abs(CourseLie.Rough.Scattered(swing, u, u).StartLineDegrees - 1));
++                sandWorst = Math.Max(sandWorst, Math.Abs(CourseLie.Bunker.Scattered(swing, u, u).StartLineDegrees - 1));
++                Assert.That(CourseLie.Rough.Scattered(swing, u, u).SpeedBonus - 0.02, Is.InRange(-0.04 - 1e-9, 0.04 + 1e-9));
++            }
++            Assert.That(roughWorst, Is.EqualTo(2.5).Within(1e-9), "the rough: up to 2.5° off line");
++            Assert.That(sandWorst, Is.EqualTo(5).Within(1e-9), "the sand: twice that");
++            // a 7-iron knocked the most the rough can: a few yards off line, not a different shot
++            var hole = Course.Course.Meadow().Holes[0];
++            var clean = new CourseShot(GolfClub.Iron, new SwingImpact { Power = 1 }, 0, hole.Tee, hole);
++            var off = new CourseShot(GolfClub.Iron, CourseLie.Rough.Scattered(new SwingImpact { Power = 1 }, 1, 0.5), 0, hole.Tee, hole);
++            Assert.That(off.Landing.X - clean.Landing.X, Is.InRange(4, 9), "2.5° at 150 yd is about 6 yd");
+         }
+ 
+         [Test]
+diff --git a/Unity/Assets/Tests/EditMode/PostcardHoleTests.cs b/Unity/Assets/Tests/EditMode/PostcardHoleTests.cs
+--- a/Unity/Assets/Tests/EditMode/PostcardHoleTests.cs
++++ b/Unity/Assets/Tests/EditMode/PostcardHoleTests.cs
+@@ -293,10 +293,11 @@
+         [Test]
+         public void LiePowerFactorsAndPenaltiesAreUnchanged()
+         {
+-            Assert.AreEqual(0.85, CourseLie.Rough.PowerFactor(), 1e-9, "rough is 0.85 power");
+-            Assert.AreEqual(0.6, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker is 0.6 power");
++            // (2026-10-12 lie pass: the rough keeps 90 % of the distance, the sand 75 %)
++            Assert.AreEqual(0.9, CourseLie.Rough.PowerFactor(), 1e-9, "rough keeps 0.9 of the distance");
++            Assert.AreEqual(0.75, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker keeps 0.75 of the distance");
+             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Green, CourseLie.Water, CourseLie.OutOfBounds })
+-                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no club speed");
++                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no distance");
+             Assert.AreEqual(1, CourseLie.Water.PenaltyStrokes(), "water is +1 stroke");
+             Assert.AreEqual(1, CourseLie.OutOfBounds.PenaltyStrokes(), "out of bounds is +1 stroke");
+             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Rough, CourseLie.Bunker, CourseLie.Green })
+diff --git a/Unity/Assets/Tests/EditMode/WindTests.cs b/Unity/Assets/Tests/EditMode/WindTests.cs
+--- a/Unity/Assets/Tests/EditMode/WindTests.cs
++++ b/Unity/Assets/Tests/EditMode/WindTests.cs
+@@ -96,5 +96,41 @@
+                 Assert.That(w.DirectionDegrees, Is.InRange(-180, 180));
+             }
+         }
++
++        [Test]
++        public void StrongWindIsRareAndMostHolesAreLight()
++        {
++            var rng = new System.Random(11);
++            int n = 20000, strong = 0, light = 0, calm = 0;
++            for (int i = 0; i < n; i++)
++            {
++                var w = Wind.Random(rng);
++                if (w.IsStrong) strong++;
++                if (w.SpeedMPH < Wind.ModerateMPH) light++;
++                if (w.SpeedMPH <= 3) calm++;
++            }
++            Assert.That(strong / (double)n, Is.InRange(0.08, 0.12), "about one hole in ten blows 15 mph or more");
++            Assert.That(light / (double)n, Is.InRange(0.6, 0.7), "two holes in three are under 10 mph");
++            Assert.That(calm / (double)n, Is.InRange(0.2, 0.3), "a quarter are near calm");
++            Assert.AreEqual("Strong", new Wind(18, 0).Strength);
++            Assert.AreEqual("Moderate", new Wind(12, 0).Strength);
++            Assert.AreEqual("Light", new Wind(5, 0).Strength);
++            Assert.AreEqual("Calm", Wind.Calm.Strength);
++        }
++
++        [Test]
++        public void AStrongWindMovesAFullShotAndNotAPutt()
++        {
++            var iron = Fly(GolfClub.Iron, 0, 0);
++            var across = Fly(GolfClub.Iron, Wind.StrongMPH, 90);
++            Assert.Greater(across.Landing.LateralYards, 15, "15 mph across pushes a 7-iron well off its line");
++            var hole = Course.Course.Meadow().Holes[0];
++            var green = new CoursePoint(hole.Pin.X, hole.Pin.D - 6);
++            var still = new CourseShot(GolfClub.Putter, new SwingImpact { Power = 0.5 }, 0, green, hole, 1, Wind.Calm);
++            var gale = new CourseShot(GolfClub.Putter, new SwingImpact { Power = 0.5 }, 0, green, hole, 1, new Wind(Wind.MaxMPH, 90));
++            Assert.AreEqual(still.Rest.X, gale.Rest.X, 1e-9, "a putt rolls on the ground, out of the wind");
++            Assert.AreEqual(still.Rest.D, gale.Rest.D, 1e-9);
++            Assert.Less(iron.Landing.LateralYards, 0.5);
++        }
+     }
+ }
+diff --git a/Unity/Assets/Tests/PlayMode/GolfPolishTests.cs b/Unity/Assets/Tests/PlayMode/GolfPolishTests.cs
+--- a/Unity/Assets/Tests/PlayMode/GolfPolishTests.cs
++++ b/Unity/Assets/Tests/PlayMode/GolfPolishTests.cs
+@@ -99,9 +99,9 @@
+      var selected=(GolfClub)typeof(GolfGame).GetField("club",Private).GetValue(game);
+      var start=game.CurrentHole.Tee;var lie=game.CurrentHole.LieAt(start);double a=game.TutorialHeading*Math.PI/180;
+      for(int i=0;i<4;i++) {
+-      var launch=lie.LaunchFrom(selected,(i+1)*.25,0,0);launch.WindMPH=game.Wind.SpeedMPH;launch.WindDegrees=game.Wind.RelativeTo(game.TutorialHeading);
++      var launch=lie.LaunchFrom(selected,(i+1)*.25,0,0);   // in still air: the wind is the player's to read
+       var p=BallFlight.Simulate(launch).CarryPoint;var expected=new Vector3((float)(start.X+p.DistanceYards*Math.Sin(a)+p.LateralYards*Math.Cos(a)),0,(float)(start.D+p.DistanceYards*Math.Cos(a)-p.LateralYards*Math.Sin(a)));
+-      Assert.That(Vector3.Distance(hud.Map.Targets[i],expected),Is.LessThan(.001),"map marker must be the actual wind-adjusted carry");
++      Assert.That(Vector3.Distance(hud.Map.Targets[i],expected),Is.LessThan(.001),"map marker must be the club's still-air carry from this lie");
+      }
+     }
+     game.DropBall(game.CurrentHole.Tee);yield return null;yield return null;
+diff --git a/Unity/Assets/Tests/PlayMode/ReviewCaptureTests.cs b/Unity/Assets/Tests/PlayMode/ReviewCaptureTests.cs
+--- a/Unity/Assets/Tests/PlayMode/ReviewCaptureTests.cs
++++ b/Unity/Assets/Tests/PlayMode/ReviewCaptureTests.cs
+@@ -311,7 +311,7 @@
+             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-11-splash-result.png"));
+         }
+ 
+-        /// Putting on the sculpted green: the read (grid, beads, ribbon, flag out), the roll
++        /// Putting on the sculpted green: the read (the grain, the start dots, flag out), the roll
+         /// watched from where it was read, and the hole cam as the ball arrives.
+         [UnityTest]
+         public IEnumerator CapturesTheGreenRead()
+@@ -333,7 +333,7 @@
+             yield return new WaitForSecondsRealtime(0.8f);
+             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6-read.png"));
+             // Changing the line: holding the right arrow turns the putt a few degrees a second —
+-            // fine enough to read a putt with — and the ribbon follows.
++            // fine enough to read a putt with — and the start dots follow.
+             var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+             var events = UnityEngine.EventSystems.EventSystem.current ?? Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
+             var press = new UnityEngine.EventSystems.PointerEventData(events);
+diff --git a/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs b/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs
+new file mode 100644
+--- /dev/null
++++ b/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs
+@@ -0,0 +1,261 @@
++using System.Collections;
++using System.IO;
++using GolfArcade.Course;
++using GolfArcade.Game;
++using NUnit.Framework;
++using UnityEngine;
++using UnityEngine.SceneManagement;
++using UnityEngine.TestTools;
++
++namespace GolfArcade.PlayTests
++{
++    /// What the player has to read before a stroke, from the game's own camera on the TV (16:9) at address: a short
++    /// putt, a long breaking putt, a full shot in a strong crosswind (and where it came down), and shots from the rough
++    /// and the sand. Frames and a log of the numbers go to GOLF_READ_DIR (default Library/Captures/golf-read).
++    /// Run windowed: Unity/Tools/run-playmode-windowed.sh GolfReadCaptureTests
++    public class GolfReadCaptureTests
++    {
++        static string Dir => System.Environment.GetEnvironmentVariable("GOLF_READ_DIR") is { Length: > 0 } d ? d : "Library/Captures/golf-read";
++        static StringWriter log;
++
++        static IEnumerator WaitFor(System.Func<bool> done, float seconds, string what)
++        {
++            float until = Time.realtimeSinceStartup + seconds;
++            while (!done())
++            {
++                if (Time.realtimeSinceStartup > until)
++                {
++                    var game = Object.FindFirstObjectByType<GolfGame>();
++                    Assert.Fail($"timed out waiting for {what} (the game is in {game?.Current}, hole {game?.CurrentHole?.Number})");
++                }
++                yield return null;
++            }
++        }
++
++        /// The TV's picture: the course camera at 16:9 and the broadcast HUD laid out for 1920×1080 (not the editor window).
++        static void Tv(string name)
++        {
++            var cam = Camera.main;
++            cam.aspect = 16f / 9;
++            var rt = RenderTexture.GetTemporary(1920, 1080, 24);
++            cam.targetTexture = rt;
++            foreach (var hud in Object.FindObjectsByType<GolfArcade.UI.GolfShotHud>(FindObjectsSortMode.None)) hud.RefreshLayout();
++            cam.targetTexture = null;
++            RenderTexture.ReleaseTemporary(rt);
++            Canvas.ForceUpdateCanvases();
++            Assert.IsNotNull(GameCapture.Save($"{Dir}/{name}.png", 1920, 1080));
++        }
++
++        static void Note(GolfGame game, string name)
++        {
++            var at = game.BallAt; var hole = game.CurrentHole;
++            var lie = hole.LieAt(at);
++            log.WriteLine($"{name}: hole {hole.Number} ball {at} lie {lie} club {game.ClubInHand} to pin {at.DistanceTo(hole.Pin):F1} yd, wind {game.Wind} ({game.Wind.Describe(game.AimHeading)})");
++            // what the aim shows: the line renderer's points, and how far out the dots reach against the shot
++            var line = GameObject.Find("Aim line")?.GetComponent<LineRenderer>();
++            var dots = GameObject.Find("Aim dots");
++            int shown = 0; double farthest = 0;
++            if (dots) foreach (Transform d in dots.transform)
++                    if (d.name == "Dot" && d.gameObject.activeSelf) { shown++; farthest = System.Math.Max(farthest, HoleView.ToCourse(d.position).DistanceTo(at)); }
++            bool putt = game.ClubInHand == Shot.GolfClub.Putter;
++            double whole = putt ? at.DistanceTo(hole.Pin) : Shot.BallFlight.Simulate(lie.LaunchFrom(game.ClubInHand, 1, 0, 0)).CarryPoint.DistanceYards;
++            log.WriteLine($"  aim line points {(line ? line.positionCount : -1)}, aim dots {shown}, farthest {farthest:F1} yd = {farthest / System.Math.Max(0.01, whole):P0} of the {(putt ? "putt" : "still-air carry")} ({whole:F1} yd)");
++            var hud = GameObject.Find("Golf broadcast");
++            string Text(string label) { if (!hud) return "-"; foreach (var t in hud.GetComponentsInChildren<UnityEngine.UI.Text>(true)) if (t.name == label) return t.gameObject.activeInHierarchy ? t.text.Replace("\n", " / ") : "(hidden) " + t.text; return "-"; }
++            log.WriteLine($"  HUD wind \"{Text("Wind")}\", lie \"{Text("Lie name")}\" \"{Text("Lie cost")}\"");
++            var grain = GameObject.Find("Green read");
++            log.WriteLine($"  green read {(grain ? string.Join(",", System.Linq.Enumerable.Select(grain.GetComponentsInChildren<MeshFilter>(), f => $"{f.name}:{f.sharedMesh.vertexCount}v")) : "off")}");
++        }
++
++        /// The ball dropped at `at` in `wind`, the stroke set up, the camera settled at address.
++        static IEnumerator AddressAt(GolfGame game, CoursePoint at, Wind wind)
++        {
++            game.SetWind(wind);
++            game.DropBall(at);
++            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the stroke to set up");
++            yield return new WaitForSecondsRealtime(1.2f);
++        }
++
++        /// To hole `number` as the app plays it: its opening (the flyover skipped, the golfer's introduction played out) to
++        /// the tee shot's address, so nothing of the opening is left on screen.
++        static IEnumerator ToHole(GolfGame game, int number)
++        {
++            game.JumpToHole(number);
++            float until = Time.realtimeSinceStartup + 60;
++            while (game.Current != GolfGame.State.Aim)
++            {
++                if (Time.realtimeSinceStartup > until) Assert.Fail($"hole {number}'s opening never reached the tee (the game is in {game.Current})");
++                if (game.Current == GolfGame.State.Intro) game.SkipPresentation();
++                yield return new WaitForSecondsRealtime(0.25f);
++            }
++            yield return new WaitForSecondsRealtime(0.5f);
++        }
++
++        /// The point `radius` yards from the pin, on the green, whose straight line to the hole crosses the most slope.
++        static CoursePoint BreakingPutt(Hole hole, double radius)
++        {
++            var best = hole.Pin; double most = -1;
++            for (int a = 0; a < 72; a++)
++            {
++                double t = a * 5 * System.Math.PI / 180;
++                var p = new CoursePoint(hole.Pin.X + System.Math.Sin(t) * radius, hole.Pin.D + System.Math.Cos(t) * radius);
++                if (hole.LieAt(p) != CourseLie.Green) continue;
++                double ux = (hole.Pin.X - p.X) / radius, ud = (hole.Pin.D - p.D) / radius, across = 0;
++                for (int i = 0; i < 10; i++)
++                {
++                    var q = new CoursePoint(p.X + ux * radius * i / 10, p.D + ud * radius * i / 10);
++                    var g = hole.Surface.Gradient(q);
++                    across += g.dx * ud - g.dd * ux;
++                }
++                if (System.Math.Abs(across) > most) { most = System.Math.Abs(across); best = p; }
++            }
++            Assert.Greater(most, 0, $"a point {radius} yd out on hole {hole.Number}'s green");
++            return best;
++        }
++
++        /// A spot in the rough a few yards off the fairway, `yards` short of the pin along the hole's centerline.
++        static CoursePoint Rough(Hole hole, double yards)
++        {
++            var line = hole.Centerline;
++            foreach (double margin in new[] { 12.0, 6.0, -1000.0 })
++            for (double want = yards; want <= yards + 60; want += 5)
++                for (int i = line.Length - 1; i > 0; i--)
++                {
++                    var a = line[i - 1]; var b = line[i];
++                    if (a.DistanceTo(hole.Pin) < want || b.DistanceTo(hole.Pin) > want) continue;
++                    double len = a.DistanceTo(b), tx = (b.X - a.X) / len, td = (b.D - a.D) / len;
++                    for (double s = 0; s <= len; s += 1)
++                    {
++                        var c = new CoursePoint(a.X + tx * s, a.D + td * s);
++                        if (System.Math.Abs(c.DistanceTo(hole.Pin) - want) > 1) continue;
++                        foreach (int side in new[] { -1, 1 })
++                        {
++                            var p = new CoursePoint(c.X + side * td * (hole.FairwayWidth / 2 + 4), c.D - side * tx * (hole.FairwayWidth / 2 + 4));
++                            if (hole.LieAt(p) == CourseLie.Rough && Clear(hole, p, margin)) return p;
++                        }
++                    }
++                }
++            Assert.Fail($"no rough {yards} yd out on hole {hole.Number}");
++            return default;
++        }
++
++        /// Nothing standing near and no hazard close, so the picture is plainly of the rough.
++        static bool Clear(Hole hole, CoursePoint p, double margin)
++        {
++            foreach (var o in hole.Obstacles) if (new CoursePoint(o.X, o.D).DistanceTo(p) < o.Radius + 4) return false;
++            foreach (var h in hole.Hazards) if (new CoursePoint(h.X, h.Distance).DistanceTo(p) < System.Math.Max(h.Width, h.Length) / 2 + margin) return false;
++            return true;
++        }
++
++        /// Line the shot up on the pin (the aim taps the phone sends) and take a club that gets there from this lie.
++        static IEnumerator AimAtThePin(GolfGame game)
++        {
++            var hole = game.CurrentHole; var at = game.BallAt;
++            for (int i = 0; i < 200; i++)
++            {
++                float off = Mathf.DeltaAngle((float)game.AimHeading, (float)at.HeadingTo(hole.Pin));
++                if (Mathf.Abs(off) < 0.2f) break;
++                game.NativeAim(Mathf.Clamp(off / game.AimTapDegrees, -1, 1));
++            }
++            var lie = hole.LieAt(at); double yards = at.DistanceTo(hole.Pin);
++            for (int i = 0; i < 10 && Shot.GolfClubs.ReferenceDistanceYards(game.ClubInHand) * lie.PowerFactor(game.ClubInHand) < yards - 4; i++) game.NativeClub(-1);
++            yield return new WaitForSecondsRealtime(1.0f);
++        }
++
++        /// Where the aim dots fall in the picture (the first few), to see which of them show.
++        static void NoteDots(GolfGame game)
++        {
++            var dots = GameObject.Find("Aim dots"); var cam = Camera.main;
++            if (!dots || !cam) return;
++            var parts = new System.Collections.Generic.List<string>();
++            foreach (Transform d in dots.transform)
++                if (d.name == "Dot" && d.gameObject.activeSelf && parts.Count < 8)
++                {
++                    var v = cam.WorldToViewportPoint(d.position);
++                    parts.Add($"({v.x:F2},{v.y:F2},{v.z:F0}{(d.GetComponent<Renderer>().isVisible ? "" : " hidden")})");
++                }
++            log.WriteLine($"  dots in view (x,y,depth): {string.Join(" ", parts)}; queue {(dots.transform.childCount > 0 ? dots.transform.GetChild(0).GetComponent<Renderer>().sharedMaterial.renderQueue : -1)}");
++        }
++
++        /// The middle of the bunker nearest `yards` from the pin.
++        static CoursePoint Sand(Hole hole, double yards)
++        {
++            CoursePoint? best = null; double off = double.MaxValue;
++            foreach (var h in hole.Hazards)
++            {
++                if (h.Kind != HazardKind.Bunker) continue;
++                var c = new CoursePoint(h.X, h.Distance);
++                double o = System.Math.Abs(c.DistanceTo(hole.Pin) - yards);
++                if (hole.LieAt(c) == CourseLie.Bunker && o < off) { off = o; best = c; }
++            }
++            Assert.IsNotNull(best, $"a bunker on hole {hole.Number}");
++            return best.Value;
++        }
++
++        [UnityTest, Timeout(900000)]
++        public IEnumerator CapturesPuttsWindAndLies()
++        {
++            Time.timeScale = 1f;
++            Directory.CreateDirectory(Dir);
++            log = new StringWriter();
++            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
++            var game = Object.FindFirstObjectByType<GolfGame>();
++            game.InstantReplays = false;
++            try
++            {
++                yield return null;
++                // golf as the app plays it: the phone is the controller, so no on-screen buttons
++                game.PrepareNativeAddress("cliffside");
++                yield return null;
++
++                // the island green: a short putt and a long one across its slopes
++                yield return ToHole(game, 12);
++                var hole = game.CurrentHole;
++                yield return AddressAt(game, BreakingPutt(hole, 2.7), new Wind(6, 40));
++                Note(game, "1-short-putt"); Tv("1-short-putt");
++                yield return AddressAt(game, BreakingPutt(hole, 13), new Wind(6, 40));
++                Note(game, "2-long-breaking-putt"); Tv("2-long-breaking-putt");
++
++                // the tee shot over the water in a strong wind from the left
++                double teeLine = hole.Tee.HeadingTo(hole.Pin);
++                yield return AddressAt(game, hole.Tee, new Wind(18, teeLine + 90));
++                Note(game, "3-strong-wind"); NoteDots(game); Tv("3-strong-wind");
++                // (diagnostic: the same frame with the dots drawn after every other see-through thing)
++                var dotMaterial = GameObject.Find("Aim dots")?.transform.GetChild(0).GetComponent<Renderer>().sharedMaterial;
++                if (dotMaterial)
++                {
++                    int queue = dotMaterial.renderQueue;
++                    dotMaterial.renderQueue = 4000; yield return null;
++                    Tv("3z-diagnostic-dots-drawn-last");
++                    dotMaterial.renderQueue = queue; yield return null;
++                }
++                double aimed = game.AimHeading;
++                Random.InitState(20261012);   // the same strike's luck before and after
++                game.NativeSwing(0.85f);      // straight down the line the game set up, at 85 %
++                yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
++                var shot = game.LastShot;
++                double flewOn = game.BallAt.HeadingTo(shot.Landing);
++                log.WriteLine($"3-strong-wind shot: {shot.Club} power {shot.Power:F2} carry {shot.Carry:F1} yd, came down {System.Math.Sin((flewOn - aimed) * System.Math.PI / 180) * shot.Carry:F1} yd right of the aim, lie {shot.Lie}");
++                yield return WaitFor(() => game.Bounces > 0 || game.Current != GolfGame.State.Flight, 20, "the ball to come down");
++                yield return null;
++                Tv("3b-strong-wind-landing");
++                yield return WaitFor(() => game.Current is GolfGame.State.Result or GolfGame.State.Aim, 25, "the shot to finish");
++
++                // Cliffside: a shot from the rough and one from the sand
++                yield return ToHole(game, 7);
++                hole = game.CurrentHole;
++                yield return AddressAt(game, Rough(hole, 150), new Wind(8, 200));
++                yield return AimAtThePin(game);
++                Note(game, "4-rough"); NoteDots(game); Tv("4-rough");
++                yield return AddressAt(game, Sand(hole, 120), new Wind(8, 200));
++                yield return AimAtThePin(game);
++                Note(game, "5-sand"); NoteDots(game); Tv("5-sand");
++            }
++            finally
++            {
++                File.WriteAllText($"{Dir}/log.txt", log.ToString());
++                Camera.main.targetTexture = null;
++            }
++        }
++    }
++}
+diff --git a/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs.meta b/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs.meta
+new file mode 100644
+--- /dev/null
++++ b/Unity/Assets/Tests/PlayMode/GolfReadCaptureTests.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: b2924035ceff94910a72e3c7792ca548

@@ -1,0 +1,33 @@
+{
+    "item": "golf_cap",
+    "sex": "Male",
+    "slot": "Headwear",
+    "parentBone": "Head",
+    "socket": "Headwear",
+    "socketPosition": [
+        5.21878443238144e-11,
+        0.11077433079481125,
+        0.0003360206028446555
+    ],
+    "socketRotation": [
+        -0.07830077409744263,
+        7.741957830376123e-8,
+        6.080685732712254e-9,
+        0.9969297647476196
+    ],
+    "pieces": [
+        {
+            "name": "Kit_Cap",
+            "renderer": "Acc_Cap",
+            "mesh": "Kit_Cap",
+            "maps": "Cap",
+            "metresPerUv": 0.6417469382286072,
+            "bones": [
+                "Headwear"
+            ],
+            "roles": [
+                "Acc_Cap"
+            ]
+        }
+    ]
+}

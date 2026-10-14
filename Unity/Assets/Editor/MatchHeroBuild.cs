@@ -14,11 +14,10 @@ namespace GolfArcade.EditorTools
     /// Body + painted face + classic racket on Hand_Racket + Animator (the Generic avatar of <Sex>_ReadyIdle.fbx) + MatchHeroLook + HeroTennisDriver
     /// with the 16 clips of the hero. The mesh, the skeleton and the clips are used as imported (nothing is edited); only materials are assigned.
     /// DRESS_MATCH_HEROES: the White tennis kit is added as six extra SkinnedMeshRenderers bound by name to the same bones (MatchHeroKit.Attach); the clip FBXs are untouched.
-    /// The old Higgsfield tennis bases that used to live at those two resource names are moved (not deleted) to Assets/Characters/Archive.
     public static class MatchHeroBuild
     {
         const string Dir = "Assets/Characters/MatchHeroes/", MatDir = Dir + "Materials/";
-        const string PrefabDir = "Assets/Resources/Tennis/Customization/", ArchiveDir = "Assets/Characters/Archive/OldPlayerBase/";
+        const string PrefabDir = "Assets/Resources/Tennis/Customization/";
         const string RacketMatSource = "../work/classic-tennis-racket/export/unity_stage/Materials/";
         const string ClipTablePath = "../work/hero-mainstay/data/clip_table.json";
 
@@ -42,10 +41,9 @@ namespace GolfArcade.EditorTools
         {
             try
             {
-                Directory.CreateDirectory(MatDir); Directory.CreateDirectory(ArchiveDir.TrimEnd('/'));
+                Directory.CreateDirectory(MatDir);
                 MatchHeroImport.CopyAndImport();
                 MatchHeroKit.CopyAndImport();
-                ArchiveOldBases();
                 var table = JsonUtility.FromJson<ClipTable>(File.ReadAllText(ClipTablePath));
                 var report = new System.Text.StringBuilder();
                 foreach (var sex in new[] { "Male", "Female" }) report.AppendLine(BuildPrefab(sex, table.heroes.First(h => h.sex == sex)));
@@ -56,20 +54,6 @@ namespace GolfArcade.EditorTools
                 if (Application.isBatchMode) EditorApplication.Exit(0);
             }
             catch (Exception e) { Debug.LogException(e); if (Application.isBatchMode) EditorApplication.Exit(1); }
-        }
-
-        /// Resources/Tennis/Customization/PlayerMale.fbx / PlayerFemale.fbx (the old tennis bases) leave Resources so the two resource
-        /// names can hold the match heroes. Moved with their .meta (same GUID), nothing is deleted.
-        static void ArchiveOldBases()
-        {
-            foreach (var n in new[] { "PlayerMale", "PlayerFemale" })
-            {
-                string from = PrefabDir + n + ".fbx", to = ArchiveDir + n + ".fbx";
-                if (!File.Exists(from)) continue;
-                if (File.Exists(to)) throw new IOException("archive target exists: " + to);
-                string err = AssetDatabase.MoveAsset(from, to);
-                if (!string.IsNullOrEmpty(err)) throw new IOException("move " + from + ": " + err);
-            }
         }
 
         static Material CopyMaterial(Material source, string name)

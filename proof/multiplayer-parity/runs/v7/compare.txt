@@ -1,0 +1,42 @@
+SEAT 0 complete True final 3–2 secs 266
+  rival strokes ['Dive=17', 'LowPickup=5', 'Lob=3', 'Drive=10', 'Serve=15', 'Smash=1', 'Volley=1', 'Running=1', 'Slice=1'] | launch gap mean 0.78 | VISIBLE gap mean/max 0.95 1.62 holds 43 held s 2.37 rivalHits 31
+  calls made/taken 20 26 | errors 0 exc 0 | worst frame 1.03 slow 163 | me swings 16 hits 13 serves 28 dives 18 emotes 13 honest misses 13
+SEAT 1 complete True final 2–3 secs 266
+  rival strokes ['Serve=28', 'Dive=18', 'Lob=5', 'LowPickup=5', 'Drive=4'] | launch gap mean 0.79 | VISIBLE gap mean/max 1.21 4.61 holds 49 held s 4.62 rivalHits 40
+  calls made/taken 26 20 | errors 0 exc 0 | worst frame 0.111 slow 11 | me swings 30 hits 16 serves 15 dives 17 emotes 13 honest misses 13
+points 34 34
+SCORE SEQUENCE AGREES
+   0 GAMES 0–0  ·  15–0  ·  YOUR SERVE | GAMES 0–0  ·  15–0  ·  OPPONENT SERVES
+   1 GAMES 0–0  ·  15–15  ·  YOUR SERVE | GAMES 0–0  ·  15–15  ·  OPPONENT SERVES
+   2 GAMES 0–0  ·  15–30  ·  YOUR SERVE | GAMES 0–0  ·  15–30  ·  OPPONENT SERVES
+   3 GAMES 0–0  ·  30–30  ·  YOUR SERVE | GAMES 0–0  ·  30–30  ·  OPPONENT SERVES
+   4 GAMES 0–0  ·  40–30  ·  YOUR SERVE | GAMES 0–0  ·  40–30  ·  OPPONENT SERVES
+   5 GAMES 0–0  ·  DEUCE  ·  YOUR SERVE | GAMES 0–0  ·  DEUCE  ·  OPPONENT SERVES
+   6 GAMES 0–0  ·  AD IN  ·  YOUR SERVE | GAMES 0–0  ·  AD IN  ·  OPPONENT SERVES
+   7 GAMES 0–0  ·  DEUCE  ·  YOUR SERVE | GAMES 0–0  ·  DEUCE  ·  OPPONENT SERVES
+   8 GAMES 0–0  ·  AD OUT  ·  YOUR SERVE | GAMES 0–0  ·  AD OUT  ·  OPPONENT SERVES
+   9 GAMES 0–0  ·  DEUCE  ·  YOUR SERVE | GAMES 0–0  ·  DEUCE  ·  OPPONENT SERVES
+   10 GAMES 0–0  ·  AD IN  ·  YOUR SERVE | GAMES 0–0  ·  AD IN  ·  OPPONENT SERVES
+   11 GAMES 1–0  ·  0–0  ·  OPPONENT SERVES | GAMES 0–1  ·  0–0  ·  YOUR SERVE
+   12 GAMES 1–0  ·  0–15  ·  OPPONENT SERVES | GAMES 0–1  ·  0–15  ·  YOUR SERVE
+   13 GAMES 1–0  ·  0–30  ·  OPPONENT SERVES | GAMES 0–1  ·  0–30  ·  YOUR SERVE
+   14 GAMES 1–0  ·  15–30  ·  OPPONENT SERVES | GAMES 0–1  ·  15–30  ·  YOUR SERVE
+   15 GAMES 1–0  ·  30–30  ·  OPPONENT SERVES | GAMES 0–1  ·  30–30  ·  YOUR SERVE
+   16 GAMES 1–0  ·  40–30  ·  OPPONENT SERVES | GAMES 0–1  ·  40–30  ·  YOUR SERVE
+   17 GAMES 1–0  ·  DEUCE  ·  OPPONENT SERVES | GAMES 0–1  ·  DEUCE  ·  YOUR SERVE
+   18 GAMES 1–0  ·  AD IN  ·  OPPONENT SERVES | GAMES 0–1  ·  AD IN  ·  YOUR SERVE
+   19 GAMES 1–1  ·  0–0  ·  YOUR SERVE | GAMES 1–1  ·  0–0  ·  OPPONENT SERVES
+   20 GAMES 1–1  ·  0–15  ·  YOUR SERVE | GAMES 1–1  ·  0–15  ·  OPPONENT SERVES
+   21 GAMES 1–1  ·  15–15  ·  YOUR SERVE | GAMES 1–1  ·  15–15  ·  OPPONENT SERVES
+   22 GAMES 1–1  ·  30–15  ·  YOUR SERVE | GAMES 1–1  ·  30–15  ·  OPPONENT SERVES
+   23 GAMES 1–1  ·  40–15  ·  YOUR SERVE | GAMES 1–1  ·  40–15  ·  OPPONENT SERVES
+   24 GAMES 2–1  ·  0–0  ·  OPPONENT SERVES | GAMES 1–2  ·  0–0  ·  YOUR SERVE
+   25 GAMES 2–1  ·  15–0  ·  OPPONENT SERVES | GAMES 1–2  ·  15–0  ·  YOUR SERVE
+   26 GAMES 2–1  ·  30–0  ·  OPPONENT SERVES | GAMES 1–2  ·  30–0  ·  YOUR SERVE
+   27 GAMES 2–1  ·  40–0  ·  OPPONENT SERVES | GAMES 1–2  ·  40–0  ·  YOUR SERVE
+   28 GAMES 2–2  ·  0–0  ·  YOUR SERVE | GAMES 2–2  ·  0–0  ·  OPPONENT SERVES
+   29 GAMES 2–2  ·  15–0  ·  YOUR SERVE | GAMES 2–2  ·  15–0  ·  OPPONENT SERVES
+   30 GAMES 2–2  ·  30–0  ·  YOUR SERVE | GAMES 2–2  ·  30–0  ·  OPPONENT SERVES
+   31 GAMES 2–2  ·  40–0  ·  YOUR SERVE | GAMES 2–2  ·  40–0  ·  OPPONENT SERVES
+   32 GAMES 2–2  ·  40–15  ·  YOUR SERVE | GAMES 2–2  ·  40–15  ·  OPPONENT SERVES
+   33 YOU WIN 3–2 | OPPONENT WINS 2–3

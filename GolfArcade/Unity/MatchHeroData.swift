@@ -39,6 +39,10 @@ enum HeroAssets {
         let fabricVersion: Float?
         let skinFinish: Float?, skinPigmentUV: Float?
         let anatomicalFace: Bool?, baseMapLinear: Bool?
+        /// The body skin is Unity's HeroFaceSkin (analytic lips, lid liner, blush, beard, face light): the mirror runs its port (MatchHeroSurfaces.faceSkinSurface).
+        let faceSkin: Bool?
+        /// TennisCloth's kit edge lines: 1 the shoe's sole line, 2 the sock's ribbed cuff (data in the part's edgeOffset channel).
+        let edgeLines: Float?
         var isCloth: Bool { shader == "TennisCloth" }
         var isCharacter: Bool { shader == "TennisCharacter" }
     }
@@ -47,7 +51,11 @@ enum HeroAssets {
         let name: String, kind: String
         let vertexCount: Int, positionOffset: Int, normalOffset: Int, swingPositionOffset: Int, swingNormalOffset: Int
         let uvOffset: Int?, bindPositionOffset: Int?
+        /// Body: HeroFaceSkin's lid-liner distances (float2). Kit: HeroKitEdges' measurements (float4, metres).
+        let lidOffset: Int?, edgeOffset: Int?
         let submeshes: [Sub]
+        var hasLid: Bool { (lidOffset ?? -1) >= 0 }
+        var hasEdges: Bool { (edgeOffset ?? -1) >= 0 }
     }
     struct Mat: Decodable { let name: String; let color: [Float]; let smoothness: Float }
     struct MorphShapeInfo: Decodable { let name: String; let positionOffset: Int; let normalOffset: Int }
@@ -161,6 +169,7 @@ enum HeroAssets {
     }
 
     /// The kit's UV0 (texcoord channel 0), or for the body (which has no UVs) its BIND-pose position in two channels: (x, y) and (z): the skin's soft normal is projected from there.
+    /// Then the body's lid-liner distances (one channel after the bind pose), or the kit's edge measurements (two channels after UV0: xy, zw).
     static func texcoordSources(_ part: Part, bin: Data) -> [SCNGeometrySource]? {
         var result: [SCNGeometrySource] = []
         if let uv = part.uvOffset, uv >= 0, uv + part.vertexCount * 8 <= bin.count {
@@ -173,6 +182,14 @@ enum HeroAssets {
             var d = bin.subdata(in: bp ..< bp + part.vertexCount * 12); d.append(contentsOf: [0, 0, 0, 0])
             result += [SCNGeometrySource(data: d, semantic: .texcoord, vectorCount: part.vertexCount, usesFloatComponents: true, componentsPerVector: 2, bytesPerComponent: 4, dataOffset: 0, dataStride: 12),
                        SCNGeometrySource(data: d, semantic: .texcoord, vectorCount: part.vertexCount, usesFloatComponents: true, componentsPerVector: 2, bytesPerComponent: 4, dataOffset: 8, dataStride: 12)]
+        }
+        if let lid = part.lidOffset, lid >= 0, lid + part.vertexCount * 8 <= bin.count {
+            result.append(SCNGeometrySource(data: bin.subdata(in: lid ..< lid + part.vertexCount * 8), semantic: .texcoord, vectorCount: part.vertexCount,
+                                           usesFloatComponents: true, componentsPerVector: 2, bytesPerComponent: 4, dataOffset: 0, dataStride: 8))
+        }
+        if let edge = part.edgeOffset, edge >= 0, edge + part.vertexCount * 16 <= bin.count {
+            let d = bin.subdata(in: edge ..< edge + part.vertexCount * 16)
+            result += [0, 8].map { SCNGeometrySource(data: d, semantic: .texcoord, vectorCount: part.vertexCount, usesFloatComponents: true, componentsPerVector: 2, bytesPerComponent: 4, dataOffset: $0, dataStride: 16) }
         }
         return result.isEmpty ? nil : result
     }
@@ -212,10 +229,11 @@ enum HeroAssets {
                 if sub.material == "Kit_Shoe", let tint = colour {
                     let pick = SIMD3<Float>(tint.x <= 0.035 ? 0 : tint.x / 0.93, tint.y <= 0.035 ? 0 : tint.y / 0.93, tint.z <= 0.0401 ? 0 : tint.z / 0.93)
                     let luminance = simd_dot(pick, SIMD3<Float>(0.2126, 0.7152, 0.0722))
-                    let derived = luminance >= 0.5 ? pick * 0.65 : pick + (SIMD3<Float>(repeating: 1) - pick) * 0.35
+                    // MatchHeroLook.KitShoeTrim: a whisper of the pick, so a white shoe reads clean white (no heavy grey trim)
+                    let derived = luminance >= 0.5 ? pick * 0.93 : pick + (SIMD3<Float>(repeating: 1) - pick) * 0.12
                     trim = SIMD3<Float>(max(derived.x * 0.93, 0.035), max(derived.y * 0.93, 0.035), max(derived.z * 0.93, 0.0401))
                 }
-                return MatchHeroSurfaces.material(sub, colour: colour, sceneScale: s, trimColour: trim)
+                return MatchHeroSurfaces.material(sub, colour: colour, sceneScale: s, trimColour: trim, part: part)
             }
             let node = SCNNode(geometry: geometry); node.name = part.name
             if part.name == "Kit_Glove_R" || (part.kind == "equipment" && part.name != "Club_Iron") { node.isHidden = true }

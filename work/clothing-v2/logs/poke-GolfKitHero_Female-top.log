@@ -1,0 +1,11 @@
+Kit_Top: covered body vertices 602
+Kit_Top clips with poke-through > 0.5 mm: 9 / 17  worst 29.9 mm, most points 37
+    HalfSwing {'max_mm': 29.9, 'verts': 17, 'frame': 7, 'vertex': 7788}
+    IronSwing {'max_mm': 29.9, 'verts': 18, 'frame': 14, 'vertex': 7789}
+    Drive {'max_mm': 29.8, 'verts': 21, 'frame': 24, 'vertex': 7522}
+    FistPump {'max_mm': 29.3, 'verts': 37, 'frame': 18, 'vertex': 10000}
+    Emote_Scuba {'max_mm': 27.7, 'verts': 19, 'frame': 3, 'vertex': 8117}
+    Chip {'max_mm': 26.4, 'verts': 3, 'frame': 14, 'vertex': 1925}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

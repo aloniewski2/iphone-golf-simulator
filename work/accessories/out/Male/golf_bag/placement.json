@@ -1,0 +1,1 @@
+{"cfg": [-6.0, 3.0, 0.02, 1.4, 0.012], "lean": -6.0, "roll": 3.0, "t": [0.012, 0.156748046875, 1.069476705541808], "report": {"lean": -6.0, "roll": 3.0, "ty": 0.1567, "tz": 1.0695, "ty_motion": 0.155, "ty_band": 0.1567, "motion_min_mm": 19.7, "motion_worst": "RunForward:1", "head_min_mm": 69.5, "band_gap_mm": 20.0}}

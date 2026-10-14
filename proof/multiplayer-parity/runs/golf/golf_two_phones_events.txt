@@ -1,0 +1,327 @@
+load 5.3 s, screen 1280x720, stick found, network True, latency guest->host 60 ms
+   0.01  [Warning] Ignoring depth surface load action as it is memoryless
+   0.01  [Warning] Ignoring depth surface store action as it is memoryless
+   0.03  view state  -> Intro
+   0.03  host phase  -> intro  hole 1 turn P1
+   0.03  HOLE 1 (wind 4 mph)
+   2.78  view state Intro -> Aim
+   2.87  host phase intro -> aim  hole 1 turn P1
+   2.87  turn P1 stroke 1 (Driver, 416 yd to pin)
+  11.84  P1 swing Driver power 0.78 heading -3.1 (wanted -3.1)
+  11.86  view state Aim -> Flight
+  11.86  host phase aim -> flight  hole 1 turn P1
+  11.86  SHOT #1 P1 Driver power 0.78 heading 356.9  carry 203 roll 12 -> Fairway  rest 193.7 yd from pin
+  19.27  P2 emote Bring It (during flight)
+  21.36  view state Flight -> Replay
+  23.86  P2 emote Thrust (during flight)
+  27.99  P2 emote Push-ups (during flight)
+  32.70  view state Replay -> Result
+  32.83  P2 emote Bring It (during flight)
+  35.00  host phase flight -> result  hole 1 turn P1
+  35.82  view state Result -> Aim
+  35.82  host phase result -> aim  hole 1 turn P2
+  35.82  turn P2 stroke 1 (Driver, 416 yd to pin)
+  40.61  P2 aim: phone heading 355.31, TV heading -4.68
+  46.54  P2 swing Driver power 0.76 heading 355.3 (wanted -1.1)
+  46.64  host phase aim -> flight  hole 1 turn P2
+  46.64  SHOT #2 P2 Driver power 0.76 heading 355.3  carry 180 roll 13 -> Fairway  rest 216.1 yd from pin
+  46.66  view state Aim -> Flight
+  47.11  P1 emote Spike (during flight)
+  51.34  P1 emote Scuba (during flight)
+  54.93  view state Flight -> Replay
+  56.13  P1 emote Wave (during flight)
+  61.12  P1 emote Spike (during flight)
+  65.69  view state Replay -> Result
+  66.80  P1 emote Scuba (during flight)
+  67.56  host phase flight -> result  hole 1 turn P2
+  70.76  P2 phone: result done
+  70.83  P2 emote Bring It (during result)
+  70.86  view state Result -> Aim
+  70.86  host phase result -> aim  hole 1 turn P2
+  70.86  turn P2 stroke 2 (Driver, 216 yd to pin)
+  72.86  P2 aim: phone heading 11.55, TV heading 11.54
+  77.33  P2 swing Driver power 0.95 heading 11.5 (wanted 11.8)
+  77.40  host phase aim -> flight  hole 1 turn P2
+  77.40  SHOT #3 P2 Driver power 0.95 heading 11.5  carry 206 roll 14 -> Green  rest 19.5 yd from pin
+  77.41  view state Aim -> Flight
+  79.00  P1 emote Spike (during flight)
+  85.10  P1 emote Scuba (during flight)
+  87.31  view state Flight -> Replay
+  89.44  P1 emote Wave (during flight)
+  94.50  P1 emote Spike (during flight)
+  98.60  view state Replay -> Result
+  98.81  P1 emote Scuba (during flight)
+ 100.43  host phase flight -> result  hole 1 turn P2
+ 103.63  P2 phone: result done
+ 103.93  view state Result -> Aim
+ 103.93  host phase result -> aim  hole 1 turn P1
+ 103.93  turn P1 stroke 2 (Driver, 194 yd to pin)
+ 109.77  P1 swing Driver power 0.75 heading 6.7 (wanted 9.1)
+ 109.80  view state Aim -> Flight
+ 109.80  host phase aim -> flight  hole 1 turn P1
+ 109.80  SHOT #4 P1 Driver power 0.75 heading 6.7  carry 173 roll 17 -> Green  rest 3.2 yd from pin
+ 110.33  P2 emote Bring It (during flight)
+ 114.47  P2 emote Thrust (during flight)
+ 118.50  P2 emote Push-ups (during flight)
+ 119.20  view state Flight -> Replay
+ 123.20  P2 emote Bring It (during flight)
+ 127.92  P2 emote Thrust (during flight)
+ 129.54  view state Replay -> Result
+ 131.43  host phase flight -> result  hole 1 turn P1
+ 132.58  view state Result -> Aim
+ 132.58  host phase result -> aim  hole 1 turn P2
+ 132.58  turn P2 stroke 3 (Putter, 20 yd to pin)
+ 133.89  P2 aim: phone heading 249.02, TV heading -110.98
+ 135.17  P2 swing Putter power 0.78 heading 249.0 (wanted -111.2)
+ 135.23  host phase aim -> flight  hole 1 turn P2
+ 135.23  SHOT #5 P2 Putter power 0.78 heading 249.0  carry 0 roll 18 -> Green  rest 2.0 yd from pin
+ 135.24  view state Aim -> Flight
+ 136.20  P1 emote Scuba (during flight)
+ 140.85  view state Flight -> Result
+ 141.33  host phase flight -> result  hole 1 turn P2
+ 144.56  P2 phone: result done
+ 144.66  view state Result -> Aim
+ 144.66  host phase result -> aim  hole 1 turn P1
+ 144.66  turn P1 stroke 3 (Putter, 3 yd to pin)
+ 146.93  P1 swing Putter power 0.32 heading 168.9 (wanted 168.7)
+ 146.94  view state Aim -> Flight
+ 146.94  host phase aim -> flight  hole 1 turn P1
+ 146.94  SHOT #6 P1 Putter power 0.32 heading 168.9  carry 0 roll 3 -> Green  rest 0.5 yd from pin
+ 149.09  view state Flight -> Result
+ 149.59  host phase flight -> result  hole 1 turn P1
+ 149.91  P1 emote Wave (during result)
+ 152.14  view state Result -> Aim
+ 152.14  host phase result -> aim  hole 1 turn P2
+ 152.14  turn P2 stroke 4 (Putter, 2 yd to pin)
+ 153.46  P2 aim: phone heading 298.23, TV heading -61.77
+ 154.07  P2 swing Putter power 0.26 heading 298.2 (wanted -61.8)
+ 154.17  host phase aim -> flight  hole 1 turn P2
+ 154.17  SHOT #7 P2 Putter power 0.26 heading 298.2  carry 0 roll 2 -> Green HOLED  rest 0.0 yd from pin
+ 154.17  view state Aim -> Flight
+ 156.15  view state Flight -> Result
+ 156.33  host phase flight -> result  hole 1 turn P2
+ 156.63  P2 emote Thrust (during result)
+ 159.56  P2 phone: result done
+ 159.69  view state Result -> Aim
+ 159.69  host phase result -> aim  hole 1 turn P1
+ 159.69  turn P1 stroke 4 (Putter, 1 yd to pin)
+ 162.06  P1 swing Putter power 0.09 heading 119.3 (wanted 119.7)
+ 162.07  view state Aim -> Flight
+ 162.07  host phase aim -> flight  hole 1 turn P1
+ 162.07  SHOT #8 P1 Putter power 0.09 heading 119.3  carry 0 roll 1 -> Green HOLED  rest 0.0 yd from pin
+ 163.06  view state Flight -> Result
+ 163.55  host phase flight -> result  hole 1 turn P1
+ 164.92  P1 emote Scuba (during result)
+ 166.09  host phase result -> holeDone  hole 1 turn P1
+ 173.08  view state Result -> Loading
+ 173.08  host phase holeDone -> loading  hole 2 turn P2
+ 173.08  HOLE 2 (wind 10 mph)
+ 180.13  view state Loading -> Intro
+ 180.17  host phase loading -> intro  hole 2 turn P2
+ 183.15  view state Intro -> Aim
+ 183.20  host phase intro -> aim  hole 2 turn P2
+ 183.20  turn P2 stroke 1 (Hybrid, 340 yd to pin)
+ 189.21  P2 aim: phone heading 5.40, TV heading 5.39
+ 195.47  P2 swing Hybrid power 0.97 heading 5.4 (wanted 2.1)
+ 195.53  host phase aim -> flight  hole 2 turn P2
+ 195.53  SHOT #9 P2 Hybrid power 0.97 heading 5.4  carry 171 roll 3 -> Fairway  rest 162.0 yd from pin
+ 195.54  view state Aim -> Flight
+ 195.91  P1 emote Wave (during flight)
+ 202.33  P1 emote Spike (during flight)
+ 206.63  view state Flight -> Replay
+ 208.17  P1 emote Scuba (during flight)
+ 212.39  P1 emote Wave (during flight)
+ 216.87  P1 emote Spike (during flight)
+ 218.62  view state Replay -> Result
+ 220.50  host phase flight -> result  hole 2 turn P2
+ 221.30  P2 emote Push-ups (during result)
+ 223.70  P2 phone: result done
+ 227.62  view state Result -> Aim
+ 227.62  host phase result -> aim  hole 2 turn P1
+ 227.62  turn P1 stroke 1 (Hybrid, 340 yd to pin)
+ 238.27  P1 swing Hybrid power 0.93 heading 6.9 (wanted 9.6)
+ 238.30  view state Aim -> Flight
+ 238.30  host phase aim -> flight  hole 2 turn P1
+ 238.30  SHOT #10 P1 Hybrid power 0.93 heading 6.9  carry 176 roll 3 -> Fairway  rest 158.1 yd from pin
+ 238.37  P2 emote Bring It (during flight)
+ 243.42  P2 emote Thrust (during flight)
+ 249.11  view state Flight -> Replay
+ 249.57  P2 emote Push-ups (during flight)
+ 254.20  P2 emote Bring It (during flight)
+ 258.60  P2 emote Thrust (during flight)
+ 261.23  view state Replay -> Result
+ 263.39  host phase flight -> result  hole 2 turn P1
+ 264.86  view state Result -> Aim
+ 264.86  host phase result -> aim  hole 2 turn P2
+ 264.87  turn P2 stroke 2 (5 Iron, 162 yd to pin)
+ 266.83  P2 aim: phone heading 350.28, TV heading -9.71
+ 271.40  P2 swing 5 Iron power 0.97 heading 350.3 (wanted -9.5)
+ 271.50  host phase aim -> flight  hole 2 turn P2
+ 271.50  SHOT #11 P2 5 Iron power 0.97 heading 350.3  carry 161 roll 0 -> Water +1  rest 16.0 yd from pin
+ 271.51  view state Aim -> Flight
+ 272.79  P1 emote Scuba (during flight)
+ 277.76  P1 emote Wave (during flight)
+ 280.11  view state Flight -> Replay
+ 282.11  P1 emote Spike (during flight)
+ 286.15  P1 emote Scuba (during flight)
+ 290.68  view state Replay -> Result
+ 290.80  P1 emote Wave (during flight)
+ 291.76  host phase flight -> result  hole 2 turn P2
+ 294.96  P2 phone: result done
+ 297.81  view state Result -> Aim
+ 297.81  host phase result -> aim  hole 2 turn P1
+ 297.81  turn P1 stroke 2 (5 Iron, 158 yd to pin)
+ 302.90  P1 swing 5 Iron power 0.90 heading -10.4 (wanted -10.8)
+ 302.91  view state Aim -> Flight
+ 302.91  host phase aim -> flight  hole 2 turn P1
+ 302.91  SHOT #12 P1 5 Iron power 0.90 heading 349.6  carry 160 roll 5 -> Water +1  rest 15.9 yd from pin
+ 304.80  P2 emote Thrust (during flight)
+ 313.10  view state Flight -> Replay
+ 319.84  P2 emote Push-ups (during flight)
+ 324.91  view state Replay -> Result
+ 325.57  P2 emote Bring It (during flight)
+ 325.73  host phase flight -> result  hole 2 turn P1
+ 328.08  view state Result -> Aim
+ 328.08  host phase result -> aim  hole 2 turn P2
+ 328.08  turn P2 stroke 4 (Putter, 16 yd to pin)
+ 330.97  P2 aim: phone heading 77.40, TV heading 77.39
+ 332.39  P2 swing Putter power 0.87 heading 77.4 (wanted 77.7)
+ 332.46  host phase aim -> flight  hole 2 turn P2
+ 332.46  SHOT #13 P2 Putter power 0.87 heading 77.4  carry 0 roll 17 -> Green  rest 1.4 yd from pin
+ 332.47  view state Aim -> Flight
+ 333.42  P1 emote Spike (during flight)
+ 337.17  view state Flight -> Result
+ 337.58  P1 emote Scuba (during flight)
+ 337.64  host phase flight -> result  hole 2 turn P2
+ 340.85  P2 phone: result done
+ 340.94  view state Result -> Aim
+ 340.94  host phase result -> aim  hole 2 turn P1
+ 340.94  turn P1 stroke 4 (Putter, 14 yd to pin)
+ 344.11  P1 swing Putter power 0.79 heading 112.3 (wanted 112.7)
+ 344.12  view state Aim -> Flight
+ 344.12  host phase aim -> flight  hole 2 turn P1
+ 344.12  SHOT #14 P1 Putter power 0.79 heading 112.3  carry 0 roll 15 -> Green  rest 1.4 yd from pin
+ 344.43  P2 emote Bring It (during flight)
+ 348.61  view state Flight -> Result
+ 348.99  P2 emote Thrust (during flight)
+ 349.12  host phase flight -> result  hole 2 turn P1
+ 351.64  view state Result -> Aim
+ 351.64  host phase result -> aim  hole 2 turn P2
+ 351.64  turn P2 stroke 5 (Putter, 1 yd to pin)
+ 353.30  P2 aim: phone heading 304.08, TV heading -55.91
+ 353.87  P2 swing Putter power 0.21 heading 304.1 (wanted -56.2)
+ 353.97  host phase aim -> flight  hole 2 turn P2
+ 353.97  SHOT #15 P2 Putter power 0.21 heading 304.1  carry 0 roll 1 -> Green HOLED  rest 0.0 yd from pin
+ 353.98  view state Aim -> Flight
+ 354.78  P1 emote Scuba (during flight)
+ 355.50  view state Flight -> Result
+ 355.97  host phase flight -> result  hole 2 turn P2
+ 359.17  P2 phone: result done
+ 359.25  view state Result -> Aim
+ 359.25  host phase result -> aim  hole 2 turn P1
+ 359.25  turn P1 stroke 5 (Putter, 1 yd to pin)
+ 362.45  P1 swing Putter power 0.20 heading -81.0 (wanted -81.5)
+ 362.47  view state Aim -> Flight
+ 362.47  host phase aim -> flight  hole 2 turn P1
+ 362.47  SHOT #16 P1 Putter power 0.20 heading 279.0  carry 0 roll 1 -> Green HOLED  rest 0.0 yd from pin
+ 364.16  view state Flight -> Result
+ 364.18  P2 emote Bring It (during flight)
+ 364.62  host phase flight -> result  hole 2 turn P1
+ 367.15  host phase result -> holeDone  hole 2 turn P1
+ 374.17  view state Result -> Loading
+ 374.17  host phase holeDone -> loading  hole 3 turn P1
+ 374.17  HOLE 3 (wind 4 mph)
+ 375.86  view state Loading -> Intro
+ 375.90  host phase loading -> intro  hole 3 turn P1
+ 378.82  view state Intro -> Aim
+ 378.82  host phase intro -> aim  hole 3 turn P1
+ 378.82  turn P1 stroke 1 (Driver, 492 yd to pin)
+ 388.33  P1 swing Driver power 0.86 heading 0.4 (wanted 1.0)
+ 388.36  view state Aim -> Flight
+ 388.36  host phase aim -> flight  hole 3 turn P1
+ 388.36  SHOT #17 P1 Driver power 0.86 heading 0.4  carry 214 roll 14 -> Fairway  rest 255.1 yd from pin
+ 388.58  P2 emote Thrust (during flight)
+ 393.25  P2 emote Push-ups (during flight)
+ 397.30  view state Flight -> Replay
+ 398.33  P2 emote Bring It (during flight)
+ 404.44  P2 emote Thrust (during flight)
+ 408.79  view state Replay -> Result
+ 410.29  P2 emote Push-ups (during flight)
+ 410.62  host phase flight -> result  hole 3 turn P1
+ 411.86  view state Result -> Aim
+ 411.86  host phase result -> aim  hole 3 turn P2
+ 411.86  turn P2 stroke 1 (Driver, 492 yd to pin)
+ 416.83  P2 aim: phone heading 4.57, TV heading 4.56
+
+AIM TRIALS (heading degrees; error = final - wanted)
+  who   control                         start    wanted   final   error  first-jump overshoot corr  secs
+  P1    sheet stick (60% push)            -3.1     -3.1    -3.1    0.07       0.0       0.0    0   0.0
+  P2    guest stick 60% via TV           357.6     -1.1    -4.7   -3.58       0.0       5.5    3   3.8
+  P2    guest arrows via TV                8.5     11.8    11.5   -0.31       0.0       0.0    2   1.0
+  P1    phone pad (absolute dir)           8.0      9.1     6.7   -2.38     -30.5       0.0    0   1.3
+  P2    guest stick (putt) via TV        249.0   -111.2  -111.0    0.19       0.0       0.0    0   0.3
+  P1    arrow taps (1.5°/tap)            167.4    168.7   168.9    0.23       0.0       0.0    1   0.3
+  P2    guest arrows via TV              298.2    -61.8   -61.8    0.06       0.0       0.0    0   0.3
+  P1    sheet stick (putt, 1/5 rate)     120.9    119.7   119.3   -0.49       0.0       0.5    0   0.7
+  P2    guest stick 60% via TV             6.1      2.1     5.4    3.25       0.0       5.7    3   5.0
+  P1    phone pad (absolute dir)           5.3      9.6     6.9   -2.73      44.3       0.0    0   1.4
+  P2    guest arrows via TV              353.3     -9.5    -9.7   -0.18       0.0       0.0    2   1.0
+  P1    arrow taps (1.5°/tap)             -8.9    -10.8   -10.4    0.37       0.0       0.0    1   0.3
+  P2    guest stick (putt) via TV         77.0     77.7    77.4   -0.32       0.0       0.9    1   1.9
+  P1    sheet stick (putt, 1/5 rate)     113.8    112.7   112.3   -0.45       0.0       0.5    0   0.6
+  P2    guest arrows via TV              304.6    -56.2   -55.9    0.33       0.0       0.0    1   0.6
+  P1    phone pad (absolute dir)         -81.1    -81.5   -81.0    0.43    -147.5       0.0    0   1.3
+  P1    arrow taps (1.5°/tap)              1.9      1.0     0.4   -0.53       0.0       0.0    1   0.3
+  P2    guest stick 60% via TV             2.9      1.3     4.6    3.27       0.0       6.3    3   4.0
+G1 waiting golfers: max move during aiming 0.000 m over 5889 samples
+G2 TV aim: lag 90 ms (mean error then 0.15 deg), biggest one-frame step 74.72 deg, 390 samples
+frames 23122, mean 18.2 ms, worst 2973 ms, over 33 ms: 188
+unity log: 0 errors, 0 exceptions, 2 warnings
+hitches (>150 ms):
+    14.32   1044 ms  Flight flight hole0 turn P1
+    14.61    293 ms  Flight flight hole0 turn P1
+   103.91    184 ms  Aim aim hole0 turn P1
+   176.07   2133 ms  Loading loading hole1 turn P2
+   176.75    681 ms  Loading loading hole1 turn P2
+   177.07    319 ms  Loading loading hole1 turn P2
+   179.28   2202 ms  Loading loading hole1 turn P2
+   179.93    658 ms  Loading loading hole1 turn P2
+   180.10    171 ms  Loading loading hole1 turn P2
+   188.93   1020 ms  Aim aim hole1 turn P2
+   189.21    285 ms  Aim aim hole1 turn P2
+   205.97   1852 ms  Replay flight hole1 turn P2
+   206.64    674 ms  Replay flight hole1 turn P2
+   206.82    177 ms  Replay flight hole1 turn P2
+   226.76   2973 ms  Aim aim hole1 turn P1
+   227.63    868 ms  Aim aim hole1 turn P1
+   227.91    279 ms  Aim aim hole1 turn P1
+   248.57   1820 ms  Replay flight hole1 turn P1
+   249.13    560 ms  Replay flight hole1 turn P1
+   249.31    183 ms  Replay flight hole1 turn P1
+   264.74    506 ms  Aim aim hole1 turn P2
+   297.16   2145 ms  Aim aim hole1 turn P1
+   297.82    651 ms  Aim aim hole1 turn P1
+   297.99    175 ms  Aim aim hole1 turn P1
+   328.07    172 ms  Aim aim hole1 turn P2
+   346.45    151 ms  Flight flight hole1 turn P1
+   375.10    165 ms  Loading loading hole2 turn P1
+   375.33    202 ms  Loading loading hole2 turn P1
+   375.49    156 ms  Loading loading hole2 turn P1
+   387.10    174 ms  Aim aim hole2 turn P1
+HITCH PROBE (frames over 250 ms: the markers over 30 ms)
+  207.19 frame 665 ms: 
+  210.45 frame 3259 ms: 
+  211.90 frame 1454 ms: 
+  226.17 frame 1036 ms: 
+  226.47 frame 297 ms: 
+  388.61 frame 2787 ms: 
+  391.79 frame 2784 ms: 
+  400.79 frame 1018 ms: 
+  401.08 frame 287 ms: 
+  418.50 frame 2502 ms: 
+  439.49 frame 3823 ms: 
+  439.77 frame 282 ms: 
+  460.99 frame 2351 ms: 
+  476.74 frame 618 ms: 
+  509.68 frame 2780 ms: 
+  587.27 frame 259 ms: 

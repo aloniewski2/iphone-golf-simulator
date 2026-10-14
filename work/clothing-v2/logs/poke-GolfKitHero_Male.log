@@ -1,0 +1,50 @@
+Kit_Belt: covered body vertices 0
+Kit_Bottom: covered body vertices 1702
+Kit_Glove_L: covered body vertices 43
+Kit_Glove_R: covered body vertices 144
+Kit_Shoe_L: covered body vertices 17
+Kit_Shoe_R: covered body vertices 22
+Kit_Top: covered body vertices 1310
+Kit_Bottom clips with poke-through > 0.5 mm: 9 / 17  worst 30.0 mm, most points 333
+    Emote_Spike {'max_mm': 30.0, 'verts': 49, 'frame': 8, 'vertex': 6185}
+    Intro_Pushups {'max_mm': 30.0, 'verts': 333, 'frame': 32, 'vertex': 6185}
+    RunForward {'max_mm': 30.0, 'verts': 52, 'frame': 1, 'vertex': 19163}
+    IronSwing {'max_mm': 29.9, 'verts': 67, 'frame': 40, 'vertex': 12180}
+    FistPump {'max_mm': 29.5, 'verts': 328, 'frame': 20, 'vertex': 13414}
+    HalfSwing {'max_mm': 28.8, 'verts': 41, 'frame': 25, 'vertex': 8618}
+Kit_Glove_L clips with poke-through > 0.5 mm: 11 / 17  worst 28.7 mm, most points 22
+    FistPump {'max_mm': 28.7, 'verts': 22, 'frame': 30, 'vertex': 23716}
+    Cheer {'max_mm': 12.1, 'verts': 11, 'frame': 5, 'vertex': 23669}
+    Intro_Pushups {'max_mm': 7.9, 'verts': 13, 'frame': 2, 'vertex': 23755}
+    Drive {'max_mm': 7.8, 'verts': 10, 'frame': 30, 'vertex': 23756}
+    Intro_Wave {'max_mm': 5.9, 'verts': 4, 'frame': 13, 'vertex': 23756}
+    HalfSwing {'max_mm': 4.6, 'verts': 8, 'frame': 2, 'vertex': 23688}
+Kit_Glove_R clips with poke-through > 0.5 mm: 13 / 17  worst 28.0 mm, most points 25
+    Intro_BringIt {'max_mm': 28.0, 'verts': 6, 'frame': 4, 'vertex': 51}
+    Drive {'max_mm': 25.7, 'verts': 9, 'frame': 2, 'vertex': 51}
+    Emote_Scuba {'max_mm': 25.3, 'verts': 7, 'frame': 14, 'vertex': 50}
+    FistPump {'max_mm': 24.3, 'verts': 25, 'frame': 5, 'vertex': 51}
+    Cheer {'max_mm': 22.9, 'verts': 14, 'frame': 5, 'vertex': 80}
+    Wave {'max_mm': 22.9, 'verts': 14, 'frame': 5, 'vertex': 80}
+Kit_Shoe_L clips with poke-through > 0.5 mm: 9 / 17  worst 21.9 mm, most points 6
+    Drive {'max_mm': 21.9, 'verts': 6, 'frame': 13, 'vertex': 17883}
+    HalfSwing {'max_mm': 19.4, 'verts': 4, 'frame': 13, 'vertex': 17883}
+    IronSwing {'max_mm': 16.8, 'verts': 6, 'frame': 1, 'vertex': 17883}
+    Putt {'max_mm': 13.5, 'verts': 3, 'frame': 21, 'vertex': 17306}
+    Walk {'max_mm': 3.8, 'verts': 2, 'frame': 6, 'vertex': 16765}
+    Chip {'max_mm': 3.7, 'verts': 1, 'frame': 31, 'vertex': 16765}
+Kit_Shoe_R clips with poke-through > 0.5 mm: 4 / 17  worst 13.1 mm, most points 3
+    IronSwing {'max_mm': 13.1, 'verts': 3, 'frame': 27, 'vertex': 3932}
+    Drive {'max_mm': 9.4, 'verts': 3, 'frame': 30, 'vertex': 7033}
+    HalfSwing {'max_mm': 6.3, 'verts': 3, 'frame': 18, 'vertex': 7614}
+    Walk {'max_mm': 3.8, 'verts': 2, 'frame': 13, 'vertex': 7074}
+Kit_Top clips with poke-through > 0.5 mm: 17 / 17  worst 30.0 mm, most points 91
+    Drive {'max_mm': 30.0, 'verts': 89, 'frame': 27, 'vertex': 20384}
+    IronSwing {'max_mm': 30.0, 'verts': 82, 'frame': 29, 'vertex': 5852}
+    Chip {'max_mm': 29.9, 'verts': 55, 'frame': 10, 'vertex': 4966}
+    FistPump {'max_mm': 29.9, 'verts': 50, 'frame': 10, 'vertex': 4560}
+    HalfSwing {'max_mm': 29.9, 'verts': 91, 'frame': 21, 'vertex': 18371}
+    Emote_Scuba {'max_mm': 29.7, 'verts': 59, 'frame': 5, 'vertex': 18448}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

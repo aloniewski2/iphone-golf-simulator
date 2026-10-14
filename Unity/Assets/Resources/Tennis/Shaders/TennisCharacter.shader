@@ -45,6 +45,8 @@ Shader "GolfArcade/TennisCharacter"
         _SpecularStrength ("Surface highlight strength", Range(0,2)) = 1
         _EnvironmentStrength ("Scene reflection strength", Range(0,1)) = 0.12
         _OcclusionStrength ("Character ambient occlusion strength", Range(0,1)) = 0.25
+        // CLOTHING V2: soft contact shadow on the skin where a garment edge meets it (mesh UV3.x, written by MatchHeroLook.ApplyKitV2Cover). 0 = off.
+        [HideInInspector] _KitContact ("Garment contact shadow", Range(0,1)) = 0
         [HideInInspector] _SkinResponse ("Regional skin response pilot", Float) = 0
         [HideInInspector] _SkinFinish ("Skin finish pilot: 1 male, 2 female", Float) = 0
         [HideInInspector] _SkinPigmentUV ("Original skin pigment mask coordinates", Float) = 0
@@ -83,18 +85,19 @@ Shader "GolfArcade/TennisCharacter"
                 float4 _EyeMapL, _EyeMapR, _EyeMapUpL, _EyeMapUpR, _EyeMapRightL, _EyeMapRightR; half _EyeMapEnabled;
                 float4 _EyeL, _EyeR, _FaceUp, _FaceRight, _Gaze, _FaceSkin, _EyeNL, _EyeNR; half _PaintLift, _FaceRole, _Blink, _BrowLift, _CraftedPaint;
                 float4 _BumpMap_ST; half _Smoothness, _Wrap, _RimPower, _RimStrength, _BumpScale, _Saturation, _BumpTriplanar, _SpecularStrength, _EnvironmentStrength, _OcclusionStrength; float _BumpTile; half _SkinResponse, _SkinFinish, _SkinPigmentUV;
+                half _KitContact;
             CBUFFER_END
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; float3 bindPos : TEXCOORD1; };
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 positionWS : TEXCOORD1; float3 normalWS : TEXCOORD2; half fog : TEXCOORD3; float4 tangentWS : TEXCOORD4; float3 bindPos : TEXCOORD5; float3 normalOS : TEXCOORD6; float2 eyeCoord : TEXCOORD7; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; float3 bindPos : TEXCOORD1; float2 kitContact : TEXCOORD3; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 positionWS : TEXCOORD1; float3 normalWS : TEXCOORD2; half fog : TEXCOORD3; float4 tangentWS : TEXCOORD4; float3 bindPos : TEXCOORD5; float3 normalOS : TEXCOORD6; float2 eyeCoord : TEXCOORD7; half kitContact : TEXCOORD8; };
 
             Varyings vert (Attributes i)
             {
                 Varyings o;
                 float3 facePos = i.positionOS.xyz;
-                o.eyeCoord = 0;
+                o.eyeCoord = 0; o.kitContact = i.kitContact.x * _KitContact;
                 float3 faceNormal = i.normalOS;
                 if (_FaceRole > .5h) {
                     float4 eye = dot(facePos - (_EyeL.xyz + _EyeR.xyz) * .5, _FaceRight.xyz) < 0 ? _EyeL : _EyeR;
@@ -297,6 +300,7 @@ Shader "GolfArcade/TennisCharacter"
                 half3 rimLight = _RimColor.rgb * rim * saturate(dot(n,main.direction)*.7h+.3h) * (0.35 + 0.65 * c.rgb) * main.color;
                 if (_SkinFinish > .5h) rimLight *= .45h;
                 colour += ambient + rimLight; reflection += rimLight;
+                colour *= 1 - i.kitContact; reflection *= 1 - i.kitContact;   // CLOTHING V2 contact shadow (0 unless a V2 garment edge is near)
                 return half4(MixFog(HeroCharacterFinish(colour, reflection), i.fog), 1);
             }
             ENDHLSL

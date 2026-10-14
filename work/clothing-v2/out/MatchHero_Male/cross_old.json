@@ -1,0 +1,134 @@
+{
+ "Male_ReadyIdle": {
+  "max_mm": 11.8,
+  "verts": 33
+ },
+ "Male_ForehandArmCorrected": {
+  "max_mm": 171.7,
+  "verts": 146
+ },
+ "Male_BackhandArmCorrected": {
+  "max_mm": 124.5,
+  "verts": 139
+ },
+ "Male_Serve": {
+  "max_mm": 39.2,
+  "verts": 45
+ },
+ "Male_VolleyForehand": {
+  "max_mm": 49.5,
+  "verts": 72
+ },
+ "Male_Overhead": {
+  "max_mm": 54.4,
+  "verts": 64
+ },
+ "Male_ForehandWide": {
+  "max_mm": 246.6,
+  "verts": 148
+ },
+ "Male_ForehandShort": {
+  "max_mm": 42.6,
+  "verts": 44
+ },
+ "Male_BackhandWide": {
+  "max_mm": 60.6,
+  "verts": 59
+ },
+ "Male_SliceApproach": {
+  "max_mm": 125.0,
+  "verts": 70
+ },
+ "Male_Return": {
+  "max_mm": 76.9,
+  "verts": 83
+ },
+ "Male_VolleyBackhand": {
+  "max_mm": 48.3,
+  "verts": 68
+ },
+ "Male_ForehandOpen": {
+  "max_mm": 249.7,
+  "verts": 101
+ },
+ "Male_SplitToForehand": {
+  "max_mm": 19.2,
+  "verts": 37
+ },
+ "Male_SplitToBackhand": {
+  "max_mm": 28.6,
+  "verts": 44
+ },
+ "Male_RecoverCenter": {
+  "max_mm": 37.6,
+  "verts": 36
+ },
+ "Male_Walk": {
+  "max_mm": 0,
+  "verts": 0
+ },
+ "Male_RunForward": {
+  "max_mm": 4.1,
+  "verts": 2
+ },
+ "Male_RunLeft": {
+  "max_mm": 5.3,
+  "verts": 3
+ },
+ "Male_RunRight": {
+  "max_mm": 12.6,
+  "verts": 7
+ },
+ "Male_Emote_Scuba": {
+  "max_mm": 28.5,
+  "verts": 32
+ },
+ "Male_Emote_Thrust": {
+  "max_mm": 18.8,
+  "verts": 34
+ },
+ "Male_Emote_Spike": {
+  "max_mm": 16.4,
+  "verts": 31
+ },
+ "Male_Intro_Wave": {
+  "max_mm": 51.9,
+  "verts": 31
+ },
+ "Male_Intro_BringIt": {
+  "max_mm": 36.6,
+  "verts": 34
+ },
+ "Male_Intro_Pushups": {
+  "max_mm": 44.5,
+  "verts": 35
+ },
+ "Male_Idle": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_HitPerfect": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_MissWhiff": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_CelebratePoint": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_SadPointLost": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_MatchWin": {
+  "max_mm": 6.3,
+  "verts": 27
+ },
+ "Male_MatchLose": {
+  "max_mm": 67.3,
+  "verts": 111
+ }
+}

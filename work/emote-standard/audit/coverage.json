@@ -1,0 +1,926 @@
+{
+ "coverage": [
+  {
+   "ctx": "tennis_male",
+   "clip": "Walk:Male_Walk",
+   "dir": "Walk_Male_Walk",
+   "emote": "Walk",
+   "variant": "racket",
+   "frames": 17,
+   "length": 1.1,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "RunForward:Male_RunForward",
+   "dir": "RunForward_Male_RunForward",
+   "emote": "Run forward",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "RunLeft:Male_RunLeft",
+   "dir": "RunLeft_Male_RunLeft",
+   "emote": "Run left",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "RunRight:Male_RunRight",
+   "dir": "RunRight_Male_RunRight",
+   "emote": "Run right",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteScuba:Male_Emote_Scuba",
+   "dir": "EmoteScuba_Male_Emote_Scuba",
+   "emote": "Scuba",
+   "variant": "racket",
+   "frames": 64,
+   "length": 4.7,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteThrust:Male_Emote_Thrust",
+   "dir": "EmoteThrust_Male_Emote_Thrust",
+   "emote": "Thrust",
+   "variant": "racket",
+   "frames": 54,
+   "length": 3.5,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteSpike:Male_Emote_Spike",
+   "dir": "EmoteSpike_Male_Emote_Spike",
+   "emote": "Spike",
+   "variant": "racket",
+   "frames": 49,
+   "length": 3.2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteJumpJoy:Male_Emote_JumpJoy",
+   "dir": "EmoteJumpJoy_Male_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "racket",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteFistPump:Male_Emote_FistPump",
+   "dir": "EmoteFistPump_Male_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "racket",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteStomp:Male_Emote_Stomp",
+   "dir": "EmoteStomp_Male_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "racket",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteSlump:Male_Emote_Slump",
+   "dir": "EmoteSlump_Male_Emote_Slump",
+   "emote": "Slump",
+   "variant": "racket",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteShock:Male_Emote_Shock",
+   "dir": "EmoteShock_Male_Emote_Shock",
+   "emote": "Shock",
+   "variant": "racket",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteVictory:Male_Emote_Victory",
+   "dir": "EmoteVictory_Male_Emote_Victory",
+   "emote": "Victory",
+   "variant": "racket",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "EmoteDefeat:Male_Emote_Defeat",
+   "dir": "EmoteDefeat_Male_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "racket",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_Defeat",
+   "dir": "free_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "free hands",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_FistPump",
+   "dir": "free_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "free hands",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_JumpJoy",
+   "dir": "free_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "free hands",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_Shock",
+   "dir": "free_Emote_Shock",
+   "emote": "Shock",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_Slump",
+   "dir": "free_Emote_Slump",
+   "emote": "Slump",
+   "variant": "free hands",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_Stomp",
+   "dir": "free_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Emote_Victory",
+   "dir": "free_Emote_Victory",
+   "emote": "Victory",
+   "variant": "free hands",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Run",
+   "dir": "free_Run",
+   "emote": "Run",
+   "variant": "free hands",
+   "frames": 11,
+   "length": 0.667,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_male",
+   "clip": "free:Walk",
+   "dir": "free_Walk",
+   "emote": "Walk",
+   "variant": "free hands",
+   "frames": 17,
+   "length": 1.067,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "Walk:Female_Walk",
+   "dir": "Walk_Female_Walk",
+   "emote": "Walk",
+   "variant": "racket",
+   "frames": 17,
+   "length": 1.1,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "RunForward:Female_RunForward",
+   "dir": "RunForward_Female_RunForward",
+   "emote": "Run forward",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "RunLeft:Female_RunLeft",
+   "dir": "RunLeft_Female_RunLeft",
+   "emote": "Run left",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "RunRight:Female_RunRight",
+   "dir": "RunRight_Female_RunRight",
+   "emote": "Run right",
+   "variant": "racket",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteScuba:Female_Emote_Scuba",
+   "dir": "EmoteScuba_Female_Emote_Scuba",
+   "emote": "Scuba",
+   "variant": "racket",
+   "frames": 64,
+   "length": 4.7,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteThrust:Female_Emote_Thrust",
+   "dir": "EmoteThrust_Female_Emote_Thrust",
+   "emote": "Thrust",
+   "variant": "racket",
+   "frames": 54,
+   "length": 3.5,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteSpike:Female_Emote_Spike",
+   "dir": "EmoteSpike_Female_Emote_Spike",
+   "emote": "Spike",
+   "variant": "racket",
+   "frames": 49,
+   "length": 3.2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteJumpJoy:Female_Emote_JumpJoy",
+   "dir": "EmoteJumpJoy_Female_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "racket",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteFistPump:Female_Emote_FistPump",
+   "dir": "EmoteFistPump_Female_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "racket",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteStomp:Female_Emote_Stomp",
+   "dir": "EmoteStomp_Female_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "racket",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteSlump:Female_Emote_Slump",
+   "dir": "EmoteSlump_Female_Emote_Slump",
+   "emote": "Slump",
+   "variant": "racket",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteShock:Female_Emote_Shock",
+   "dir": "EmoteShock_Female_Emote_Shock",
+   "emote": "Shock",
+   "variant": "racket",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteVictory:Female_Emote_Victory",
+   "dir": "EmoteVictory_Female_Emote_Victory",
+   "emote": "Victory",
+   "variant": "racket",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "EmoteDefeat:Female_Emote_Defeat",
+   "dir": "EmoteDefeat_Female_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "racket",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_Defeat",
+   "dir": "free_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "free hands",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_FistPump",
+   "dir": "free_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "free hands",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_JumpJoy",
+   "dir": "free_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "free hands",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_Shock",
+   "dir": "free_Emote_Shock",
+   "emote": "Shock",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_Slump",
+   "dir": "free_Emote_Slump",
+   "emote": "Slump",
+   "variant": "free hands",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_Stomp",
+   "dir": "free_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Emote_Victory",
+   "dir": "free_Emote_Victory",
+   "emote": "Victory",
+   "variant": "free hands",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Run",
+   "dir": "free_Run",
+   "emote": "Run",
+   "variant": "free hands",
+   "frames": 11,
+   "length": 0.667,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "tennis_female",
+   "clip": "free:Walk",
+   "dir": "free_Walk",
+   "emote": "Walk",
+   "variant": "free hands",
+   "frames": 17,
+   "length": 1.067,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "golf:Emote_Scuba",
+   "dir": "golf_Emote_Scuba",
+   "emote": "Scuba",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "golf:Emote_Spike",
+   "dir": "golf_Emote_Spike",
+   "emote": "Spike",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "golf:Emote_Thrust",
+   "dir": "golf_Emote_Thrust",
+   "emote": "Thrust",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "golf:RunForward",
+   "dir": "golf_RunForward",
+   "emote": "Run forward",
+   "variant": "golfer clip",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "golf:Walk",
+   "dir": "golf_Walk",
+   "emote": "Walk",
+   "variant": "golfer clip",
+   "frames": 17,
+   "length": 1.1,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_Defeat",
+   "dir": "free_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "free hands",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_FistPump",
+   "dir": "free_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "free hands",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_JumpJoy",
+   "dir": "free_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "free hands",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_Shock",
+   "dir": "free_Emote_Shock",
+   "emote": "Shock",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_Slump",
+   "dir": "free_Emote_Slump",
+   "emote": "Slump",
+   "variant": "free hands",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_Stomp",
+   "dir": "free_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Emote_Victory",
+   "dir": "free_Emote_Victory",
+   "emote": "Victory",
+   "variant": "free hands",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Run",
+   "dir": "free_Run",
+   "emote": "Run",
+   "variant": "free hands",
+   "frames": 11,
+   "length": 0.667,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_male",
+   "clip": "free:Walk",
+   "dir": "free_Walk",
+   "emote": "Walk",
+   "variant": "free hands",
+   "frames": 17,
+   "length": 1.067,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "golf:Emote_Scuba",
+   "dir": "golf_Emote_Scuba",
+   "emote": "Scuba",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "golf:Emote_Spike",
+   "dir": "golf_Emote_Spike",
+   "emote": "Spike",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "golf:Emote_Thrust",
+   "dir": "golf_Emote_Thrust",
+   "emote": "Thrust",
+   "variant": "golfer clip",
+   "frames": 31,
+   "length": 2,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "golf:RunForward",
+   "dir": "golf_RunForward",
+   "emote": "Run forward",
+   "variant": "golfer clip",
+   "frames": 10,
+   "length": 0.567,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "golf:Walk",
+   "dir": "golf_Walk",
+   "emote": "Walk",
+   "variant": "golfer clip",
+   "frames": 17,
+   "length": 1.1,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_Defeat",
+   "dir": "free_Emote_Defeat",
+   "emote": "Defeat",
+   "variant": "free hands",
+   "frames": 51,
+   "length": 3.3,
+   "mood": "sad"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_FistPump",
+   "dir": "free_Emote_FistPump",
+   "emote": "FistPump",
+   "variant": "free hands",
+   "frames": 25,
+   "length": 1.567,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_JumpJoy",
+   "dir": "free_Emote_JumpJoy",
+   "emote": "JumpJoy",
+   "variant": "free hands",
+   "frames": 32,
+   "length": 2.067,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_Shock",
+   "dir": "free_Emote_Shock",
+   "emote": "Shock",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "shock"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_Slump",
+   "dir": "free_Emote_Slump",
+   "emote": "Slump",
+   "variant": "free hands",
+   "frames": 40,
+   "length": 2.567,
+   "mood": "sad"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_Stomp",
+   "dir": "free_Emote_Stomp",
+   "emote": "Stomp",
+   "variant": "free hands",
+   "frames": 33,
+   "length": 2.167,
+   "mood": "angry"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Emote_Victory",
+   "dir": "free_Emote_Victory",
+   "emote": "Victory",
+   "variant": "free hands",
+   "frames": 49,
+   "length": 3.167,
+   "mood": "happy"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Run",
+   "dir": "free_Run",
+   "emote": "Run",
+   "variant": "free hands",
+   "frames": 11,
+   "length": 0.667,
+   "mood": "neutral"
+  },
+  {
+   "ctx": "golf_female",
+   "clip": "free:Walk",
+   "dir": "free_Walk",
+   "emote": "Walk",
+   "variant": "free hands",
+   "frames": 17,
+   "length": 1.067,
+   "mood": "neutral"
+  }
+ ],
+ "loco": [
+  {
+   "median": 1.2748203844071524,
+   "spread": 0.07939960409430438,
+   "n": 39,
+   "ctx": "tennis_male",
+   "clip": "Walk:Male_Walk",
+   "emote": "Walk",
+   "variant": "racket"
+  },
+  {
+   "median": 3.2465085922893406,
+   "spread": 0.05265538487567286,
+   "n": 11,
+   "ctx": "tennis_male",
+   "clip": "RunForward:Male_RunForward",
+   "emote": "Run forward",
+   "variant": "racket"
+  },
+  {
+   "median": 3.2531217440146167,
+   "spread": 0.05120987392515721,
+   "n": 11,
+   "ctx": "tennis_male",
+   "clip": "RunLeft:Male_RunLeft",
+   "emote": "Run left",
+   "variant": "racket"
+  },
+  {
+   "median": 3.2433412688216796,
+   "spread": 0.04796640395726716,
+   "n": 11,
+   "ctx": "tennis_male",
+   "clip": "RunRight:Male_RunRight",
+   "emote": "Run right",
+   "variant": "racket"
+  },
+  {
+   "median": 3.5174825119831206,
+   "spread": 0.09651956731009492,
+   "n": 14,
+   "ctx": "tennis_male",
+   "clip": "free:Run",
+   "emote": "Run",
+   "variant": "free hands"
+  },
+  {
+   "median": 1.206283574893988,
+   "spread": 0.07665099172609473,
+   "n": 34,
+   "ctx": "tennis_male",
+   "clip": "free:Walk",
+   "emote": "Walk",
+   "variant": "free hands"
+  },
+  {
+   "median": 1.2859280850809658,
+   "spread": 0.07593984603328327,
+   "n": 36,
+   "ctx": "tennis_female",
+   "clip": "Walk:Female_Walk",
+   "emote": "Walk",
+   "variant": "racket"
+  },
+  {
+   "median": 3.245365238360745,
+   "spread": 0.050275214435654726,
+   "n": 11,
+   "ctx": "tennis_female",
+   "clip": "RunForward:Female_RunForward",
+   "emote": "Run forward",
+   "variant": "racket"
+  },
+  {
+   "median": 3.25095941324649,
+   "spread": 0.04665064817901295,
+   "n": 11,
+   "ctx": "tennis_female",
+   "clip": "RunLeft:Female_RunLeft",
+   "emote": "Run left",
+   "variant": "racket"
+  },
+  {
+   "median": 3.24289710889139,
+   "spread": 0.04813245948996455,
+   "n": 11,
+   "ctx": "tennis_female",
+   "clip": "RunRight:Female_RunRight",
+   "emote": "Run right",
+   "variant": "racket"
+  },
+  {
+   "median": 3.52677661182162,
+   "spread": 0.09575029166120064,
+   "n": 12,
+   "ctx": "tennis_female",
+   "clip": "free:Run",
+   "emote": "Run",
+   "variant": "free hands"
+  },
+  {
+   "median": 1.2068833592378896,
+   "spread": 0.06908675265144862,
+   "n": 34,
+   "ctx": "tennis_female",
+   "clip": "free:Walk",
+   "emote": "Walk",
+   "variant": "free hands"
+  },
+  {
+   "median": 3.2287937071335158,
+   "spread": 0.12462170254068909,
+   "n": 12,
+   "ctx": "golf_male",
+   "clip": "golf:RunForward",
+   "emote": "Run forward",
+   "variant": "golfer clip"
+  },
+  {
+   "median": 1.2760200902807135,
+   "spread": 0.1165861078573726,
+   "n": 39,
+   "ctx": "golf_male",
+   "clip": "golf:Walk",
+   "emote": "Walk",
+   "variant": "golfer clip"
+  },
+  {
+   "median": 3.548141635730671,
+   "spread": 0.03584919904034306,
+   "n": 14,
+   "ctx": "golf_male",
+   "clip": "free:Run",
+   "emote": "Run",
+   "variant": "free hands"
+  },
+  {
+   "median": 1.226799031182175,
+   "spread": 0.05503414852134293,
+   "n": 38,
+   "ctx": "golf_male",
+   "clip": "free:Walk",
+   "emote": "Walk",
+   "variant": "free hands"
+  },
+  {
+   "median": 3.224159005855098,
+   "spread": 0.17768728695993302,
+   "n": 13,
+   "ctx": "golf_female",
+   "clip": "golf:RunForward",
+   "emote": "Run forward",
+   "variant": "golfer clip"
+  },
+  {
+   "median": 1.2735300173140796,
+   "spread": 0.16494138029919775,
+   "n": 40,
+   "ctx": "golf_female",
+   "clip": "golf:Walk",
+   "emote": "Walk",
+   "variant": "golfer clip"
+  },
+  {
+   "median": 3.5912751244045023,
+   "spread": 0.04369302809508515,
+   "n": 14,
+   "ctx": "golf_female",
+   "clip": "free:Run",
+   "emote": "Run",
+   "variant": "free hands"
+  },
+  {
+   "median": 1.2271266695540723,
+   "spread": 0.053327444494177874,
+   "n": 38,
+   "ctx": "golf_female",
+   "clip": "free:Walk",
+   "emote": "Walk",
+   "variant": "free hands"
+  }
+ ]
+}

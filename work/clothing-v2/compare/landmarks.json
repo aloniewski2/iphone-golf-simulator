@@ -1,0 +1,122 @@
+{
+ "front": {
+  "target": {
+   "top": 5,
+   "floor": 513,
+   "H": 508,
+   "collar": 0.183,
+   "shirt_hem": 0.49,
+   "shorts_top": 0.49,
+   "shorts_hem": 0.659,
+   "sock_top": 0.829,
+   "head": 0.183,
+   "shirt_w": 0.325,
+   "shorts_w": 0.207,
+   "head_w": 0.126
+  },
+  "ours": {
+   "top": 80,
+   "floor": 1373,
+   "H": 1293,
+   "collar": 0.152,
+   "shirt_hem": 0.483,
+   "shorts_top": 0.482,
+   "shorts_hem": 0.648,
+   "sock_top": 0.796,
+   "head": 0.152,
+   "shirt_w": 0.332,
+   "shorts_w": 0.254,
+   "head_w": 0.104
+  }
+ },
+ "3/4": {
+  "target": {
+   "top": 6,
+   "floor": 517,
+   "H": 511,
+   "collar": 0.17,
+   "shirt_hem": 0.485,
+   "shorts_top": 0.485,
+   "shorts_hem": 0.654,
+   "sock_top": 0.82,
+   "head": 0.17,
+   "shirt_w": 0.278,
+   "shorts_w": 0.196,
+   "head_w": 0.133
+  },
+  "ours": {
+   "top": 79,
+   "floor": 1394,
+   "H": 1315,
+   "collar": 0.144,
+   "shirt_hem": 0.475,
+   "shorts_top": 0.475,
+   "shorts_hem": 0.637,
+   "sock_top": 0.778,
+   "head": 0.144,
+   "shirt_w": 0.223,
+   "shorts_w": 0.226,
+   "head_w": 0.112
+  }
+ },
+ "side": {
+  "target": {
+   "top": 6,
+   "floor": 516,
+   "H": 510,
+   "collar": 0.159,
+   "shirt_hem": 0.498,
+   "shorts_top": 0.498,
+   "shorts_hem": 0.655,
+   "sock_top": 0.837,
+   "head": 0.159,
+   "shirt_w": 0.145,
+   "shorts_w": 0.133,
+   "head_w": 0.143
+  },
+  "ours": {
+   "top": 79,
+   "floor": 1397,
+   "H": 1318,
+   "collar": 0.14,
+   "shirt_hem": 0.476,
+   "shorts_top": 0.474,
+   "shorts_hem": 0.637,
+   "sock_top": 0.778,
+   "head": 0.14,
+   "shirt_w": 0.046,
+   "shorts_w": 0.173,
+   "head_w": 0.118
+  }
+ },
+ "back": {
+  "target": {
+   "top": 6,
+   "floor": 512,
+   "H": 506,
+   "collar": 0.152,
+   "shirt_hem": 0.504,
+   "shorts_top": 0.504,
+   "shorts_hem": 0.662,
+   "sock_top": 0.842,
+   "head": 0.152,
+   "shirt_w": 0.328,
+   "shorts_w": 0.211,
+   "head_w": 0.119
+  },
+  "ours": {
+   "top": 76,
+   "floor": 1378,
+   "H": 1302,
+   "collar": 0.137,
+   "shirt_hem": 0.485,
+   "shorts_top": 0.485,
+   "shorts_hem": 0.647,
+   "sock_top": 0.801,
+   "head": 0.137,
+   "shirt_w": 0.349,
+   "shorts_w": 0.254,
+   "head_w": 0.105
+  }
+ }
+}

@@ -155,6 +155,20 @@ struct SteeringFilter {
     static let rearmRate = 2.8, rearmForce = 0.24
     /// How long a candidate may hold steering hostage before it is written off as a step.
     static let strokeAbort = 0.18
+    /// Swing prediction: confirm a strong stroke the moment its rotation has peaked, instead of waiting for the 60 ms and
+    /// 0.75 rad of proof. A fast forehand peaks before that proof is in (by about 10-50 ms), and the peak is when the racket
+    /// meets the ball: confirming there lands the strike in the hand with the arm, and reads power from the true peak rather
+    /// than the peak so far. Only for swings that are unmistakable: fast (`peakConfirmRate`), already turning (`peakArc`) and
+    /// with a stroke's force. Anything less waits for the proof as before.
+    /// The peak is seen in either of two ways: the rate has already dropped `peakDrop` below it, or the curve through the
+    /// last three samples bends over hard enough (`peakBend` of the peak) to top out within half a sample from now.
+    static let peakConfirmRate = 7.0, peakDrop = 0.99, peakBend = 0.02, peakArc = 0.3
+    /// Settings → Controls → Swing prediction (on unless turned off); read whenever a filter is made.
+    var peakConfirm = UserDefaults.standard.object(forKey: "sports.swingPrediction") as? Bool ?? true
+    /// How the last stroke was confirmed, and when its rotation peaked (the swingtrace logs both, to measure the gain).
+    private(set) var confirmedAtPeak = false, peakTime = 0.0
+    /// The two rates before this one, to see the curve bending over.
+    private var rateBack1 = 0.0, rateBack2 = 0.0
     private(set) var phase: Phase = .calibrating
     private(set) var target: Double = 0
     private var origin = 0.0, started = 0.0, settled = 0.0, peak = 0.0
@@ -246,7 +260,8 @@ struct SteeringFilter {
                 : rate > 2.2
             candidateDuration = onset ? candidateDuration+dt : 0
             if detectSwings && onset && (!tennisStroke || candidateDuration >= Self.strokeHold) {
-                phase = .swinging; started=time; peak=rate; peakAcceleration=acceleration; arc=0; emitted=false; strokeArmed=false
+                phase = .swinging; started=time; peak=rate; peakTime=time; peakAcceleration=acceleration; arc=0; emitted=false; strokeArmed=false
+                rateBack1=rate; rateBack2=rate
                 onsets+=1; onsetTime=time
                 return nil
             }
@@ -267,14 +282,22 @@ struct SteeringFilter {
             let wanted=max(-1,min(1,Self.courtPosition(delta:delta,span:span)))
             target += (wanted-target)*(1-exp(-dt*14))
         case .swinging:
-            peak=max(peak,rate)
+            if rate>peak { peak=rate; peakTime=time }
             peakAcceleration=max(peakAcceleration,acceleration)
             arc += rate*dt
             // Arc now accumulates from the (shorter) onset hold, so the bar is raised by the
             // rotation the old 70ms hold used to absorb: the same flick is still rejected.
             let confirmed = tennisStroke ? arc>=Self.strokeArc && peakAcceleration>=Self.strokeForce : arc>=0.25
-            if !emitted && time-started>=0.06 && confirmed && rate>=2.2 {
-                emitted=true; confirmationTime=time
+            let proven = time-started>=0.06 && confirmed && rate>=2.2
+            // A parabola through the last three samples tops out within half a sample of now when its last rise is no bigger
+            // than its bend (second difference); a bend this sharp is the swing turning over, not sensor noise.
+            let rise=rate-rateBack1, bend=rate-2*rateBack1+rateBack2
+            rateBack2=rateBack1; rateBack1=rate
+            let topping = rate<=peak*Self.peakDrop || (bend < -Self.peakBend*peak && rise <= -bend)
+            let peaked = tennisStroke && peakConfirm && peak>=Self.peakConfirmRate && topping
+                && arc>=Self.peakArc && peakAcceleration>=Self.strokeForce
+            if !emitted && (proven || peaked) {
+                emitted=true; confirmationTime=time; confirmedAtPeak = peaked && !proven
                 return tennisStroke ? max(0.15,min(1,(peak-Self.strokeRate)/10)) : min(1,peak/12)
             }
             // A candidate that never becomes a real stroke hands steering straight back,

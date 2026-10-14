@@ -13,6 +13,8 @@ namespace GolfArcade.Game {
         }
         static string Key(string beat) => "presentation.v" + Revision + "." + beat;
         public static PresentationCut Cut(string beat) => PresentationDirector.Select(Preference, PlayerPrefs.GetInt(Key(beat), 0) == 1, Multiplayer, Constrained);
+        /// The cut single player would play (a multiplayer round's host chooses each hole's intro this way, and every phone plays it).
+        public static PresentationCut CutAlone(string beat) => PresentationDirector.Select(Preference, PlayerPrefs.GetInt(Key(beat), 0) == 1, false, Constrained);
         public static void Seen(string beat) { PlayerPrefs.SetInt(Key(beat), 1); PlayerPrefs.Save(); }
         public static void Event(string beat, string state, int sequence, string detail = "") {
             var line = $"{Revision}|{sequence}|{beat}|{state}|{Time.realtimeSinceStartupAsDouble:F3}|{detail}";

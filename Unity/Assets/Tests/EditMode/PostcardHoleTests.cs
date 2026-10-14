@@ -56,8 +56,8 @@ namespace GolfArcade.Tests
             Assert.AreEqual(7, seven.Number);
             Assert.AreEqual(4, seven.Par);
             Assert.AreEqual(6, seven.Hazards.Length, "hole 7 keeps its six bunkers");
-            var numbers = string.Join(",", cliffside.Holes.Concat(Holes).Select(h => h.Number));
-            Assert.AreEqual("7,12,13,14,15,8,9,10", numbers, "The current Cliffside and Postcards catalogs keep distinct hole numbers");
+            var numbers = string.Join(",", Course.Course.All().SelectMany(c => c.Holes).Select(h => h.Number));
+            Assert.AreEqual("7,8,9,12,15,13,14,17,18,19,20,10,16,21,22,23", numbers, "the three courses deal the sixteen modelled holes out with distinct numbers");
         }
 
         [TestCase(8)]
@@ -293,10 +293,11 @@ namespace GolfArcade.Tests
         [Test]
         public void LiePowerFactorsAndPenaltiesAreUnchanged()
         {
-            Assert.AreEqual(0.85, CourseLie.Rough.PowerFactor(), 1e-9, "rough is 0.85 power");
-            Assert.AreEqual(0.6, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker is 0.6 power");
+            // (2026-10-12 lie pass: the rough keeps 90 % of the distance, the sand 75 %)
+            Assert.AreEqual(0.9, CourseLie.Rough.PowerFactor(), 1e-9, "rough keeps 0.9 of the distance");
+            Assert.AreEqual(0.75, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker keeps 0.75 of the distance");
             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Green, CourseLie.Water, CourseLie.OutOfBounds })
-                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no club speed");
+                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no distance");
             Assert.AreEqual(1, CourseLie.Water.PenaltyStrokes(), "water is +1 stroke");
             Assert.AreEqual(1, CourseLie.OutOfBounds.PenaltyStrokes(), "out of bounds is +1 stroke");
             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Rough, CourseLie.Bunker, CourseLie.Green })

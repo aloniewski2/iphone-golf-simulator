@@ -1,0 +1,1 @@
+sex=male; sourceDefault=BC9373; selectedOverride=none; activeBaseColor=BC9373; playerLook=False; skinPolish=0; presentationFill=0.12; filmResponse=1

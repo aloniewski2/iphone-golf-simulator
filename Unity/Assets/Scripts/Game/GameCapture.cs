@@ -33,6 +33,10 @@ namespace GolfArcade.Game
                     overlays.Add((c,c.worldCamera,c.planeDistance));
                     c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = camera; c.planeDistance = 0.5f;
                 }
+            // the full-screen cards size themselves to the surface being drawn to, not to the editor window
+            GolfArcade.UI.OffscreenSize.Override = new Vector2Int(width, height);
+            foreach (var card in Object.FindObjectsByType<GolfArcade.UI.HoleOutCard>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)) card.RefreshLayout();
+            foreach (var cover in Object.FindObjectsByType<GolfArcade.UI.HoleLoadingCover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)) cover.RefreshLayout();
             try
             {
                 Canvas.ForceUpdateCanvases();
@@ -45,6 +49,7 @@ namespace GolfArcade.Game
             }
             finally
             {
+                GolfArcade.UI.OffscreenSize.Override = null;
                 foreach (var state in overlays)
                 {
                     state.canvas.renderMode = RenderMode.ScreenSpaceOverlay;

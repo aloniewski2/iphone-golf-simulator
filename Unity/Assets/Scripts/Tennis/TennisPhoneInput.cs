@@ -1,5 +1,4 @@
 using System;
-using GolfArcade.Net;
 using GolfArcade.Swing;
 using UnityEngine;
 using NQuaternion = System.Numerics.Quaternion;
@@ -7,11 +6,10 @@ using NVector3 = System.Numerics.Vector3;
 
 namespace GolfArcade.Tennis
 {
-    /// Existing gyro/LAN protocol adapter. Tilt is a prototype movement control, not tracking.
+    /// This phone's gyro outside the app (the standalone build). Tilt is a prototype movement control, not tracking.
     public sealed class TennisPhoneInput : MonoBehaviour
     {
         TennisGame game;
-        NetworkMotionSource network;
         readonly PhoneMotionSource local = new();
         NQuaternion neutral;
         bool calibrated, armed = true;
@@ -24,8 +22,6 @@ namespace GolfArcade.Tennis
             game = GetComponent<TennisGame>();
             if (GolfArcade.Game.NativeSportsSession.Active) { enabled=false; return; }
             clock = Time.unscaledTimeAsDouble; local.Start();
-            try { network = new NetworkMotionSource(() => clock); network.Start(); }
-            catch (Exception e) { Debug.LogWarning("Tennis phone connection unavailable: " + e.Message); network?.Dispose(); network = null; }
         }
 
         void Update()
@@ -33,7 +29,7 @@ namespace GolfArcade.Tennis
             clock = Time.unscaledTimeAsDouble;
             if (!game || game.ManualSimulation) return;
             if (Input.GetKeyDown(KeyCode.C)) calibrated = false;
-            IMotionSource source = network != null && network.IsConnected ? network : local;
+            IMotionSource source = local;
             while (source.TryRead(out var sample))
             {
                 lastSampleAt = clock;
@@ -53,18 +49,12 @@ namespace GolfArcade.Tennis
             {
                 // Suppress tilt steering during a stroke: swing rotation is not a side-step.
                 float movement = game.Player && game.Player.Swinging ? 0 : lateral;
-                if (network != null && network.IsConnected)
-                {
-                    int buttons = (network.Buttons.HasFlag(ControllerButtons.AimRight) ? 1 : 0) - (network.Buttons.HasFlag(ControllerButtons.AimLeft) ? 1 : 0);
-                    if (buttons != 0) movement = buttons;
-                }
                 game.SetLateralInput(movement, Mathf.Abs(movement) > .8f);
-                game.InputStatus = "PHONE · calibrated tilt/buttons move · swing to hit (physical-position tracking pending)";
-                network?.SendAck(0, game.LastHit.Quality, game.Feedback);
+                game.InputStatus = "PHONE · calibrated tilt moves · swing to hit";
             }
             else game.InputStatus = "Keyboard · A/D move · Shift sprint · hold/release Space · arrows aim";
         }
 
-        void OnDestroy() { network?.Dispose(); local.Stop(); }
+        void OnDestroy() { local.Stop(); }
     }
 }

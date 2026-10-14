@@ -1,0 +1,7953 @@
+[
+ {
+  "n": 1,
+  "key": "tennis_male|Run|free hands|hint|hand in body|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left hip / groin",
+  "issue": "left hand pushes into the body",
+  "metric": 1038,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "001_Run_male_tennis.jpg"
+ },
+ {
+  "n": 2,
+  "key": "golf_male|Run|free hands|hint|hand in body|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left hip / groin",
+  "issue": "left hand pushes into the body",
+  "metric": 1038,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "002_Run_male_golf.jpg"
+ },
+ {
+  "n": 3,
+  "key": "golf_male|Run|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 1011,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "003_Run_male_golf.jpg"
+ },
+ {
+  "n": 4,
+  "key": "tennis_male|Slump|racket|hint|racket in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 985,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ],
+   [
+    32,
+    34
+   ],
+   [
+    61,
+    67
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "004_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 5,
+  "key": "tennis_male|Slump|racket|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 968,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ],
+   [
+    30,
+    67
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "005_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 6,
+  "key": "tennis_male|Slump|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 962,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ],
+   [
+    30,
+    67
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "006_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 7,
+  "key": "golf_male|Slump|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 962,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "007_Slump_male_golf.jpg"
+ },
+ {
+  "n": 8,
+  "key": "golf_male|Stomp|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 951,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    49,
+    55
+   ]
+  ],
+  "worst_frame": 53,
+  "img": "008_Stomp_male_golf.jpg"
+ },
+ {
+  "n": 9,
+  "key": "tennis_male|Slump|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 942,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    67
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "009_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 10,
+  "key": "golf_male|Defeat|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 942,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ],
+   [
+    77,
+    81
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "010_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 11,
+  "key": "tennis_male|Slump|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 940,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "011_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 12,
+  "key": "tennis_male|Slump|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 940,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "012_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 13,
+  "key": "tennis_male|Slump|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 908,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    67
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "013_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 14,
+  "key": "golf_male|Slump|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 881,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    22
+   ],
+   [
+    32,
+    67
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "014_Slump_male_golf.jpg"
+ },
+ {
+  "n": 15,
+  "key": "golf_male|Slump|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 863,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    67
+   ]
+  ],
+  "worst_frame": 32,
+  "img": "015_Slump_male_golf.jpg"
+ },
+ {
+  "n": 16,
+  "key": "golf_male|Run|free hands|hint|hand in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right hip / groin",
+  "issue": "right hand pushes into the body",
+  "metric": 859,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "016_Run_male_golf.jpg"
+ },
+ {
+  "n": 17,
+  "key": "tennis_female|Slump|racket|hint|racket in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 833,
+  "unit": "pts",
+  "frames": [
+   [
+    34,
+    36
+   ],
+   [
+    59,
+    67
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "017_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 18,
+  "key": "golf_male|Run|free hands|hint|hand under cloth|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right hip / groin",
+  "issue": "right hand disappears under the clothes",
+  "metric": 830,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "018_Run_male_golf.jpg"
+ },
+ {
+  "n": 19,
+  "key": "tennis_male|Walk|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 826,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "019_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 20,
+  "key": "golf_male|Defeat|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 814,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    75,
+    81
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "020_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 21,
+  "key": "golf_male|Spike|golfer clip|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 812,
+  "unit": "pts",
+  "frames": [
+   [
+    38,
+    56
+   ]
+  ],
+  "worst_frame": 54,
+  "img": "021_Spike_male_golf.jpg"
+ },
+ {
+  "n": 22,
+  "key": "tennis_male|Stomp|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 806,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "022_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 23,
+  "key": "tennis_male|Stomp|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 806,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "023_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 24,
+  "key": "golf_male|Stomp|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 806,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "024_Stomp_male_golf.jpg"
+ },
+ {
+  "n": 25,
+  "key": "tennis_male|Stomp|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 789,
+  "unit": "pts",
+  "frames": [
+   [
+    12,
+    16
+   ],
+   [
+    28,
+    55
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "025_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 26,
+  "key": "tennis_male|Run|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 769,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "026_Run_male_tennis.jpg"
+ },
+ {
+  "n": 27,
+  "key": "tennis_male|Stomp|racket|hint|racket in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 766,
+  "unit": "pts",
+  "frames": [
+   [
+    53,
+    55
+   ]
+  ],
+  "worst_frame": 53,
+  "img": "027_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 28,
+  "key": "tennis_male|Defeat|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 765,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ],
+   [
+    75,
+    81
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "028_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 29,
+  "key": "tennis_male|Defeat|racket|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 756,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ],
+   [
+    75,
+    81
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "029_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 30,
+  "key": "tennis_male|JumpJoy|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 749,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "030_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 31,
+  "key": "golf_male|Walk|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 749,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "031_Walk_male_golf.jpg"
+ },
+ {
+  "n": 32,
+  "key": "tennis_male|Walk|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 747,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "032_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 33,
+  "key": "tennis_female|Stomp|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 744,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    24,
+    49
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "033_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 34,
+  "key": "tennis_female|Stomp|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 744,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    24,
+    49
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "034_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 35,
+  "key": "golf_female|Stomp|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 744,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    24,
+    49
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "035_Stomp_female_golf.jpg"
+ },
+ {
+  "n": 36,
+  "key": "tennis_male|Stomp|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 741,
+  "unit": "pts",
+  "frames": [
+   [
+    12,
+    16
+   ],
+   [
+    28,
+    55
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "036_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 37,
+  "key": "golf_male|Defeat|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 739,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ],
+   [
+    44,
+    75
+   ]
+  ],
+  "worst_frame": 73,
+  "img": "037_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 38,
+  "key": "tennis_male|Defeat|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 736,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ],
+   [
+    44,
+    75
+   ]
+  ],
+  "worst_frame": 73,
+  "img": "038_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 39,
+  "key": "tennis_male|Defeat|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 736,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ],
+   [
+    44,
+    75
+   ]
+  ],
+  "worst_frame": 73,
+  "img": "039_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 40,
+  "key": "tennis_male|Shock|racket|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 719,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    43
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "040_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 41,
+  "key": "tennis_male|Shock|free hands|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 719,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    43
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "041_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 42,
+  "key": "golf_male|Shock|free hands|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 719,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    43
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "042_Shock_male_golf.jpg"
+ },
+ {
+  "n": 43,
+  "key": "golf_female|Slump|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 719,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "043_Slump_female_golf.jpg"
+ },
+ {
+  "n": 44,
+  "key": "tennis_male|Defeat|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 714,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    46,
+    81
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "044_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 45,
+  "key": "tennis_male|Defeat|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 708,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    46,
+    83
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "045_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 46,
+  "key": "tennis_male|Slump|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 701,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    63
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "046_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 47,
+  "key": "tennis_male|Slump|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 701,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    63
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "047_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 48,
+  "key": "tennis_female|Slump|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 701,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "048_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 49,
+  "key": "tennis_female|Slump|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 701,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    63
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "049_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 50,
+  "key": "tennis_male|Run|free hands|hint|hand in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right hip / groin",
+  "issue": "right hand pushes into the body",
+  "metric": 686,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "050_Run_male_tennis.jpg"
+ },
+ {
+  "n": 51,
+  "key": "tennis_male|Defeat|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 670,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ],
+   [
+    46,
+    67
+   ],
+   [
+    75,
+    75
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "051_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 52,
+  "key": "tennis_male|Defeat|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 670,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ],
+   [
+    46,
+    67
+   ],
+   [
+    75,
+    75
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "052_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 53,
+  "key": "tennis_male|Stomp|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 669,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 43,
+  "img": "053_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 54,
+  "key": "tennis_male|Stomp|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 669,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 43,
+  "img": "054_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 55,
+  "key": "tennis_female|Stomp|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 636,
+  "unit": "pts",
+  "frames": [
+   [
+    12,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 45,
+  "img": "055_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 56,
+  "key": "tennis_female|Stomp|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 636,
+  "unit": "pts",
+  "frames": [
+   [
+    12,
+    16
+   ],
+   [
+    22,
+    51
+   ]
+  ],
+  "worst_frame": 45,
+  "img": "056_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 57,
+  "key": "golf_male|Spike|golfer clip|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 629,
+  "unit": "pts",
+  "frames": [
+   [
+    38,
+    56
+   ]
+  ],
+  "worst_frame": 54,
+  "img": "057_Spike_male_golf.jpg"
+ },
+ {
+  "n": 58,
+  "key": "tennis_male|Walk|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 626,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "058_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 59,
+  "key": "golf_male|Walk|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 626,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "059_Walk_male_golf.jpg"
+ },
+ {
+  "n": 60,
+  "key": "golf_male|Walk|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 621,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "060_Walk_male_golf.jpg"
+ },
+ {
+  "n": 61,
+  "key": "tennis_male|Run|free hands|hint|hand under cloth|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right hip / groin",
+  "issue": "right hand disappears under the clothes",
+  "metric": 617,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    6
+   ],
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "061_Run_male_tennis.jpg"
+ },
+ {
+  "n": 62,
+  "key": "golf_female|Slump|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 612,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    18
+   ],
+   [
+    32,
+    65
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "062_Slump_female_golf.jpg"
+ },
+ {
+  "n": 63,
+  "key": "golf_female|Walk|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 612,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "063_Walk_female_golf.jpg"
+ },
+ {
+  "n": 64,
+  "key": "tennis_male|JumpJoy|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 604,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "064_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 65,
+  "key": "tennis_male|Run|free hands|hint|hand under cloth|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left hip / groin",
+  "issue": "left hand disappears under the clothes",
+  "metric": 603,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "065_Run_male_tennis.jpg"
+ },
+ {
+  "n": 66,
+  "key": "tennis_female|Walk|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 598,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "066_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 67,
+  "key": "tennis_male|Stomp|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 597,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    55
+   ]
+  ],
+  "worst_frame": 53,
+  "img": "067_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 68,
+  "key": "tennis_female|Walk|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 596,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "068_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 69,
+  "key": "tennis_male|JumpJoy|racket|hint|hand under cloth|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "pelvis / waist",
+  "issue": "left hand disappears under the clothes",
+  "metric": 588,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    8
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "069_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 70,
+  "key": "tennis_male|JumpJoy|free hands|hint|hand under cloth|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "pelvis / waist",
+  "issue": "left hand disappears under the clothes",
+  "metric": 588,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    8
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "070_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 71,
+  "key": "tennis_male|Slump|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 581,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    69
+   ]
+  ],
+  "worst_frame": 24,
+  "img": "071_Slump_male_tennis.jpg"
+ },
+ {
+  "n": 72,
+  "key": "golf_male|JumpJoy|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 574,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "072_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 73,
+  "key": "tennis_male|Walk|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 562,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "073_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 74,
+  "key": "tennis_female|Walk|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 561,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "074_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 75,
+  "key": "golf_female|Walk|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 560,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    8
+   ],
+   [
+    26,
+    32
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "075_Walk_female_golf.jpg"
+ },
+ {
+  "n": 76,
+  "key": "tennis_female|Run|free hands|hint|hand under cloth|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left hip / groin",
+  "issue": "left hand disappears under the clothes",
+  "metric": 549,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "076_Run_female_tennis.jpg"
+ },
+ {
+  "n": 77,
+  "key": "tennis_male|Defeat|racket|hint|racket in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 519,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    46,
+    59
+   ],
+   [
+    65,
+    83
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "077_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 78,
+  "key": "tennis_female|Slump|racket|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 515,
+  "unit": "pts",
+  "frames": [
+   [
+    14,
+    18
+   ],
+   [
+    34,
+    65
+   ]
+  ],
+  "worst_frame": 63,
+  "img": "078_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 79,
+  "key": "tennis_female|Stomp|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 511,
+  "unit": "pts",
+  "frames": [
+   [
+    43,
+    53
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "079_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 80,
+  "key": "tennis_female|Defeat|racket|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 507,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    14
+   ],
+   [
+    46,
+    75
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "080_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 81,
+  "key": "tennis_female|Defeat|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 507,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    14
+   ],
+   [
+    46,
+    75
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "081_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 82,
+  "key": "golf_female|Defeat|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 507,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    14
+   ],
+   [
+    46,
+    75
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "082_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 83,
+  "key": "tennis_female|Spike||cloth-lining|Kit_Top|chest",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 501,
+  "unit": "px",
+  "frames": [
+   [
+    12,
+    84
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "083_Spike_female_tennis.jpg"
+ },
+ {
+  "n": 84,
+  "key": "tennis_male|Stomp|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 478,
+  "unit": "pts",
+  "frames": [
+   [
+    20,
+    20
+   ],
+   [
+    49,
+    55
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "084_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 85,
+  "key": "golf_male|Victory||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 426,
+  "unit": "px",
+  "frames": [
+   [
+    4,
+    14
+   ],
+   [
+    38,
+    38
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "085_Victory_male_golf.jpg"
+ },
+ {
+  "n": 86,
+  "key": "tennis_female|Slump|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 405,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    69
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "086_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 87,
+  "key": "tennis_male|Defeat|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 398,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    16
+   ],
+   [
+    22,
+    30
+   ],
+   [
+    40,
+    83
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "087_Defeat_male_tennis.jpg"
+ },
+ {
+  "n": 88,
+  "key": "golf_male|Run forward||cloth-skin|skin through clothes|waist",
+  "sev": "very obvious",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "lower torso",
+  "issue": "skin shows through the clothes",
+  "metric": 393,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 9,
+  "img": "088_Runforward_male_golf.jpg"
+ },
+ {
+  "n": 89,
+  "key": "tennis_female|Defeat|racket|hint|racket in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 385,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    75,
+    75
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "089_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 90,
+  "key": "tennis_female|JumpJoy||cloth-lining|Kit_Top|chest",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 369,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    48
+   ],
+   [
+    6,
+    48
+   ]
+  ],
+  "worst_frame": 28,
+  "img": "090_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 91,
+  "key": "tennis_female|Thrust||cloth-skin|skin through clothes|chest",
+  "sev": "very obvious",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 351,
+  "unit": "px",
+  "frames": [
+   [
+    28,
+    34
+   ],
+   [
+    44,
+    50
+   ],
+   [
+    69,
+    71
+   ]
+  ],
+  "worst_frame": 48,
+  "img": "091_Thrust_female_tennis.jpg"
+ },
+ {
+  "n": 92,
+  "key": "tennis_male|Spike||cloth-skin|skin through clothes|RUpperArm",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right upper arm / armpit",
+  "issue": "skin shows through the clothes",
+  "metric": 350,
+  "unit": "px",
+  "frames": [
+   [
+    16,
+    34
+   ]
+  ],
+  "worst_frame": 26,
+  "img": "092_Spike_male_tennis.jpg"
+ },
+ {
+  "n": 93,
+  "key": "tennis_female|Defeat|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 335,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    14
+   ],
+   [
+    24,
+    30
+   ],
+   [
+    42,
+    79
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "093_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 94,
+  "key": "tennis_male|Shock||cloth-skin|skin through clothes|RShoulder",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right shoulder",
+  "issue": "skin shows through the clothes",
+  "metric": 331,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    43
+   ],
+   [
+    6,
+    43
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "094_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 95,
+  "key": "tennis_male|JumpJoy|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 329,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "095_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 96,
+  "key": "golf_male|Stomp||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 309,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    24
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "096_Stomp_male_golf.jpg"
+ },
+ {
+  "n": 97,
+  "key": "tennis_female|JumpJoy|racket|hint|racket in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right hip / groin",
+  "issue": "racket goes into the body",
+  "metric": 302,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "097_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 98,
+  "key": "golf_male|Run||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 294,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    20
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "098_Run_male_golf.jpg"
+ },
+ {
+  "n": 99,
+  "key": "tennis_female|Victory||cloth-lining|Kit_Top|chest",
+  "sev": "very obvious",
+  "emote": "Victory",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 275,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    85
+   ],
+   [
+    6,
+    85
+   ]
+  ],
+  "worst_frame": 71,
+  "img": "099_Victory_female_tennis.jpg"
+ },
+ {
+  "n": 100,
+  "key": "tennis_female|Shock||cloth-lining|Kit_Top|RShoulder",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "right shoulder",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 272,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    49
+   ],
+   [
+    6,
+    49
+   ]
+  ],
+  "worst_frame": 20,
+  "img": "100_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 101,
+  "key": "golf_male|Walk||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 265,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    32
+   ],
+   [
+    0,
+    33
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "101_Walk_male_golf.jpg"
+ },
+ {
+  "n": 102,
+  "key": "tennis_male|Thrust||cloth-skin|skin through clothes|chest",
+  "sev": "very obvious",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 263,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    14
+   ],
+   [
+    22,
+    34
+   ],
+   [
+    46,
+    50
+   ],
+   [
+    69,
+    77
+   ]
+  ],
+  "worst_frame": 50,
+  "img": "102_Thrust_male_tennis.jpg"
+ },
+ {
+  "n": 103,
+  "key": "golf_female|Shock||cloth-skin|skin through clothes|RUpperArm",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right upper arm / armpit",
+  "issue": "skin shows through the clothes",
+  "metric": 195,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    43
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "103_Shock_female_golf.jpg"
+ },
+ {
+  "n": 104,
+  "key": "golf_male|Spike||cloth-skin|skin through clothes|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right hip / groin",
+  "issue": "skin shows through the clothes",
+  "metric": 190,
+  "unit": "px",
+  "frames": [
+   [
+    12,
+    20
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "104_Spike_male_golf.jpg"
+ },
+ {
+  "n": 105,
+  "key": "golf_male|Victory||cloth-skin|skin through clothes|waist",
+  "sev": "very obvious",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "lower torso",
+  "issue": "skin shows through the clothes",
+  "metric": 190,
+  "unit": "px",
+  "frames": [
+   [
+    20,
+    28
+   ],
+   [
+    44,
+    63
+   ]
+  ],
+  "worst_frame": 24,
+  "img": "105_Victory_male_golf.jpg"
+ },
+ {
+  "n": 106,
+  "key": "golf_male|Defeat||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 168,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    22
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "106_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 107,
+  "key": "tennis_male|Scuba||hint|Top intersects Bottom|hips",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 81.5,
+  "unit": "mm",
+  "frames": [
+   [
+    18,
+    27
+   ],
+   [
+    38,
+    49
+   ],
+   [
+    60,
+    69
+   ],
+   [
+    83,
+    92
+   ],
+   [
+    114,
+    128
+   ]
+  ],
+  "worst_frame": 123,
+  "img": "107_Scuba_male_tennis.jpg"
+ },
+ {
+  "n": 108,
+  "key": "tennis_female|Scuba||hint|Top intersects Bottom|hips",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 78.8,
+  "unit": "mm",
+  "frames": [
+   [
+    112,
+    130
+   ]
+  ],
+  "worst_frame": 119,
+  "img": "108_Scuba_female_tennis.jpg"
+ },
+ {
+  "n": 109,
+  "key": "golf_female|Run|free hands|hint|hand under cloth|hips",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "pelvis / waist",
+  "issue": "right hand disappears under the clothes",
+  "metric": 493,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "109_Run_female_golf.jpg"
+ },
+ {
+  "n": 110,
+  "key": "tennis_female|Walk|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 490,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "110_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 111,
+  "key": "golf_female|Walk|free hands|hint|hand in body|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 490,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    24
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "111_Walk_female_golf.jpg"
+ },
+ {
+  "n": 112,
+  "key": "tennis_female|Run|free hands|hint|hand in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right hip / groin",
+  "issue": "right hand pushes into the body",
+  "metric": 475,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "112_Run_female_tennis.jpg"
+ },
+ {
+  "n": 113,
+  "key": "tennis_female|Slump|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 465,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    65
+   ]
+  ],
+  "worst_frame": 57,
+  "img": "113_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 114,
+  "key": "tennis_female|Slump|free hands|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 465,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    65
+   ]
+  ],
+  "worst_frame": 57,
+  "img": "114_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 115,
+  "key": "tennis_female|Slump|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 461,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    18
+   ],
+   [
+    32,
+    65
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "115_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 116,
+  "key": "tennis_female|Scuba||cloth-lining|Kit_Top|chest",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 219,
+  "unit": "px",
+  "frames": [
+   [
+    9,
+    87
+   ],
+   [
+    94,
+    130
+   ]
+  ],
+  "worst_frame": 85,
+  "img": "116_Scuba_female_tennis.jpg"
+ },
+ {
+  "n": 117,
+  "key": "tennis_male|Stomp|racket|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 451,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    55
+   ]
+  ],
+  "worst_frame": 53,
+  "img": "117_Stomp_male_tennis.jpg"
+ },
+ {
+  "n": 118,
+  "key": "tennis_female|JumpJoy|racket|hint|racket under cloth|Rpelvis",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right hip / groin",
+  "issue": "racket goes through the clothes",
+  "metric": 267,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "118_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 119,
+  "key": "golf_female|Slump|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 442,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    65
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "119_Slump_female_golf.jpg"
+ },
+ {
+  "n": 120,
+  "key": "tennis_male|Walk|racket|hint|hand under cloth|LThigh",
+  "sev": "very obvious",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 439,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    8
+   ],
+   [
+    25,
+    27
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "120_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 121,
+  "key": "tennis_male|FistPump|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 258,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    16,
+    33
+   ]
+  ],
+  "worst_frame": 29,
+  "img": "121_FistPump_male_tennis.jpg"
+ },
+ {
+  "n": 122,
+  "key": "golf_male|Stomp|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 427,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    55
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "122_Stomp_male_golf.jpg"
+ },
+ {
+  "n": 123,
+  "key": "tennis_female|Run|free hands|hint|hand under cloth|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right hip / groin",
+  "issue": "right hand disappears under the clothes",
+  "metric": 418,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "123_Run_female_tennis.jpg"
+ },
+ {
+  "n": 124,
+  "key": "tennis_female|Stomp|racket|hint|racket under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 249,
+  "unit": "pts",
+  "frames": [
+   [
+    18,
+    22
+   ],
+   [
+    51,
+    53
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "124_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 125,
+  "key": "golf_male|FistPump||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 132,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    27
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "125_FistPump_male_golf.jpg"
+ },
+ {
+  "n": 126,
+  "key": "golf_female|Spike|golfer clip|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 387,
+  "unit": "pts",
+  "frames": [
+   [
+    38,
+    54
+   ]
+  ],
+  "worst_frame": 52,
+  "img": "126_Spike_female_golf.jpg"
+ },
+ {
+  "n": 127,
+  "key": "tennis_male|Thrust||hint|Top intersects Bottom|hips",
+  "sev": "very obvious",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 33.8,
+  "unit": "mm",
+  "frames": [
+   [
+    73,
+    93
+   ]
+  ],
+  "worst_frame": 81,
+  "img": "127_Thrust_male_tennis.jpg"
+ },
+ {
+  "n": 128,
+  "key": "golf_male|JumpJoy|free hands|hint|hand in body|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "pelvis / waist",
+  "issue": "left hand pushes into the body",
+  "metric": 383,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "128_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 129,
+  "key": "tennis_male|FistPump|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 382,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    31
+   ]
+  ],
+  "worst_frame": 29,
+  "img": "129_FistPump_male_tennis.jpg"
+ },
+ {
+  "n": 130,
+  "key": "golf_female|Run|free hands|hint|hand in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right hip / groin",
+  "issue": "right hand pushes into the body",
+  "metric": 374,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "130_Run_female_golf.jpg"
+ },
+ {
+  "n": 131,
+  "key": "golf_male|Thrust||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Thrust",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 119,
+  "unit": "px",
+  "frames": [
+   [
+    14,
+    16
+   ],
+   [
+    28,
+    44
+   ]
+  ],
+  "worst_frame": 30,
+  "img": "131_Thrust_male_golf.jpg"
+ },
+ {
+  "n": 132,
+  "key": "tennis_male|JumpJoy|racket|hint|hand in body|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "pelvis / waist",
+  "issue": "left hand pushes into the body",
+  "metric": 371,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "132_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 133,
+  "key": "tennis_male|JumpJoy|free hands|hint|hand in body|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "pelvis / waist",
+  "issue": "left hand pushes into the body",
+  "metric": 371,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "133_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 134,
+  "key": "tennis_female|Run|free hands|hint|hand in body|RThigh",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 363,
+  "unit": "pts",
+  "frames": [
+   [
+    16,
+    20
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "134_Run_female_tennis.jpg"
+ },
+ {
+  "n": 135,
+  "key": "tennis_female|Slump|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 360,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    67
+   ]
+  ],
+  "worst_frame": 65,
+  "img": "135_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 136,
+  "key": "tennis_male|JumpJoy|racket|hint|racket in body|Rpelvis",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right hip / groin",
+  "issue": "racket goes into the body",
+  "metric": 214,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "136_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 137,
+  "key": "tennis_female|Stomp|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 353,
+  "unit": "pts",
+  "frames": [
+   [
+    43,
+    53
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "137_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 138,
+  "key": "tennis_female|Slump|racket|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 351,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    67
+   ]
+  ],
+  "worst_frame": 41,
+  "img": "138_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 139,
+  "key": "golf_female|Run|free hands|hint|hand in body|hips",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "pelvis / waist",
+  "issue": "right hand pushes into the body",
+  "metric": 343,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "139_Run_female_golf.jpg"
+ },
+ {
+  "n": 140,
+  "key": "golf_female|Shock|free hands|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 341,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    41
+   ],
+   [
+    8,
+    39
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "140_Shock_female_golf.jpg"
+ },
+ {
+  "n": 141,
+  "key": "tennis_female|Shock|racket|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 336,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    41
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "141_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 142,
+  "key": "tennis_female|Shock|free hands|hint|hand in body|neckhead",
+  "sev": "very obvious",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "neck / head",
+  "issue": "left hand pushes into the body",
+  "metric": 336,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    41
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "142_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 143,
+  "key": "golf_male|JumpJoy||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 106,
+  "unit": "px",
+  "frames": [
+   [
+    20,
+    26
+   ]
+  ],
+  "worst_frame": 26,
+  "img": "143_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 144,
+  "key": "tennis_female|Run|free hands|hint|hand in body|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left hip / groin",
+  "issue": "left hand pushes into the body",
+  "metric": 329,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "144_Run_female_tennis.jpg"
+ },
+ {
+  "n": 145,
+  "key": "golf_female|Run|free hands|hint|hand in body|Lpelvis",
+  "sev": "very obvious",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left hip / groin",
+  "issue": "left hand pushes into the body",
+  "metric": 329,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    14
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "145_Run_female_golf.jpg"
+ },
+ {
+  "n": 146,
+  "key": "tennis_female|Scuba||cloth-skin|skin through clothes|hips",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 103,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    29
+   ],
+   [
+    38,
+    49
+   ],
+   [
+    60,
+    72
+   ],
+   [
+    81,
+    92
+   ],
+   [
+    110,
+    130
+   ]
+  ],
+  "worst_frame": 114,
+  "img": "146_Scuba_female_tennis.jpg"
+ },
+ {
+  "n": 147,
+  "key": "tennis_female|JumpJoy|free hands|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 305,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "147_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 148,
+  "key": "tennis_female|Spike||cloth-skin|skin through clothes|chest",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 94,
+  "unit": "px",
+  "frames": [
+   [
+    20,
+    76
+   ]
+  ],
+  "worst_frame": 24,
+  "img": "148_Spike_female_tennis.jpg"
+ },
+ {
+  "n": 149,
+  "key": "golf_male|Scuba||cloth-skin|skin through clothes|chest",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 93,
+  "unit": "px",
+  "frames": [
+   [
+    8,
+    52
+   ]
+  ],
+  "worst_frame": 12,
+  "img": "149_Scuba_male_golf.jpg"
+ },
+ {
+  "n": 150,
+  "key": "golf_female|Spike|golfer clip|hint|hand under cloth|RThigh",
+  "sev": "very obvious",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 280,
+  "unit": "pts",
+  "frames": [
+   [
+    38,
+    54
+   ]
+  ],
+  "worst_frame": 52,
+  "img": "150_Spike_female_golf.jpg"
+ },
+ {
+  "n": 151,
+  "key": "tennis_male|Run right|racket|hint|racket under cloth|hips",
+  "sev": "very obvious",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 168,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    13,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "151_Runright_male_tennis.jpg"
+ },
+ {
+  "n": 152,
+  "key": "tennis_male|Scuba||cloth-skin|skin through clothes|chest",
+  "sev": "very obvious",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 81,
+  "unit": "px",
+  "frames": [
+   [
+    20,
+    20
+   ],
+   [
+    40,
+    47
+   ],
+   [
+    63,
+    67
+   ],
+   [
+    85,
+    87
+   ],
+   [
+    110,
+    130
+   ]
+  ],
+  "worst_frame": 112,
+  "img": "152_Scuba_male_tennis.jpg"
+ },
+ {
+  "n": 153,
+  "key": "tennis_male|FistPump|free hands|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 246,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    16,
+    31
+   ]
+  ],
+  "worst_frame": 29,
+  "img": "153_FistPump_male_tennis.jpg"
+ },
+ {
+  "n": 154,
+  "key": "golf_female|Defeat|free hands|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 241,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "154_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 155,
+  "key": "golf_female|JumpJoy|free hands|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 228,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "155_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 156,
+  "key": "tennis_male|Run forward|racket|hint|racket under cloth|Rpelvis",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right hip / groin",
+  "issue": "racket goes through the clothes",
+  "metric": 135,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    13,
+    17
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "156_Runforward_male_tennis.jpg"
+ },
+ {
+  "n": 157,
+  "key": "tennis_female|Defeat|racket|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 223,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "157_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 158,
+  "key": "tennis_male|Victory||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Victory",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 70,
+  "unit": "px",
+  "frames": [
+   [
+    36,
+    55
+   ],
+   [
+    36,
+    55
+   ],
+   [
+    61,
+    63
+   ],
+   [
+    61,
+    63
+   ],
+   [
+    69,
+    71
+   ],
+   [
+    69,
+    71
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "158_Victory_male_tennis.jpg"
+ },
+ {
+  "n": 159,
+  "key": "tennis_female|Defeat|free hands|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 218,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "159_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 160,
+  "key": "golf_female|JumpJoy||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 17.3,
+  "unit": "mm",
+  "frames": [
+   [
+    13,
+    15
+   ],
+   [
+    30,
+    30
+   ],
+   [
+    36,
+    38
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "160_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 161,
+  "key": "tennis_female|Thrust||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 100,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    28
+   ],
+   [
+    34,
+    93
+   ]
+  ],
+  "worst_frame": 73,
+  "img": "161_Thrust_female_tennis.jpg"
+ },
+ {
+  "n": 162,
+  "key": "tennis_male|Thrust||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 99,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    14
+   ],
+   [
+    26,
+    32
+   ],
+   [
+    44,
+    48
+   ],
+   [
+    71,
+    77
+   ]
+  ],
+  "worst_frame": 32,
+  "img": "162_Thrust_male_tennis.jpg"
+ },
+ {
+  "n": 163,
+  "key": "tennis_male|Spike||hint|Top intersects Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 18.1,
+  "unit": "mm",
+  "frames": [
+   [
+    36,
+    36
+   ]
+  ],
+  "worst_frame": 36,
+  "img": "163_Spike_male_tennis.jpg"
+ },
+ {
+  "n": 164,
+  "key": "golf_female|JumpJoy||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 15.8,
+  "unit": "mm",
+  "frames": [
+   [
+    13,
+    15
+   ],
+   [
+    30,
+    30
+   ],
+   [
+    36,
+    38
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "164_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 165,
+  "key": "golf_female|Stomp|free hands|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 190,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "165_Stomp_female_golf.jpg"
+ },
+ {
+  "n": 166,
+  "key": "tennis_female|JumpJoy|racket|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 187,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "166_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 167,
+  "key": "golf_female|Spike||cloth-lining|Kit_Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 89,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    24
+   ],
+   [
+    32,
+    32
+   ]
+  ],
+  "worst_frame": 22,
+  "img": "167_Spike_female_golf.jpg"
+ },
+ {
+  "n": 168,
+  "key": "tennis_female|Run forward|racket|hint|racket under cloth|hips",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 106,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    11,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "168_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 169,
+  "key": "golf_male|Defeat||cloth-skin|skin through clothes|RShin",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right shin / knee",
+  "issue": "skin shows through the clothes",
+  "metric": 56,
+  "unit": "px",
+  "frames": [
+   [
+    63,
+    77
+   ]
+  ],
+  "worst_frame": 69,
+  "img": "169_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 170,
+  "key": "tennis_male|Run left|racket|hint|hand under cloth|Lpelvis",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left hip / groin",
+  "issue": "left hand disappears under the clothes",
+  "metric": 171,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ],
+   [
+    11,
+    11
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "170_Runleft_male_tennis.jpg"
+ },
+ {
+  "n": 171,
+  "key": "tennis_female|Stomp|free hands|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 171,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "171_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 172,
+  "key": "tennis_male|JumpJoy||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 53,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    26
+   ],
+   [
+    18,
+    26
+   ]
+  ],
+  "worst_frame": 20,
+  "img": "172_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 173,
+  "key": "golf_female|Victory||cloth-skin|skin through clothes|RUpperArm",
+  "sev": "noticeable",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right upper arm / armpit",
+  "issue": "skin shows through the clothes",
+  "metric": 53,
+  "unit": "px",
+  "frames": [
+   [
+    34,
+    73
+   ]
+  ],
+  "worst_frame": 59,
+  "img": "173_Victory_female_golf.jpg"
+ },
+ {
+  "n": 174,
+  "key": "golf_female|Defeat|free hands|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 159,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    12
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "174_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 175,
+  "key": "golf_female|Stomp|free hands|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 158,
+  "unit": "pts",
+  "frames": [
+   [
+    49,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "175_Stomp_female_golf.jpg"
+ },
+ {
+  "n": 176,
+  "key": "tennis_female|Run left|racket|hint|racket under cloth|hips",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 94,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    6
+   ],
+   [
+    11,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "176_Runleft_female_tennis.jpg"
+ },
+ {
+  "n": 177,
+  "key": "tennis_female|Run right|racket|hint|racket under cloth|hips",
+  "sev": "noticeable",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 93,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    6
+   ],
+   [
+    11,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "177_Runright_female_tennis.jpg"
+ },
+ {
+  "n": 178,
+  "key": "tennis_female|Run left||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 73,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "178_Runleft_female_tennis.jpg"
+ },
+ {
+  "n": 179,
+  "key": "golf_female|Run forward||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 12.2,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    1
+   ],
+   [
+    6,
+    6
+   ],
+   [
+    18,
+    18
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "179_Runforward_female_golf.jpg"
+ },
+ {
+  "n": 180,
+  "key": "tennis_male|Run left|racket|hint|racket under cloth|Rpelvis",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right hip / groin",
+  "issue": "racket goes through the clothes",
+  "metric": 89,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    6
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "180_Runleft_male_tennis.jpg"
+ },
+ {
+  "n": 181,
+  "key": "tennis_male|Run forward|racket|hint|hand under cloth|Lpelvis",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left hip / groin",
+  "issue": "left hand disappears under the clothes",
+  "metric": 144,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ],
+   [
+    11,
+    11
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "181_Runforward_male_tennis.jpg"
+ },
+ {
+  "n": 182,
+  "key": "tennis_female|Shock|racket|hint|racket under cloth|hips",
+  "sev": "noticeable",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 86,
+  "unit": "pts",
+  "frames": [
+   [
+    2,
+    2
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "182_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 183,
+  "key": "tennis_male|Spike||cloth-skin|skin through clothes|Lpelvis",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "left hip / groin",
+  "issue": "skin shows through the clothes",
+  "metric": 45,
+  "unit": "px",
+  "frames": [
+   [
+    52,
+    52
+   ]
+  ],
+  "worst_frame": 52,
+  "img": "183_Spike_male_tennis.jpg"
+ },
+ {
+  "n": 184,
+  "key": "tennis_female|FistPump||cloth-skin|skin through clothes|hips",
+  "sev": "noticeable",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 45,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    12
+   ],
+   [
+    10,
+    12
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "184_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 185,
+  "key": "golf_male|Shock||cloth-skin|skin through clothes|RUpperArm",
+  "sev": "noticeable",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right upper arm / armpit",
+  "issue": "skin shows through the clothes",
+  "metric": 45,
+  "unit": "px",
+  "frames": [
+   [
+    8,
+    41
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "185_Shock_male_golf.jpg"
+ },
+ {
+  "n": 186,
+  "key": "tennis_male|Run right|racket|hint|hand under cloth|Lpelvis",
+  "sev": "noticeable",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left hip / groin",
+  "issue": "left hand disappears under the clothes",
+  "metric": 140,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ],
+   [
+    11,
+    11
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "186_Runright_male_tennis.jpg"
+ },
+ {
+  "n": 187,
+  "key": "tennis_female|Walk|racket|hint|hand under cloth|LThigh",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 140,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ],
+   [
+    23,
+    23
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "187_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 188,
+  "key": "tennis_female|Thrust||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 11.1,
+  "unit": "mm",
+  "frames": [
+   [
+    35,
+    35
+   ],
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "188_Thrust_female_tennis.jpg"
+ },
+ {
+  "n": 189,
+  "key": "tennis_female|Thrust||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 11.1,
+  "unit": "mm",
+  "frames": [
+   [
+    35,
+    35
+   ],
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "189_Thrust_female_tennis.jpg"
+ },
+ {
+  "n": 190,
+  "key": "tennis_female|Spike||hint|Top intersects Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 12.2,
+  "unit": "mm",
+  "frames": [
+   [
+    34,
+    48
+   ],
+   [
+    54,
+    70
+   ]
+  ],
+  "worst_frame": 36,
+  "img": "190_Spike_female_tennis.jpg"
+ },
+ {
+  "n": 191,
+  "key": "tennis_female|Run left||hint|Top intersects Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 12.2,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    13,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "191_Runleft_female_tennis.jpg"
+ },
+ {
+  "n": 192,
+  "key": "tennis_male|Thrust||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 11.0,
+  "unit": "mm",
+  "frames": [
+   [
+    35,
+    35
+   ],
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "192_Thrust_male_tennis.jpg"
+ },
+ {
+  "n": 193,
+  "key": "tennis_male|Thrust||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 11.0,
+  "unit": "mm",
+  "frames": [
+   [
+    35,
+    35
+   ],
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "193_Thrust_male_tennis.jpg"
+ },
+ {
+  "n": 194,
+  "key": "tennis_female|Shock|racket|hint|hand under cloth|chest",
+  "sev": "noticeable",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 137,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "194_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 195,
+  "key": "tennis_female|Shock|free hands|hint|hand under cloth|chest",
+  "sev": "noticeable",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 137,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "195_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 196,
+  "key": "golf_female|JumpJoy||cloth-skin|skin through clothes|RUpperArm",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "right upper arm / armpit",
+  "issue": "skin shows through the clothes",
+  "metric": 43,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    30
+   ]
+  ],
+  "worst_frame": 20,
+  "img": "196_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 197,
+  "key": "tennis_female|Defeat|racket|hint|hand under cloth|LThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 134,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "197_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 198,
+  "key": "tennis_female|Defeat|free hands|hint|hand under cloth|LThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 134,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    16
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "198_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 199,
+  "key": "golf_male|JumpJoy||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 10.6,
+  "unit": "mm",
+  "frames": [
+   [
+    15,
+    15
+   ],
+   [
+    38,
+    39
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "199_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 200,
+  "key": "tennis_female|Run right||hint|Top intersects Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 11.5,
+  "unit": "mm",
+  "frames": [
+   [
+    4,
+    9
+   ]
+  ],
+  "worst_frame": 9,
+  "img": "200_Runright_female_tennis.jpg"
+ },
+ {
+  "n": 201,
+  "key": "tennis_male|Walk|racket|hint|hand in body|LThigh",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 129,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    8
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "201_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 202,
+  "key": "golf_male|Walk|golfer clip|hint|hand in body|LThigh",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 129,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    8
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "202_Walk_male_golf.jpg"
+ },
+ {
+  "n": 203,
+  "key": "tennis_male|Run left|racket|hint|racket under cloth|hips",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "pelvis / waist",
+  "issue": "racket goes through the clothes",
+  "metric": 77,
+  "unit": "pts",
+  "frames": [
+   [
+    13,
+    17
+   ]
+  ],
+  "worst_frame": 17,
+  "img": "203_Runleft_male_tennis.jpg"
+ },
+ {
+  "n": 204,
+  "key": "tennis_male|Victory|racket|hint|racket under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "Victory",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 77,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "204_Victory_male_tennis.jpg"
+ },
+ {
+  "n": 205,
+  "key": "golf_female|Victory||feet-slide|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 41 mm on the ground while planted",
+  "metric": 40.6,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    15
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "205_Victory_female_golf.jpg"
+ },
+ {
+  "n": 206,
+  "key": "tennis_female|Run||hint|Top intersects Bottom|hips",
+  "sev": "noticeable",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 11.0,
+  "unit": "mm",
+  "frames": [
+   [
+    6,
+    6
+   ],
+   [
+    16,
+    16
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "206_Run_female_tennis.jpg"
+ },
+ {
+  "n": 207,
+  "key": "tennis_female|Run||cloth-skin|skin through clothes|hips",
+  "sev": "noticeable",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 40,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    8
+   ],
+   [
+    16,
+    18
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "207_Run_female_tennis.jpg"
+ },
+ {
+  "n": 208,
+  "key": "golf_female|Scuba||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Scuba",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 58,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    60
+   ]
+  ],
+  "worst_frame": 44,
+  "img": "208_Scuba_female_golf.jpg"
+ },
+ {
+  "n": 209,
+  "key": "tennis_male|Walk||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 9.5,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    32,
+    32
+   ],
+   [
+    33,
+    33
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "209_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 210,
+  "key": "tennis_female|Defeat|free hands|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 117,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    12
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "210_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 211,
+  "key": "tennis_female|Scuba||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 37,
+  "unit": "px",
+  "frames": [
+   [
+    7,
+    9
+   ]
+  ],
+  "worst_frame": 7,
+  "img": "211_Scuba_female_tennis.jpg"
+ },
+ {
+  "n": 212,
+  "key": "tennis_female|Slump|racket|hint|racket in body|Rpelvis",
+  "sev": "noticeable",
+  "emote": "Slump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right hip / groin",
+  "issue": "racket goes into the body",
+  "metric": 69,
+  "unit": "pts",
+  "frames": [
+   [
+    8,
+    10
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "212_Slump_female_tennis.jpg"
+ },
+ {
+  "n": 213,
+  "key": "tennis_female|Defeat|racket|hint|hand under cloth|RThigh",
+  "sev": "noticeable",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 114,
+  "unit": "pts",
+  "frames": [
+   [
+    10,
+    12
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "213_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 214,
+  "key": "golf_male|JumpJoy||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 9.0,
+  "unit": "mm",
+  "frames": [
+   [
+    15,
+    15
+   ],
+   [
+    38,
+    39
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "214_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 215,
+  "key": "golf_female|Spike||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 54,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    24
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "215_Spike_female_golf.jpg"
+ },
+ {
+  "n": 216,
+  "key": "tennis_female|Run forward||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 53,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "216_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 217,
+  "key": "golf_male|Victory||feet-slide|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 35 mm on the ground while planted",
+  "metric": 35.3,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    15
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "217_Victory_male_golf.jpg"
+ },
+ {
+  "n": 218,
+  "key": "tennis_male|Walk||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 8.8,
+  "unit": "mm",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    17,
+    19
+   ]
+  ],
+  "worst_frame": 17,
+  "img": "218_Walk_male_tennis.jpg"
+ },
+ {
+  "n": 219,
+  "key": "tennis_female|Run right||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 35,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "219_Runright_female_tennis.jpg"
+ },
+ {
+  "n": 220,
+  "key": "golf_female|Run forward||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 8.7,
+  "unit": "mm",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    14,
+    15
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "220_Runforward_female_golf.jpg"
+ },
+ {
+  "n": 221,
+  "key": "golf_female|Run||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 8.6,
+  "unit": "mm",
+  "frames": [
+   [
+    15,
+    17
+   ]
+  ],
+  "worst_frame": 17,
+  "img": "221_Run_female_golf.jpg"
+ },
+ {
+  "n": 222,
+  "key": "golf_female|Run||feet-sink|R|RFoot",
+  "sev": "noticeable",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 8.6,
+  "unit": "mm",
+  "frames": [
+   [
+    5,
+    7
+   ]
+  ],
+  "worst_frame": 7,
+  "img": "222_Run_female_golf.jpg"
+ },
+ {
+  "n": 223,
+  "key": "tennis_female|Walk||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 49,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    33
+   ],
+   [
+    0,
+    6
+   ],
+   [
+    30,
+    32
+   ]
+  ],
+  "worst_frame": 27,
+  "img": "223_Walk_female_tennis.jpg"
+ },
+ {
+  "n": 224,
+  "key": "tennis_female|Run||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 49,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    20
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "224_Run_female_tennis.jpg"
+ },
+ {
+  "n": 225,
+  "key": "golf_female|Walk||feet-sink|L|LFoot",
+  "sev": "noticeable",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 8.0,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    3
+   ],
+   [
+    0,
+    3
+   ],
+   [
+    31,
+    33
+   ],
+   [
+    31,
+    32
+   ]
+  ],
+  "worst_frame": 1,
+  "img": "225_Walk_female_golf.jpg"
+ },
+ {
+  "n": 226,
+  "key": "tennis_female|Run forward||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 32,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "226_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 227,
+  "key": "golf_female|Scuba||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Scuba",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 32,
+  "unit": "px",
+  "frames": [
+   [
+    8,
+    52
+   ]
+  ],
+  "worst_frame": 44,
+  "img": "227_Scuba_female_golf.jpg"
+ },
+ {
+  "n": 228,
+  "key": "tennis_female|JumpJoy|free hands|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 97,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "228_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 229,
+  "key": "tennis_female|Thrust||cloth-skin|skin through clothes|hips",
+  "sev": "noticeable",
+  "emote": "Thrust",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 29,
+  "unit": "px",
+  "frames": [
+   [
+    77,
+    93
+   ]
+  ],
+  "worst_frame": 79,
+  "img": "229_Thrust_female_tennis.jpg"
+ },
+ {
+  "n": 230,
+  "key": "golf_male|Spike|golfer clip|hint|hand in body|Lpelvis",
+  "sev": "noticeable",
+  "emote": "Spike",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left hip / groin",
+  "issue": "left hand pushes into the body",
+  "metric": 89,
+  "unit": "pts",
+  "frames": [
+   [
+    36,
+    52
+   ]
+  ],
+  "worst_frame": 52,
+  "img": "230_Spike_male_golf.jpg"
+ },
+ {
+  "n": 231,
+  "key": "tennis_male|FistPump|racket|hint|racket in body|RThigh",
+  "sev": "noticeable",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket in body",
+  "area": "right thigh",
+  "issue": "racket goes into the body",
+  "metric": 53,
+  "unit": "pts",
+  "frames": [
+   [
+    29,
+    31
+   ]
+  ],
+  "worst_frame": 31,
+  "img": "231_FistPump_male_tennis.jpg"
+ },
+ {
+  "n": 232,
+  "key": "tennis_female|FistPump||cloth-lining|Kit_Top|LUpperArm",
+  "sev": "noticeable",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "left upper arm / armpit",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 42,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    22
+   ],
+   [
+    6,
+    22
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "232_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 233,
+  "key": "tennis_female|Stomp||cloth-lining|Kit_Top|chest",
+  "sev": "noticeable",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 42,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    24
+   ],
+   [
+    18,
+    24
+   ],
+   [
+    35,
+    35
+   ],
+   [
+    35,
+    35
+   ],
+   [
+    41,
+    41
+   ],
+   [
+    41,
+    41
+   ],
+   [
+    47,
+    47
+   ],
+   [
+    47,
+    47
+   ]
+  ],
+  "worst_frame": 20,
+  "img": "233_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 234,
+  "key": "tennis_female|Run left||cloth-skin|skin through clothes|chest",
+  "sev": "noticeable",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 28,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "234_Runleft_female_tennis.jpg"
+ },
+ {
+  "n": 235,
+  "key": "tennis_female|Stomp|racket|hint|hand in body|RThigh",
+  "sev": "noticeable",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 68,
+  "unit": "pts",
+  "frames": [
+   [
+    51,
+    51
+   ]
+  ],
+  "worst_frame": 51,
+  "img": "235_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 236,
+  "key": "tennis_female|FistPump||hint|Top intersects Bottom|hips",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "pelvis / waist",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 9.5,
+  "unit": "mm",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "236_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 237,
+  "key": "golf_male|Run forward||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 7.9,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    1
+   ],
+   [
+    6,
+    6
+   ],
+   [
+    18,
+    18
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "237_Runforward_male_golf.jpg"
+ },
+ {
+  "n": 238,
+  "key": "golf_female|Defeat||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 7.9,
+  "unit": "mm",
+  "frames": [
+   [
+    9,
+    16
+   ],
+   [
+    70,
+    81
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "238_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 239,
+  "key": "golf_female|Defeat||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 7.9,
+  "unit": "mm",
+  "frames": [
+   [
+    9,
+    16
+   ],
+   [
+    70,
+    81
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "239_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 240,
+  "key": "golf_female|Walk||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 7.9,
+  "unit": "mm",
+  "frames": [
+   [
+    15,
+    20
+   ],
+   [
+    15,
+    19
+   ]
+  ],
+  "worst_frame": 18,
+  "img": "240_Walk_female_golf.jpg"
+ },
+ {
+  "n": 241,
+  "key": "tennis_female|Run forward||hint|Top intersects Bottom|Lpelvis",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "left hip / groin",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 8.5,
+  "unit": "mm",
+  "frames": [
+   [
+    13,
+    13
+   ]
+  ],
+  "worst_frame": 13,
+  "img": "241_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 242,
+  "key": "golf_female|FistPump||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 30 mm on the ground while planted",
+  "metric": 29.9,
+  "unit": "mm",
+  "frames": [
+   [
+    16,
+    47
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "242_FistPump_female_golf.jpg"
+ },
+ {
+  "n": 243,
+  "key": "golf_female|Victory||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 7.4,
+  "unit": "mm",
+  "frames": [
+   [
+    12,
+    15
+   ],
+   [
+    31,
+    32
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "243_Victory_female_golf.jpg"
+ },
+ {
+  "n": 244,
+  "key": "golf_female|Victory||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 7.4,
+  "unit": "mm",
+  "frames": [
+   [
+    12,
+    15
+   ],
+   [
+    31,
+    32
+   ]
+  ],
+  "worst_frame": 15,
+  "img": "244_Victory_female_golf.jpg"
+ },
+ {
+  "n": 245,
+  "key": "golf_male|FistPump||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 30 mm on the ground while planted",
+  "metric": 29.6,
+  "unit": "mm",
+  "frames": [
+   [
+    16,
+    47
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "245_FistPump_male_golf.jpg"
+ },
+ {
+  "n": 246,
+  "key": "tennis_female|Run forward||hint|Top intersects Bottom|Rpelvis",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "Top intersects Bottom",
+  "area": "right hip / groin",
+  "issue": "polo and shorts/skirt cut through each other",
+  "metric": 8.1,
+  "unit": "mm",
+  "frames": [
+   [
+    8,
+    8
+   ]
+  ],
+  "worst_frame": 8,
+  "img": "246_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 247,
+  "key": "tennis_male|FistPump||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 29 mm on the ground while planted",
+  "metric": 29.1,
+  "unit": "mm",
+  "frames": [
+   [
+    16,
+    47
+   ],
+   [
+    16,
+    47
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "247_FistPump_male_tennis.jpg"
+ },
+ {
+  "n": 248,
+  "key": "tennis_female|FistPump||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 29 mm on the ground while planted",
+  "metric": 29.1,
+  "unit": "mm",
+  "frames": [
+   [
+    16,
+    47
+   ],
+   [
+    16,
+    47
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "248_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 249,
+  "key": "golf_male|Walk||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 7.2,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    1
+   ],
+   [
+    15,
+    17
+   ],
+   [
+    33,
+    33
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "249_Walk_male_golf.jpg"
+ },
+ {
+  "n": 250,
+  "key": "golf_male|Run forward||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 7.0,
+  "unit": "mm",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    15,
+    15
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "250_Runforward_male_golf.jpg"
+ },
+ {
+  "n": 251,
+  "key": "golf_female|Run||cloth-lining|Kit_Bottom|LThigh",
+  "sev": "small",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "left thigh",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 39,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    8
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "251_Run_female_golf.jpg"
+ },
+ {
+  "n": 252,
+  "key": "golf_male|Walk||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 6.5,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    0
+   ],
+   [
+    17,
+    18
+   ],
+   [
+    31,
+    33
+   ]
+  ],
+  "worst_frame": 17,
+  "img": "252_Walk_male_golf.jpg"
+ },
+ {
+  "n": 253,
+  "key": "tennis_female|Run right||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 34,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "253_Runright_female_tennis.jpg"
+ },
+ {
+  "n": 254,
+  "key": "tennis_female|Defeat||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 33,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    71
+   ],
+   [
+    18,
+    71
+   ]
+  ],
+  "worst_frame": 36,
+  "img": "254_Defeat_female_tennis.jpg"
+ },
+ {
+  "n": 255,
+  "key": "golf_female|Run||cloth-lining|Kit_Bottom|RThigh",
+  "sev": "small",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "right thigh",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 33,
+  "unit": "px",
+  "frames": [
+   [
+    16,
+    18
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "255_Run_female_golf.jpg"
+ },
+ {
+  "n": 256,
+  "key": "tennis_male|Run||feet-sink|R|RFoot",
+  "sev": "small",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right shoe sinks into the ground",
+  "metric": 5.4,
+  "unit": "mm",
+  "frames": [
+   [
+    0,
+    0
+   ],
+   [
+    20,
+    20
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "256_Run_male_tennis.jpg"
+ },
+ {
+  "n": 257,
+  "key": "tennis_male|Run||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 5.4,
+  "unit": "mm",
+  "frames": [
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "257_Run_male_tennis.jpg"
+ },
+ {
+  "n": 258,
+  "key": "tennis_male|Spike||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 30,
+  "unit": "px",
+  "frames": [
+   [
+    16,
+    34
+   ]
+  ],
+  "worst_frame": 32,
+  "img": "258_Spike_male_tennis.jpg"
+ },
+ {
+  "n": 259,
+  "key": "golf_female|Run||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Run",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 29,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    10,
+    12
+   ],
+   [
+    20,
+    20
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "259_Run_female_golf.jpg"
+ },
+ {
+  "n": 260,
+  "key": "golf_female|Defeat||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 28,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    75
+   ],
+   [
+    83,
+    87
+   ]
+  ],
+  "worst_frame": 38,
+  "img": "260_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 261,
+  "key": "golf_male|Scuba|golfer clip|hint|hand under cloth|LForearm",
+  "sev": "small",
+  "emote": "Scuba",
+  "variant": "golfer clip",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left forearm / hand",
+  "issue": "right hand disappears under the clothes",
+  "metric": 58,
+  "unit": "pts",
+  "frames": [
+   [
+    2,
+    2
+   ],
+   [
+    58,
+    58
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "261_Scuba_male_golf.jpg"
+ },
+ {
+  "n": 262,
+  "key": "tennis_female|Run forward|racket|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 57,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    15,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "262_Runforward_female_tennis.jpg"
+ },
+ {
+  "n": 263,
+  "key": "golf_female|JumpJoy|free hands|hint|hand in body|RThigh",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 57,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "263_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 264,
+  "key": "golf_male|Defeat||feet-slide|R|RFoot",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "R",
+  "area": "right foot / shoe",
+  "issue": "right foot slides 18 mm on the ground while planted",
+  "metric": 18.1,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    12
+   ],
+   [
+    75,
+    100
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "264_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 265,
+  "key": "golf_male|Defeat||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 18 mm on the ground while planted",
+  "metric": 18.1,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    12
+   ],
+   [
+    75,
+    100
+   ]
+  ],
+  "worst_frame": 11,
+  "img": "265_Defeat_male_golf.jpg"
+ },
+ {
+  "n": 266,
+  "key": "golf_female|Run forward||cloth-skin|skin through clothes|hips",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "pelvis / waist",
+  "issue": "skin shows through the clothes",
+  "metric": 18,
+  "unit": "px",
+  "frames": [
+   [
+    2,
+    2
+   ],
+   [
+    13,
+    15
+   ]
+  ],
+  "worst_frame": 13,
+  "img": "266_Runforward_female_golf.jpg"
+ },
+ {
+  "n": 267,
+  "key": "tennis_female|JumpJoy|racket|hint|hand in body|RThigh",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "right thigh",
+  "issue": "right hand pushes into the body",
+  "metric": 53,
+  "unit": "pts",
+  "frames": [
+   [
+    6,
+    6
+   ]
+  ],
+  "worst_frame": 6,
+  "img": "267_JumpJoy_female_tennis.jpg"
+ },
+ {
+  "n": 268,
+  "key": "golf_female|Victory||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 25,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    10,
+    18
+   ],
+   [
+    30,
+    30
+   ],
+   [
+    87,
+    95
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "268_Victory_female_golf.jpg"
+ },
+ {
+  "n": 269,
+  "key": "tennis_female|Shock||cloth-skin|skin through clothes|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 16,
+  "unit": "px",
+  "frames": [
+   [
+    45,
+    45
+   ],
+   [
+    45,
+    45
+   ]
+  ],
+  "worst_frame": 45,
+  "img": "269_Shock_female_tennis.jpg"
+ },
+ {
+  "n": 270,
+  "key": "tennis_female|Victory||cloth-skin|skin through clothes|chest",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-skin",
+  "what": "skin through clothes",
+  "area": "chest / upper torso",
+  "issue": "skin shows through the clothes",
+  "metric": 16,
+  "unit": "px",
+  "frames": [
+   [
+    81,
+    83
+   ],
+   [
+    81,
+    83
+   ]
+  ],
+  "worst_frame": 83,
+  "img": "270_Victory_female_tennis.jpg"
+ },
+ {
+  "n": 271,
+  "key": "golf_female|Shock||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 3.9,
+  "unit": "mm",
+  "frames": [
+   [
+    4,
+    5
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "271_Shock_female_golf.jpg"
+ },
+ {
+  "n": 272,
+  "key": "tennis_female|Run left|racket|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Run left",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 48,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    15,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "272_Runleft_female_tennis.jpg"
+ },
+ {
+  "n": 273,
+  "key": "tennis_male|Shock||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 23,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    41
+   ],
+   [
+    6,
+    41
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "273_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 274,
+  "key": "golf_male|JumpJoy||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 15 mm on the ground while planted",
+  "metric": 15.0,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    15
+   ]
+  ],
+  "worst_frame": 14,
+  "img": "274_JumpJoy_male_golf.jpg"
+ },
+ {
+  "n": 275,
+  "key": "golf_female|JumpJoy||feet-slide|L|LFoot",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-slide",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left foot slides 15 mm on the ground while planted",
+  "metric": 14.9,
+  "unit": "mm",
+  "frames": [
+   [
+    1,
+    15
+   ]
+  ],
+  "worst_frame": 13,
+  "img": "275_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 276,
+  "key": "tennis_female|Run right|racket|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 46,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    15,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "276_Runright_female_tennis.jpg"
+ },
+ {
+  "n": 277,
+  "key": "tennis_male|Run right||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Run right",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 3.5,
+  "unit": "mm",
+  "frames": [
+   [
+    10,
+    10
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "277_Runright_male_tennis.jpg"
+ },
+ {
+  "n": 278,
+  "key": "tennis_male|Victory||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 21,
+  "unit": "px",
+  "frames": [
+   [
+    38,
+    55
+   ],
+   [
+    38,
+    55
+   ],
+   [
+    61,
+    63
+   ],
+   [
+    61,
+    63
+   ],
+   [
+    69,
+    71
+   ],
+   [
+    69,
+    71
+   ]
+  ],
+  "worst_frame": 61,
+  "img": "278_Victory_male_tennis.jpg"
+ },
+ {
+  "n": 279,
+  "key": "golf_female|Victory||cloth-lining|Kit_Bottom|LThigh",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "left thigh",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 21,
+  "unit": "px",
+  "frames": [
+   [
+    20,
+    22
+   ]
+  ],
+  "worst_frame": 20,
+  "img": "279_Victory_female_golf.jpg"
+ },
+ {
+  "n": 280,
+  "key": "golf_female|Slump||feet-sink|L|LFoot",
+  "sev": "small",
+  "emote": "Slump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "feet-sink",
+  "what": "L",
+  "area": "left foot / shoe",
+  "issue": "left shoe sinks into the ground",
+  "metric": 3.4,
+  "unit": "mm",
+  "frames": [
+   [
+    12,
+    33
+   ],
+   [
+    37,
+    61
+   ]
+  ],
+  "worst_frame": 25,
+  "img": "280_Slump_female_golf.jpg"
+ },
+ {
+  "n": 281,
+  "key": "golf_female|Run forward|golfer clip|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 42,
+  "unit": "pts",
+  "frames": [
+   [
+    0,
+    4
+   ],
+   [
+    13,
+    17
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "281_Runforward_female_golf.jpg"
+ },
+ {
+  "n": 282,
+  "key": "golf_female|Run forward||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Run forward",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 19,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    11
+   ]
+  ],
+  "worst_frame": 9,
+  "img": "282_Runforward_female_golf.jpg"
+ },
+ {
+  "n": 283,
+  "key": "golf_female|FistPump||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 19,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    0
+   ],
+   [
+    33,
+    47
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "283_FistPump_female_golf.jpg"
+ },
+ {
+  "n": 284,
+  "key": "golf_female|FistPump||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 19,
+  "unit": "px",
+  "frames": [
+   [
+    8,
+    16
+   ],
+   [
+    23,
+    27
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "284_FistPump_female_golf.jpg"
+ },
+ {
+  "n": 285,
+  "key": "golf_female|JumpJoy||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 19,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    14,
+    14
+   ],
+   [
+    20,
+    20
+   ],
+   [
+    52,
+    62
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "285_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 286,
+  "key": "golf_female|Shock||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 19,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    0
+   ],
+   [
+    53,
+    65
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "286_Shock_female_golf.jpg"
+ },
+ {
+  "n": 287,
+  "key": "tennis_female|FistPump|racket|hint|racket under cloth|RThigh",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "racket under cloth",
+  "area": "right thigh",
+  "issue": "racket goes through the clothes",
+  "metric": 22,
+  "unit": "pts",
+  "frames": [
+   [
+    22,
+    27
+   ]
+  ],
+  "worst_frame": 23,
+  "img": "287_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 288,
+  "key": "tennis_female|FistPump||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 17,
+  "unit": "px",
+  "frames": [
+   [
+    27,
+    31
+   ],
+   [
+    27,
+    31
+   ]
+  ],
+  "worst_frame": 31,
+  "img": "288_FistPump_female_tennis.jpg"
+ },
+ {
+  "n": 289,
+  "key": "golf_female|Thrust||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Thrust",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 17,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    2
+   ],
+   [
+    54,
+    60
+   ]
+  ],
+  "worst_frame": 0,
+  "img": "289_Thrust_female_golf.jpg"
+ },
+ {
+  "n": 290,
+  "key": "tennis_male|Shock|racket|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 35,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "290_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 291,
+  "key": "tennis_male|Shock|free hands|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 35,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "291_Shock_male_tennis.jpg"
+ },
+ {
+  "n": 292,
+  "key": "tennis_male|Scuba||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Scuba",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 16,
+  "unit": "px",
+  "frames": [
+   [
+    16,
+    16
+   ],
+   [
+    27,
+    40
+   ],
+   [
+    51,
+    58
+   ],
+   [
+    76,
+    81
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "292_Scuba_male_tennis.jpg"
+ },
+ {
+  "n": 293,
+  "key": "golf_female|Victory||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 16,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    12
+   ],
+   [
+    32,
+    36
+   ],
+   [
+    79,
+    85
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "293_Victory_female_golf.jpg"
+ },
+ {
+  "n": 294,
+  "key": "golf_female|Victory||cloth-lining|Kit_Top|RShoulder",
+  "sev": "small",
+  "emote": "Victory",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "right shoulder",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 15,
+  "unit": "px",
+  "frames": [
+   [
+    36,
+    36
+   ],
+   [
+    49,
+    49
+   ],
+   [
+    55,
+    55
+   ]
+  ],
+  "worst_frame": 36,
+  "img": "294_Victory_female_golf.jpg"
+ },
+ {
+  "n": 295,
+  "key": "tennis_male|JumpJoy||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 14,
+  "unit": "px",
+  "frames": [
+   [
+    18,
+    28
+   ],
+   [
+    18,
+    28
+   ]
+  ],
+  "worst_frame": 22,
+  "img": "295_JumpJoy_male_tennis.jpg"
+ },
+ {
+  "n": 296,
+  "key": "golf_female|JumpJoy||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "JumpJoy",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 14,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    14
+   ],
+   [
+    30,
+    44
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "296_JumpJoy_female_golf.jpg"
+ },
+ {
+  "n": 297,
+  "key": "golf_female|Scuba||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Scuba",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 13,
+  "unit": "px",
+  "frames": [
+   [
+    2,
+    58
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "297_Scuba_female_golf.jpg"
+ },
+ {
+  "n": 298,
+  "key": "golf_female|Stomp||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 13,
+  "unit": "px",
+  "frames": [
+   [
+    10,
+    10
+   ],
+   [
+    26,
+    53
+   ]
+  ],
+  "worst_frame": 47,
+  "img": "298_Stomp_female_golf.jpg"
+ },
+ {
+  "n": 299,
+  "key": "golf_female|Walk||cloth-lining|Kit_Top|chest",
+  "sev": "small",
+  "emote": "Walk",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Top",
+  "area": "chest / upper torso",
+  "issue": "Kit_Top torn open / inside of the cloth shows",
+  "metric": 12,
+  "unit": "px",
+  "frames": [
+   [
+    0,
+    6
+   ],
+   [
+    0,
+    2
+   ],
+   [
+    12,
+    12
+   ],
+   [
+    31,
+    33
+   ],
+   [
+    32,
+    32
+   ]
+  ],
+  "worst_frame": 2,
+  "img": "299_Walk_female_golf.jpg"
+ },
+ {
+  "n": 300,
+  "key": "golf_female|Defeat||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Defeat",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 12,
+  "unit": "px",
+  "frames": [
+   [
+    6,
+    18
+   ],
+   [
+    34,
+    34
+   ],
+   [
+    77,
+    81
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "300_Defeat_female_golf.jpg"
+ },
+ {
+  "n": 301,
+  "key": "golf_male|FistPump|free hands|hint|hand under cloth|RThigh",
+  "sev": "small",
+  "emote": "FistPump",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right thigh",
+  "issue": "right hand disappears under the clothes",
+  "metric": 24,
+  "unit": "pts",
+  "frames": [
+   [
+    31,
+    31
+   ]
+  ],
+  "worst_frame": 31,
+  "img": "301_FistPump_male_golf.jpg"
+ },
+ {
+  "n": 302,
+  "key": "tennis_female|Spike|racket|hint|hand under cloth|LThigh",
+  "sev": "small",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "left thigh",
+  "issue": "left hand disappears under the clothes",
+  "metric": 23,
+  "unit": "pts",
+  "frames": [
+   [
+    12,
+    16
+   ],
+   [
+    82,
+    86
+   ]
+  ],
+  "worst_frame": 16,
+  "img": "302_Spike_female_tennis.jpg"
+ },
+ {
+  "n": 303,
+  "key": "golf_female|Thrust||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Thrust",
+  "variant": "golfer clip",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 11,
+  "unit": "px",
+  "frames": [
+   [
+    2,
+    10
+   ],
+   [
+    20,
+    22
+   ],
+   [
+    50,
+    54
+   ]
+  ],
+  "worst_frame": 10,
+  "img": "303_Thrust_female_golf.jpg"
+ },
+ {
+  "n": 304,
+  "key": "golf_female|Shock||cloth-lining|Kit_Bottom|hips",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "golf",
+  "kind": "cloth-lining",
+  "what": "Kit_Bottom",
+  "area": "pelvis / waist",
+  "issue": "Kit_Bottom torn open / inside of the cloth shows",
+  "metric": 10,
+  "unit": "px",
+  "frames": [
+   [
+    49,
+    51
+   ]
+  ],
+  "worst_frame": 49,
+  "img": "304_Shock_female_golf.jpg"
+ },
+ {
+  "n": 305,
+  "key": "golf_male|Shock|free hands|hint|hand under cloth|chest",
+  "sev": "small",
+  "emote": "Shock",
+  "variant": "free hands",
+  "hero": "male",
+  "kit": "golf",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "chest / upper torso",
+  "issue": "right hand disappears under the clothes",
+  "metric": 20,
+  "unit": "pts",
+  "frames": [
+   [
+    4,
+    4
+   ]
+  ],
+  "worst_frame": 4,
+  "img": "305_Shock_male_golf.jpg"
+ },
+ {
+  "n": 306,
+  "key": "tennis_male|Spike|racket|hint|hand in body|LThigh",
+  "sev": "small",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "male",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 15,
+  "unit": "pts",
+  "frames": [
+   [
+    56,
+    56
+   ]
+  ],
+  "worst_frame": 56,
+  "img": "306_Spike_male_tennis.jpg"
+ },
+ {
+  "n": 307,
+  "key": "tennis_female|Spike|racket|hint|hand in body|LThigh",
+  "sev": "small",
+  "emote": "Spike",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand in body",
+  "area": "left thigh",
+  "issue": "left hand pushes into the body",
+  "metric": 9,
+  "unit": "pts",
+  "frames": [
+   [
+    34,
+    34
+   ]
+  ],
+  "worst_frame": 34,
+  "img": "307_Spike_female_tennis.jpg"
+ },
+ {
+  "n": 308,
+  "key": "tennis_female|Stomp|racket|hint|hand under cloth|Rpelvis",
+  "sev": "small",
+  "emote": "Stomp",
+  "variant": "racket",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right hip / groin",
+  "issue": "right hand disappears under the clothes",
+  "metric": 6,
+  "unit": "pts",
+  "frames": [
+   [
+    32,
+    32
+   ]
+  ],
+  "worst_frame": 32,
+  "img": "308_Stomp_female_tennis.jpg"
+ },
+ {
+  "n": 309,
+  "key": "tennis_female|Stomp|free hands|hint|hand under cloth|Rpelvis",
+  "sev": "small",
+  "emote": "Stomp",
+  "variant": "free hands",
+  "hero": "female",
+  "kit": "tennis",
+  "kind": "hint",
+  "what": "hand under cloth",
+  "area": "right hip / groin",
+  "issue": "right hand disappears under the clothes",
+  "metric": 6,
+  "unit": "pts",
+  "frames": [
+   [
+    32,
+    32
+   ]
+  ],
+  "worst_frame": 32,
+  "img": "309_Stomp_female_tennis.jpg"
+ }
+]

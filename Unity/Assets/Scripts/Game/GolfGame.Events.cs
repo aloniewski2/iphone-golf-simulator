@@ -209,12 +209,12 @@ namespace GolfArcade.Game
             {
                 case ObstacleKind.Balloon:
                     effects.Burst(at, new Color(1f, 1f, 1f, 0.8f), new Color(1f, 0.85f, 0.9f, 0.6f), 26, 3.2f, 0.5f);
-                    eventSounds?.Boing(); Haptics.Impact(0.6);
+                    eventSounds?.Boing(); Haptics.Play(Haptics.Cue.Bounce, 0.6f);
                     hud.ShowCallout("Boing!", Hex("FF6FA8"));
                     break;
                 case ObstacleKind.Twister:
                     effects.Burst(at, new Color(0.55f, 0.5f, 0.42f, 0.9f), new Color(0.4f, 0.55f, 0.3f, 0.8f), 46, 6f, 0.4f, 1.6f, 1.2f);
-                    eventSounds?.Gust(); Haptics.Impact(0.8);
+                    eventSounds?.Gust(); Haptics.Play(Haptics.Cue.Bounce, 0.8f);
                     hud.ShowCallout("Twister!", Hex("8FA3B8"));
                     break;
                 case ObstacleKind.Gull:
@@ -224,7 +224,7 @@ namespace GolfArcade.Game
                     break;
                 default:
                     effects.Burst(at, new Color(0.75f, 0.68f, 0.55f), new Color(0.9f, 0.86f, 0.78f), 14, 2f, 0.4f);
-                    sounds.PlayKnock(false); eventSounds?.Horn(); Haptics.Impact(0.5);
+                    sounds.PlayKnock(false); eventSounds?.Horn(); Haptics.Play(Haptics.Cue.Bounce, 0.5f);
                     hud.ShowCallout("Beep beep!", Hex("2FA36B"));
                     break;
             }

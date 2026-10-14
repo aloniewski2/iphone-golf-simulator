@@ -1,0 +1,1 @@
+Rendered SceneKit frames=429, seconds=10.0, fps=42.9, footprintMB=260.28438568115234, model=iPhone18,1, 4 heroes + Scuba, 4x MSAA

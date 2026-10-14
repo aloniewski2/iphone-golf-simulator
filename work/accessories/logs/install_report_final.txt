@@ -1,0 +1,10 @@
+  Male golf_bag Acc_Bag: v=19437 tris=29656 bones=7 roles=Acc_Bag,Acc_BagMetal
+  Male golf_cap Acc_Cap: v=6605 tris=11524 bones=1 roles=Acc_Cap
+  Male golf_glove Acc_GloveL: v=6543 tris=11902 bones=17 roles=Acc_Glove
+  Male golf_glove Acc_GloveR: v=6396 tris=11621 bones=17 roles=Acc_Glove
+  Male tennis_cap Acc_Cap: v=6675 tris=10572 bones=1 roles=Acc_Cap,Acc_CapMetal
+  Female golf_bag Acc_Bag: v=19437 tris=29656 bones=7 roles=Acc_Bag,Acc_BagMetal
+  Female golf_cap Acc_Cap: v=6605 tris=11524 bones=1 roles=Acc_Cap
+  Female golf_glove Acc_GloveL: v=6655 tris=11973 bones=17 roles=Acc_Glove
+  Female golf_glove Acc_GloveR: v=6429 tris=11671 bones=17 roles=Acc_Glove
+  Female tennis_cap Acc_Cap: v=6675 tris=10572 bones=1 roles=Acc_Cap,Acc_CapMetal

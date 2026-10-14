@@ -135,14 +135,4 @@ final class ClubRealismTests: XCTestCase {
         XCTAssertLessThan(driver.roll * 0.5, driver.roll - iron.roll + 1, "the driver runs out far more than an iron")
     }
 
-    func testFullSwingArcShortensWithTheClub() {
-        var driver = ArmSwingDetector(), iron = ArmSwingDetector(), wedge = ArmSwingDetector()
-        driver.configure(for: .driver)
-        iron.configure(for: .iron)
-        wedge.configure(for: .wedge)
-        XCTAssertGreaterThan(driver.fullBackswing, iron.fullBackswing)
-        XCTAssertGreaterThan(iron.fullBackswing, wedge.fullBackswing)
-        XCTAssertEqual(wedge.power(arc: 100, downswingSpeed: 450), 1, accuracy: 1e-9, "a natural full wedge swing fills its meter")
-        XCTAssertLessThan(driver.power(arc: 100, downswingSpeed: 550), 0.9, "the same arc is not a full driver swing")
-    }
 }

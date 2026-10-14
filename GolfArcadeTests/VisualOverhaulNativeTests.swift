@@ -1,6 +1,7 @@
 import XCTest
 import SceneKit
 import simd
+import CryptoKit
 @testable import GolfArcade
 
 /// Compare the shipped SceneKit graph with vertices sampled independently from
@@ -18,8 +19,10 @@ import simd
         }
     }
     private func integers(_ source: SCNGeometrySource) throws -> [Int] {
+        // a part skinned to ONE bone (an accessory on its socket) has all-zero indices: SceneKit's live skinner then reports an empty index source (every vertex = bone 0)
+        if source.vectorCount == 0 { return [] }
         guard !source.usesFloatComponents, [1,2,4].contains(source.bytesPerComponent) else {
-            throw NSError(domain:"VisualGolden",code:1,userInfo:[NSLocalizedDescriptionKey:"Unsupported live SceneKit bone index format"])
+            throw NSError(domain:"VisualGolden",code:1,userInfo:[NSLocalizedDescriptionKey:"Unsupported live SceneKit bone index format (float \(source.usesFloatComponents), bytes \(source.bytesPerComponent), components \(source.componentsPerVector), vectors \(source.vectorCount))"])
         }
         return source.data.withUnsafeBytes { raw in
             (0..<source.vectorCount*source.componentsPerVector).map { k in
@@ -40,27 +43,71 @@ import simd
         for golf in [false, true] { for female in [false, true] { for distance in golf ? [false] : [false, true] {
             let asset = try XCTUnwrap(MatchHero.asset(female: female, golf: golf, distance: distance))
             let rig = try XCTUnwrap(asset.rig())
-            XCTAssertEqual(rig.info.bones.count, golf ? 54 : 53)
+            XCTAssertEqual(rig.info.bones.count, golf ? 55 : (female ? 159 : 145), "current Unity rig: the tennis heroes carry the authored finger / face bones (+ the cap's Headwear socket, ACCESSORIES)")
             if golf { XCTAssertEqual(rig.info.bones.last, "Club") }
             for role in ["Body", "Face"] {
                 let index = try XCTUnwrap(asset.manifest.parts.firstIndex { $0.name == role })
                 let part = asset.manifest.parts[index]
-                XCTAssertEqual(part.vertexCount, role == "Body" ? (female ? 23230 : 33694) : (female ? 3004 : 3824), "accepted source exact count")
-                XCTAssertEqual(asset.geometry[index].sources(for: .texcoord).count, role == "Body" ? 3 : 1)
+                XCTAssertEqual(part.vertexCount, role == "Body" ? (female ? 34443 : 44168) : (female ? 3004 : 3824), "current Unity source exact count (OriginalSeamBlinkFinish composed-ears head)")
+                // Body: UV0, bind xy, bind z and HeroFaceSkin's lid-liner distances (+ the CLOTHING V2 garment contact shadow, 2); Face: its eye UV0
+                XCTAssertEqual(asset.geometry[index].sources(for: .texcoord).count, role == "Body" ? 4 + (part.hasEdges ? 2 : 0) : 1)
+                if role == "Body" { XCTAssertTrue(part.hasLid, "the body carries HeroFaceSkin's lid-liner channel") }
                 let skin = try XCTUnwrap(rig.skinned.first { $0.name == role })
-                XCTAssertEqual(skin.morphTargets.map(\.name), ["Hero_Blink_Half", "Hero_Blink"])
+                XCTAssertEqual(skin.morphTargets.map(\.name), role == "Body" ? ["Hero_Blink_Half", "Hero_Blink"] : ["Hero_Blink_Half", "Hero_Blink", "Face_GazeRight", "Face_GazeLeft", "Face_GazeUp", "Face_GazeDown", "Face_BrowUp", "Face_BrowDown"])
                 if role == "Body" {
                     let look = try XCTUnwrap(part.submeshes.first?.look)
                     XCTAssertEqual(look.skinFinish, female ? 2 : 1)
                     XCTAssertEqual(look.skinPigmentUV, 2)
                     XCTAssertEqual(look.baseMapLinear, true)
                     XCTAssertEqual(look.baseMap, resources[2])
+                    XCTAssertEqual(look.faceSkin, true, "the body skin is Unity's HeroFaceSkin head surface, mirrored by MatchHeroSurfaces.faceSkinBody")
                 } else {
                     XCTAssertEqual(Set(part.submeshes.map(\.material)), faceRoles.union(female ? ["Reference_Face_IrisIn"] : []))
                     XCTAssertTrue(part.submeshes.allSatisfy { $0.look?.anatomicalFace == true })
                 }
             }
         } } }
+    }
+    /// The lobby, locker and menus draw the exported hero, not the Unity prefab: if the Unity head files change and the native assets are not re-exported, the menus show an older face
+    /// than the match. The golden provenance records the head FBX hashes the shipped assets were exported from; this fails when Unity has moved on.
+    /// Fix: work/hero-sync/sync_heroes.sh (Unity batch export of tennis, tennis-distance and golf, install into CharacterAssets, goldens + provenance, lobby-vs-game sheets).
+    func testNativeHeroesAreExportedFromTheCurrentUnityHeads() throws {
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let provenance = repo.appendingPathComponent("GolfArcadeTests/VisualGolden/provenance.json")
+        struct Row: Decodable { let name: String; let frozenFaceSourceFiles: [String: String] }
+        let rows = try JSONDecoder().decode([Row].self, from: Data(contentsOf: provenance))
+        XCTAssertFalse(rows.isEmpty)
+        var checked = 0
+        for row in rows { for (path, recorded) in row.frozenFaceSourceFiles {
+            let url = repo.appendingPathComponent(path)
+            guard FileManager.default.fileExists(atPath: url.path) else { continue }   // a checkout without the Unity project cannot judge
+            let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+            XCTAssertEqual(digest, recorded, "\(row.name): the native hero was exported from an older \(url.lastPathComponent) than Unity now draws; re-export the native heroes")
+            checked += 1
+        } }
+        NSLog("[HeroFreshness] checked \(checked) head source hashes")
+    }
+    /// Hero sync: the lobby must never drift from the game again. Every file that decides how a hero looks (work/hero-sync/look_sources.txt: mesh shaping, grip, skin,
+    /// kit, shaders, the exporter) is hashed into the provenance when work/hero-sync/sync_heroes.sh exports and installs the native heroes; this fails as soon as one of them
+    /// changes without a re-sync. Fix: run work/hero-sync/sync_heroes.sh (and port a changed hero shader into MatchHeroSurfaces.swift; its sheets show the difference).
+    func testNativeHeroesMatchTheCurrentUnityHeroLook() throws {
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        struct Row: Decodable { let name: String; let heroLookSourceFiles: [String: String] }
+        let rows = try JSONDecoder().decode([Row].self, from: Data(contentsOf: repo.appendingPathComponent("GolfArcadeTests/VisualGolden/provenance.json")))
+        XCTAssertEqual(Set(rows.map(\.name)), ["MatchHero_Male", "MatchHero_Female", "MatchHero_Male_Distance", "MatchHero_Female_Distance", "GolfKitHero_Male", "GolfKitHero_Female"])
+        var checked = 0, stale: [String] = []
+        for row in rows {
+            XCTAssertGreaterThan(row.heroLookSourceFiles.count, 30, "\(row.name): the provenance lists the hero look sources")
+            for (path, recorded) in row.heroLookSourceFiles {
+                let url = repo.appendingPathComponent(path)
+                guard FileManager.default.fileExists(atPath: url.path) else { continue }   // a checkout without the Unity project cannot judge
+                let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+                if digest != recorded { stale.append("\(row.name): \(path)") }
+                checked += 1
+            }
+        }
+        XCTAssertTrue(stale.isEmpty, "the hero look changed since the native heroes were exported; run work/hero-sync/sync_heroes.sh:\n" + stale.joined(separator: "\n"))
+        NSLog("[HeroFreshness] checked \(checked) hero look source hashes")
     }
     func testShippedGolfAndTennisRigsMatchUnityGoldenVertices() throws {
         let folder = ProcessInfo.processInfo.environment["VISUAL_GOLDEN_DIR"].map { URL(fileURLWithPath:$0) }
@@ -72,7 +119,7 @@ import simd
             let root = MatchHeroData.buildHero(asset,picks:MatchHeroData.Picks(colour:{ _ in nil }))
             let live = try XCTUnwrap(HeroRig(root:root,asset:asset)); live.attach()
             defer { live.detach() }
-            XCTAssertEqual(live.data.boneCount,golf ? 54 : 53,name)
+            XCTAssertEqual(live.data.boneCount,golf ? 55 : (female ? 159 : 145),name)   // + the Headwear socket of the cap (ACCESSORIES)
             let fixture = try XCTUnwrap(folder?.appendingPathComponent(name+"_golden.json")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"lzfse")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"json"),"Independent Unity fixture for "+name)
@@ -122,7 +169,7 @@ import simd
                     if node.skinner != nil {
                         var sum=SIMD4<Float>(repeating:0)
                         for k in 0..<4 where weights[i*4+k]>0 {
-                            let b=Int(indices[i*4+k])
+                            let b=indices.isEmpty ? 0 : Int(indices[i*4+k])
                             let matrix=matrices[b]
                             sum += weights[i*4+k]*(matrix*SIMD4(p,1))
                         }

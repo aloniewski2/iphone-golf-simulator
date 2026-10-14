@@ -71,3 +71,7 @@ Latest scope clarification: character-only execution. Preserve map geometry, tur
 Latest scope clarification: **clothes only**. Complete garment shape, fit, seams, fabric and garment deformation, with all clothing colors customizable. Preserve body/head/face/hair/skin assets, body bindings, rig and animation sources, lights, cameras and maps. Garment bindings and garment-only corrections remain in scope. Keep male polo first, show actual passing game proof, then continue garment by garment. Deferred character/face/arm/presentation stages are no longer part of this pass.
 
 Latest scope/stop instruction: finish the current male polo, reuse its successful system for the female polo and skirt, then stop. Do not proceed to the remaining male shorts, golf garments or broader character/map work in this pass.
+
+## Active handoff — 2026-10-13 Clothing V2 (all heroes)
+
+Adnan: "finish all, proceed" — rebuild every hero garment as a real, separately built garment (not the body surface pushed out) to match `ArtDir/hero/targets-2026-10-12/clothing-v2/01–04`. Male tennis polo is done and staged; everything else is open. Start with `work/clothing-v2/HANDOFF_ClothingV2_next.md` (process rules, status, pipeline, Unity/lobby install, tests, pitfalls). Stage only, no commits.

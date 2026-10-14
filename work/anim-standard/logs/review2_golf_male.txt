@@ -1,0 +1,26 @@
+free_Emote_Defeat 16 frames | g0 skin/skin through clothes: f2-11 x39; g1 hand/hand in body L: f2-11 x30; g2 hand/hand under cloth R: f1-12 x15; g3 hand/hand in body R: f12-12 x5
+free_Emote_FistPump 10 frames | g0 skin/skin through clothes: f2-5 x8; g1 hand/hand under cloth R: f6-6 x5; g2 lining/Kit_Top: f2-2 x1
+free_Emote_JumpJoy 13 frames | g0 skin/skin through clothes: f4-6 x7; g1 hand/hand in body R: f1-1 x5; g2 hand/hand under cloth R: f1-1 x5
+free_Emote_Shock 14 frames | g0 hand/hand in body L: f2-8 x35; g1 skin/skin through clothes: f2-8 x14; g2 hole/see-through Kit_Glove_L: f1-1 x1
+free_Emote_Slump 16 frames | g0 hand/hand under cloth R: f2-13 x60; g1 hand/hand in body L: f2-12 x55; g2 hand/hand in body R: f2-13 x55
+free_Emote_Stomp 14 frames | g0 hand/hand in body L: f5-10 x30; g1 hand/hand in body R: f10-11 x10; g2 hand/hand under cloth R: f10-11 x10; g3 skin/skin through clothes: f1-5 x9
+free_Emote_Victory 16 frames | g0 skin/skin through clothes: f1-10 x18
+free_Run 6 frames | g0 skin/skin through clothes: f0-5 x21; g1 hand/hand in body R: f0-5 x20; g2 hand/hand under cloth R: f0-5 x20; g3 hole/see-through Kit_Bottom: f0-5 x16; g4 hand/hand in body L: f2-3 x10
+free_Walk 7 frames | g0 hand/hand in body R: f0-6 x20; g1 hand/hand under cloth R: f0-6 x20; g2 hand/hand in body L: f2-4 x15; g3 hole/see-through Kit_Bottom: f0-6 x11; g4 skin/skin through clothes: f0-6 x7
+golf_Cheer 13 frames | 
+golf_Chip 16 frames | g0 hand/hands overlap L: f0-15 x80; g1 hand/hands overlap R: f0-15 x80; g2 hand/hand under cloth R: f0-15 x80; g3 skin/skin through clothes: f0-15 x42; g4 hole/see-through Kit_Bottom: f11-15 x5; g5 lining/Kit_Top: f0-8 x2; g6 hole/see-through Kit_Top: f11-11 x1
+golf_Drive 16 frames | g0 skin/skin through clothes: f0-15 x93; g1 hand/hands overlap L: f0-15 x80; g2 hand/hands overlap R: f0-15 x80; g3 hand/hand under cloth R: f0-15 x80; g4 hole/see-through Kit_Bottom: f10-15 x7
+golf_Emote_Scuba 13 frames | g0 skin/skin through clothes: f2-10 x19
+golf_Emote_Spike 13 frames | g0 hand/hand in body L: f7-10 x20; g1 hand/hand in body R: f8-11 x20; g2 hand/hand under cloth R: f8-11 x20; g3 skin/skin through clothes: f3-4 x4
+golf_Emote_Thrust 13 frames | g0 skin/skin through clothes: f3-8 x4
+golf_FistPump 16 frames | g0 skin/skin through clothes: f0-15 x86
+golf_HalfSwing 16 frames | g0 hand/hands overlap L: f0-15 x80; g1 hand/hands overlap R: f0-15 x80; g2 hand/hand under cloth R: f0-15 x80; g3 skin/skin through clothes: f0-15 x58; g4 hole/see-through Kit_Bottom: f10-15 x6
+golf_Idle 13 frames | 
+golf_Intro_BringIt 16 frames | g0 hole/see-through Kit_Top: f1-14 x2; g1 skin/skin through clothes: f9-9 x2; g2 hole/see-through Kit_Glove_L: f7-7 x1
+golf_Intro_Pushups 16 frames | g0 skin/skin through clothes: f1-13 x10
+golf_Intro_Wave 13 frames | 
+golf_IronSwing 16 frames | g0 skin/skin through clothes: f0-15 x87; g1 hand/hands overlap L: f0-15 x80; g2 hand/hands overlap R: f0-15 x80; g3 hand/hand under cloth R: f0-15 x80; g4 hole/see-through Kit_Bottom: f10-15 x6; g5 lining/Kit_Top: f0-0 x1
+golf_Putt 15 frames | g0 hand/hands overlap L: f0-14 x75; g1 hand/hands overlap R: f0-14 x75; g2 hand/hand under cloth R: f0-14 x75; g3 skin/skin through clothes: f0-14 x44; g4 lining/Kit_Top: f0-14 x10
+golf_RunForward 6 frames | g0 skin/skin through clothes: f0-5 x18; g1 hole/see-through Kit_Bottom: f1-4 x7
+golf_Walk 8 frames | g0 hole/see-through Kit_Bottom: f0-7 x14; g1 skin/skin through clothes: f0-7 x10
+golf_Wave 13 frames | 

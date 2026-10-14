@@ -1,0 +1,43 @@
+BackhandWide_Female_BackhandWide 9 frames | g0 hand/hand under cloth R: f1-4 x20; g1 hand/hand in body R: f2-4 x15; g2 lining/Kit_Top: f2-7 x12; g3 skin/skin through clothes: f2-4 x3
+Backhand_Female_BackhandArmCorrected 8 frames | g0 hand/hands overlap R: f1-5 x20; g1 lining/Kit_Top: f1-6 x15; g2 hand/hands overlap L: f6-6 x5; g3 hand/hand under cloth L: f6-6 x5
+EmoteDefeat_Female_Emote_Defeat 16 frames | g0 hand/hand in body L: f2-11 x30; g1 lining/Kit_Top: f3-11 x14; g2 hand/hand under cloth L: f2-2 x5; g3 hand/hand under cloth R: f2-2 x5
+EmoteFistPump_Female_Emote_FistPump 10 frames | g0 lining/Kit_Top: f1-6 x5; g1 skin/skin through clothes: f2-2 x2
+EmoteJumpJoy_Female_Emote_JumpJoy 13 frames | g0 lining/Kit_Top: f1-8 x21; g1 hand/hand under cloth R: f1-1 x5
+EmoteScuba_Female_Emote_Scuba 16 frames | g0 skin/skin through clothes: f2-13 x20; g1 lining/Kit_Top: f1-13 x18
+EmoteShock_Female_Emote_Shock 14 frames | g0 lining/Kit_Top: f1-10 x40; g1 hand/hand in body L: f2-8 x35; g2 hand/hand in body R: f2-8 x35; g3 skin/skin through clothes: f9-9 x1
+EmoteSlump_Female_Emote_Slump 16 frames | g0 hand/hand under cloth R: f2-13 x60; g1 hand/hand in body L: f2-12 x55; g2 hand/hand under cloth L: f2-12 x55; g3 hand/hand in body R: f2-12 x40
+EmoteSpike_Female_Emote_Spike 16 frames | g0 lining/Kit_Top: f2-13 x25; g1 skin/skin through clothes: f4-11 x22; g2 hand/hand under cloth L: f13-13 x5
+EmoteStomp_Female_Emote_Stomp 14 frames | g0 hand/hand in body L: f5-10 x30; g1 hand/hand under cloth L: f5-10 x30; g2 hand/hand under cloth R: f7-10 x20; g3 hand/hand in body R: f10-10 x5; g4 lining/Kit_Top: f5-10 x3; g5 skin/skin through clothes: f2-2 x2
+EmoteThrust_Female_Emote_Thrust 16 frames | g0 lining/Kit_Top: f1-13 x18; g1 skin/skin through clothes: f4-13 x15
+EmoteVictory_Female_Emote_Victory 16 frames | g0 lining/Kit_Top: f1-13 x39; g1 lining/Kit_Bottom: f3-3 x1; g2 skin/skin through clothes: f13-13 x1
+ForehandOpen_Female_ForehandOpen 7 frames | g0 lining/Kit_Top: f1-5 x13; g1 hand/hands overlap R: f5-5 x5; g2 skin/skin through clothes: f2-2 x1
+ForehandShort_Female_ForehandShort 7 frames | g0 lining/Kit_Top: f1-4 x9; g1 skin/skin through clothes: f1-3 x5; g2 hand/hands overlap L: f4-4 x5; g3 hand/hand under cloth L: f4-4 x5
+ForehandWide_Female_ForehandWide 9 frames | g0 lining/Kit_Top: f1-6 x9; g1 skin/skin through clothes: f2-6 x8
+Forehand_Female_ForehandArmCorrected 8 frames | g0 lining/Kit_Top: f0-6 x14; g1 hand/hand in body R: f1-1 x5; g2 hand/hand under cloth R: f1-1 x5
+Idle_Female_Idle 16 frames | 
+IntroBringIt_Female_Intro_BringIt 16 frames | g0 lining/Kit_Top: f2-12 x10
+IntroPushups_Female_Intro_Pushups 16 frames | g0 skin/skin through clothes: f1-13 x30; g1 lining/Kit_Top: f1-13 x24
+IntroWave_Female_Intro_Wave 13 frames | g0 lining/Kit_Top: f1-10 x24; g1 skin/skin through clothes: f1-10 x20
+Ready_Female_ReadyIdle 14 frames | 
+RecoverCenter_Female_RecoverCenter 6 frames | g0 lining/Kit_Top: f1-4 x6; g1 skin/skin through clothes: f1-4 x3
+Return_Female_Return 6 frames | g0 lining/Kit_Top: f1-4 x10; g1 hand/hands overlap R: f2-3 x10; g2 hand/hand in body R: f1-1 x5; g3 hand/hand under cloth R: f1-1 x5; g4 skin/skin through clothes: f1-1 x1
+RunForward_Female_RunForward 6 frames | g0 hand/hand under cloth R: f0-5 x20; g1 lining/Kit_Top: f0-5 x16; g2 skin/skin through clothes: f0-5 x6
+RunLeft_Female_RunLeft 6 frames | g0 hand/hand under cloth R: f0-5 x20; g1 lining/Kit_Top: f0-5 x14; g2 skin/skin through clothes: f0-5 x4
+RunRight_Female_RunRight 6 frames | g0 lining/Kit_Top: f0-5 x16; g1 hand/hand under cloth R: f0-5 x15; g2 skin/skin through clothes: f0-5 x6
+Serve_Female_Serve 16 frames | g0 lining/Kit_Top: f2-14 x40; g1 skin/skin through clothes: f2-12 x7; g2 hole/see-through Kit_Top: f2-4 x2
+SliceApproach_Female_SliceApproach 8 frames | g0 lining/Kit_Top: f1-6 x16; g1 hand/hand in body R: f2-3 x10; g2 hand/hand under cloth R: f2-3 x10; g3 skin/skin through clothes: f1-6 x7
+Smash_Female_Overhead 8 frames | g0 lining/Kit_Top: f1-6 x19
+SplitToBackhand_Female_SplitToBackhand 6 frames | g0 hand/hand in body R: f1-4 x20; g1 hand/hand under cloth R: f1-4 x20; g2 skin/skin through clothes: f1-4 x11; g3 lining/Kit_Top: f1-4 x7; g4 hand/hands overlap R: f4-4 x5
+SplitToForehand_Female_SplitToForehand 6 frames | g0 lining/Kit_Top: f1-3 x7; g1 skin/skin through clothes: f1-3 x4
+VolleyBackhand_Female_VolleyBackhand 6 frames | g0 lining/Kit_Top: f2-4 x5; g1 hand/hand in body R: f1-1 x5; g2 hand/hand under cloth R: f1-1 x5; g3 skin/skin through clothes: f2-2 x1
+Volley_Female_VolleyForehand 6 frames | g0 lining/Kit_Top: f1-4 x8; g1 skin/skin through clothes: f2-2 x1
+Walk_Female_Walk 8 frames | g0 lining/Kit_Top: f0-7 x20; g1 hand/hand under cloth L: f2-2 x5; g2 skin/skin through clothes: f4-4 x1
+free_Emote_Defeat 16 frames | g0 hand/hand in body L: f2-11 x30; g1 lining/Kit_Top: f3-11 x14; g2 hand/hand under cloth L: f2-2 x5; g3 hand/hand under cloth R: f2-2 x5
+free_Emote_FistPump 10 frames | g0 lining/Kit_Top: f1-6 x5; g1 skin/skin through clothes: f2-2 x2
+free_Emote_JumpJoy 13 frames | g0 lining/Kit_Top: f1-8 x21; g1 hand/hand under cloth R: f1-1 x5
+free_Emote_Shock 14 frames | g0 lining/Kit_Top: f1-10 x40; g1 hand/hand in body L: f2-8 x35; g2 hand/hand in body R: f2-8 x35; g3 skin/skin through clothes: f9-9 x1
+free_Emote_Slump 16 frames | g0 hand/hand under cloth R: f2-13 x60; g1 hand/hand in body L: f2-12 x55; g2 hand/hand under cloth L: f2-12 x55; g3 hand/hand in body R: f2-12 x40
+free_Emote_Stomp 14 frames | g0 hand/hand in body L: f5-10 x30; g1 hand/hand under cloth L: f5-10 x30; g2 hand/hand under cloth R: f7-10 x20; g3 hand/hand in body R: f10-10 x5; g4 lining/Kit_Top: f5-10 x3; g5 skin/skin through clothes: f2-2 x2
+free_Emote_Victory 16 frames | g0 lining/Kit_Top: f1-13 x39; g1 lining/Kit_Bottom: f3-3 x1; g2 skin/skin through clothes: f13-13 x1
+free_Run 6 frames | g0 hand/hand in body R: f0-5 x20; g1 hand/hand under cloth R: f0-5 x20; g2 hand/hand in body L: f2-3 x10; g3 hand/hand under cloth L: f2-3 x10; g4 lining/Kit_Top: f0-5 x9; g5 skin/skin through clothes: f2-4 x4
+free_Walk 7 frames | g0 hand/hand in body R: f0-6 x20; g1 hand/hand under cloth R: f0-6 x20; g2 hand/hand in body L: f2-4 x15; g3 hand/hand under cloth L: f2-4 x15; g4 lining/Kit_Top: f0-6 x3

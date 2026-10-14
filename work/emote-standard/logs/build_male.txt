@@ -1,0 +1,112 @@
+== jumpjoy racket
+REPLAY_MAX_MM 0.003
+INFO {"dz_to": 0.0745, "dz_td": 0.0537, "v_to": 2.4536, "v_td": -2.5353, "t_flight": 0.5086, "f_td": 30.2565, "f_bot": 33.8717, "apex": 0.3813}
+MIN_BODY_Z 0.0021 at 10 MIN_RACKET_Z 0.297
+BUILD_DONE male Emote_JumpJoy 63
+== jumpjoy none
+REPLAY_MAX_MM 0.003
+INFO {"dz_to": 0.0745, "dz_td": 0.0537, "v_to": 2.4536, "v_td": -2.5353, "t_flight": 0.5086, "f_td": 30.2565, "f_bot": 33.8717, "apex": 0.3813}
+MIN_BODY_Z 0.0021 at 10 MIN_RACKET_Z 0.297
+BUILD_DONE male Emote_JumpJoy_Free 63
+== fistpump racket
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0015 at 5 MIN_RACKET_Z 0.197
+BUILD_DONE male Emote_FistPump 48
+== fistpump none
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0015 at 5 MIN_RACKET_Z 0.197
+BUILD_DONE male Emote_FistPump_Free 48
+== stomp racket
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0021 at 15 MIN_RACKET_Z 0.17
+BUILD_DONE male Emote_Stomp 66
+== stomp none
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0021 at 15 MIN_RACKET_Z 0.17
+BUILD_DONE male Emote_Stomp_Free 66
+== slump racket
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0006 at 29 MIN_RACKET_Z 0.13
+BUILD_DONE male Emote_Slump 78
+== slump none
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0006 at 29 MIN_RACKET_Z 0.13
+BUILD_DONE male Emote_Slump_Free 78
+== shock racket
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0014 at 8 MIN_RACKET_Z 0.985
+BUILD_DONE male Emote_Shock 66
+== shock none
+REPLAY_MAX_MM 0.003
+INFO {}
+MIN_BODY_Z 0.0014 at 8 MIN_RACKET_Z 0.985
+BUILD_DONE male Emote_Shock_Free 66
+== victory racket
+REPLAY_MAX_MM 0.004
+INFO {"dz_to": 0.0745, "dz_td": 0.0537, "v_to": 2.6936, "f_td": 31.7027, "f_bot": 35.1762, "apex": 0.4443, "t_flight": 0.5568}
+MIN_BODY_Z 0.002 at 35 MIN_RACKET_Z 0.667
+BUILD_DONE male Emote_Victory 96
+== victory none
+REPLAY_MAX_MM 0.004
+INFO {"dz_to": 0.0745, "dz_td": 0.0537, "v_to": 2.6936, "f_td": 31.7027, "f_bot": 35.1762, "apex": 0.4443, "t_flight": 0.5568}
+MIN_BODY_Z 0.002 at 35 MIN_RACKET_Z 0.667
+BUILD_DONE male Emote_Victory_Free 96
+== defeat racket
+REPLAY_MAX_MM 0.003
+INFO {"kneel_dz": -0.4068, "kneel_df": 0.4991, "knee_f": 0.6079, "ankle_z": 0.1767}
+MIN_BODY_Z -0.0048 at 15 MIN_RACKET_Z 0.027
+BUILD_DONE male Emote_Defeat 100
+== defeat none
+REPLAY_MAX_MM 0.003
+INFO {"kneel_dz": -0.4068, "kneel_df": 0.4991, "knee_f": 0.6079, "ankle_z": 0.1767}
+MIN_BODY_Z -0.0048 at 15 MIN_RACKET_Z 0.027
+BUILD_DONE male Emote_Defeat_Free 100
+== walk none
+REPLAY_MAX_MM 0.003
+INFO {"max_leg_extension": 0.985, "clip_speed": 1.2, "period_frames": 32.0, "step_m": 0.64, "cadence_spm": 112.5, "hips_guard_mm": 17.5475}
+MIN_BODY_Z 0.0016 at 19 MIN_RACKET_Z 0.351
+BUILD_DONE male Walk_Free 33
+== run none
+REPLAY_MAX_MM 0.003
+INFO {"max_leg_extension": 0.985, "clip_speed": 3.5, "period_frames": 20.0, "step_m": 1.1667, "cadence_spm": 180.0, "hips_guard_mm": 30.4854}
+MIN_BODY_Z 0.0012 at 10 MIN_RACKET_Z 0.422
+BUILD_DONE male Run_Free 21
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_JumpJoy.fbx'
+FBX Emote_JumpJoy 63 2863804 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_JumpJoy.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_JumpJoy_Free.fbx'
+FBX Emote_JumpJoy_Free 63 2575500 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_JumpJoy_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_FistPump.fbx'
+FBX Emote_FistPump 48 2809900 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_FistPump.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_FistPump_Free.fbx'
+FBX Emote_FistPump_Free 48 2526284 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_FistPump_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Stomp.fbx'
+FBX Emote_Stomp 66 2873756 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Stomp.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Stomp_Free.fbx'
+FBX Emote_Stomp_Free 66 2584780 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Stomp_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Slump.fbx'
+FBX Emote_Slump 78 2924748 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Slump.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Slump_Free.fbx'
+FBX Emote_Slump_Free 78 2632828 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Slump_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Shock.fbx'
+FBX Emote_Shock 66 2872652 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Shock.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Shock_Free.fbx'
+FBX Emote_Shock_Free 66 2584444 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Shock_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Victory.fbx'
+FBX Emote_Victory 96 2987020 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Victory.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Victory_Free.fbx'
+FBX Emote_Victory_Free 96 2689084 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Victory_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Defeat.fbx'
+FBX Emote_Defeat 100 2991932 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Defeat.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Defeat_Free.fbx'
+FBX Emote_Defeat_Free 100 2693244 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Emote_Defeat_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Walk_Free.fbx'
+FBX Walk_Free 33 2468428 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Walk_Free.fbx
+FBX export starting... '/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Run_Free.fbx'
+FBX Run_Free 21 2435724 /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/emote-standard/fbx/Male_Run_Free.fbx

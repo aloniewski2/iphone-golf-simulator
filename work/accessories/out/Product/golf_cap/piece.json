@@ -1,0 +1,85 @@
+{
+ "item": "golf_cap",
+ "sex": "Product",
+ "slot": "Headwear",
+ "npz": "Kit_Cap_final.npz",
+ "tag": "Cap",
+ "pieces": [
+  "Kit_Cap"
+ ],
+ "piece": {
+  "name": "Kit_Cap",
+  "vertexCount": 6605,
+  "triangleCount": 11524,
+  "submeshes": [
+   {
+    "role": "Kit_Cap",
+    "start": 0,
+    "count": 11524
+   }
+  ],
+  "bones": [
+   "Headwear"
+  ],
+  "bindposes": [
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "metresPerUv": 0.6417469453496306,
+  "texture": 2048
+ },
+ "entries": {
+  "Kit_Cap": {
+   "name": "Kit_Cap",
+   "vertexCount": 6605,
+   "triangleCount": 11524,
+   "submeshes": [
+    {
+     "role": "Kit_Cap",
+     "start": 0,
+     "count": 11524
+    }
+   ],
+   "bones": [
+    "Headwear"
+   ],
+   "bindposes": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "metresPerUv": 0.6417469453496306,
+   "texture": 2048
+  }
+ },
+ "tags": {
+  "Kit_Cap": "Cap"
+ }
+}

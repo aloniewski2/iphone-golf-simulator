@@ -1,0 +1,19 @@
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:336: RuntimeWarning: divide by zero encountered in power
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:336: RuntimeWarning: invalid value encountered in multiply
+  gx = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(X / hw) ** (p - 1) / hw, 1 / hw)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:337: RuntimeWarning: divide by zero encountered in power
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/py/bag.py:337: RuntimeWarning: invalid value encountered in multiply
+  gy = np.where(Gv > 1e-9, Gv ** (1 - p) * np.abs(Y / hh) ** (p - 1) / hh, 1 / hh)
+{'lean': 8.0, 'rim': 1.4, 'ty': 0.2026, 'tz': 1.0704, 'worst_mm': 10.3, 'worst_clip': 'Walk', 'worst_frame': 2, 'top_y': 0.249, 'bottom_y': 0.14, 'bottom_z': 0.625}
+{'lean': 8.0, 'rim': 1.44, 'ty': 0.1959, 'tz': 1.1104, 'worst_mm': 10.1, 'worst_clip': 'Walk', 'worst_frame': 2, 'top_y': 0.242, 'bottom_y': 0.133, 'bottom_z': 0.665}
+{'lean': 8.0, 'rim': 1.48, 'ty': 0.1826, 'tz': 1.1504, 'worst_mm': 10.4, 'worst_clip': 'Idle', 'worst_frame': 14, 'top_y': 0.229, 'bottom_y': 0.12, 'bottom_z': 0.705}
+{'lean': 8.0, 'rim': 1.52, 'ty': 0.1898, 'tz': 1.1904, 'worst_mm': 10.5, 'worst_clip': 'Wave', 'worst_frame': 2, 'top_y': 0.236, 'bottom_y': 0.127, 'bottom_z': 0.745}
+{'lean': 10.0, 'rim': 1.4, 'ty': 0.2147, 'tz': 1.0723, 'worst_mm': 10.4, 'worst_clip': 'Walk', 'worst_frame': 2, 'top_y': 0.272, 'bottom_y': 0.137, 'bottom_z': 0.629}
+{'lean': 10.0, 'rim': 1.44, 'ty': 0.2074, 'tz': 1.1123, 'worst_mm': 10.0, 'worst_clip': 'Walk', 'worst_frame': 2, 'top_y': 0.265, 'bottom_y': 0.129, 'bottom_z': 0.669}
+{'lean': 10.0, 'rim': 1.48, 'ty': 0.2801, 'tz': 1.1523, 'worst_mm': 90.6, 'worst_clip': 'Walk', 'worst_frame': 2, 'top_y': 0.338, 'bottom_y': 0.202, 'bottom_z': 0.709}
+{'lean': 10.0, 'rim': 1.52, 'ty': 0.2032, 'tz': 1.1923, 'worst_mm': 10.5, 'worst_clip': 'Wave', 'worst_frame': 22, 'top_y': 0.261, 'bottom_y': 0.125, 'bottom_z': 0.749}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

@@ -15,9 +15,12 @@ namespace GolfArcade.Tests {
         static NetworkConfiguration Config(string sport="tennis",string local="a")=>new() {lobbyID="party",matchID="contest",hostID="a",localID=local,sport=sport,venue="resort",sets=1,games=3,seed=123,
             participants=new[] {new NetworkParticipant{id="a",name="Alice",seat=0},new NetworkParticipant{id="b",name="Bob",seat=1},new NetworkParticipant{id="c",name="Cora",seat=sport=="golf"?2:-1},new NetworkParticipant{id="d",name="Dan",seat=sport=="golf"?3:-1}}};
         static string Packet(NetworkConfiguration c,string kind,string payload="",string sender="a",string match=null)=>JsonUtility.ToJson(new NetworkPacket {lobbyID=c.lobbyID,matchID=match??c.matchID,sender=sender,kind=kind,payload=payload});
+        // These cover the host-rules tennis (NetworkTennisMatch); matches now play TennisGame.Versus (VersusPeerCapture covers that).
+        [SetUp] public void OldTennisRules(){SportsMultiplayer.TennisVersusEnabled=false;}
+        [TearDown] public void VersusTennisRules(){SportsMultiplayer.TennisVersusEnabled=true;}
         static void Clean(){SportsMultiplayer.TestOutput=null;SportsMultiplayer.Shutdown();if(SportsMultiplayer.Instance)Object.DestroyImmediate(SportsMultiplayer.Instance.gameObject);Time.timeScale=1;}
 
-        [UnityTest] public IEnumerator EquippedIntroChoiceDoesNotExtendThePresentationBudget() {
+        [UnityTest] public IEnumerator EquippedIntroChoicePlaysInTheIntroductionAndIsPlayedOut() {
             Clean();Time.captureFramerate=10;
             yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
             var game=Object.FindFirstObjectByType<TennisGame>();
@@ -25,17 +28,19 @@ namespace GolfArcade.Tests {
             Assert.True(game && game.Initialized);
             game.NativeControlled=true;game.AutoPlay=false;game.ManualSimulation=false;
             game.EquipEmotes(new[]{"scuba","wave","pushups"});
-            var presentation=game.GetComponent<TennisPresentation>();
 
             var driver=game.Player.GetComponentInChildren<HeroTennisDriver>();int before=driver.EmotesPlayed;
             try {
                 Assert.AreEqual("intro",game.EmoteWindow);
-                Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0));
-                for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
+                Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0),"one pick an intro");
+                // picked during the flyover: played when the player's own introduction comes up
+                for(int i=0;i<200 && driver.EmotesPlayed==before;i++)yield return null;
                 Assert.AreEqual(before+1,driver.EmotesPlayed);Assert.AreEqual("IntroPushups",driver.LastEmotePlayed);
-
-                for(int i=0;i<100 && game.IntroPlaying;i++)yield return null;
-                Assert.False(game.IntroPlaying,"A long equipped animation cannot extend the intro cap");
+                // and played out: the intro does not move on from under it
+                for(int i=0;i<100 && driver.EmoteActive;i++) { Assert.True(game.IntroPlaying,"the intro waits for the emote"); yield return null; }
+                Assert.False(driver.EmoteActive,"the emote finishes");
+                for(int i=0;i<200 && game.IntroPlaying;i++)yield return null;
+                Assert.False(game.IntroPlaying,"then the intro ends");
                 Assert.AreNotEqual("intro",game.EmoteWindow);
             } finally {Time.captureFramerate=0;Clean();}
         }
@@ -103,7 +108,7 @@ namespace GolfArcade.Tests {
         [UnityTest] public IEnumerator AuthorityRejectsObserverInputAndOldContest() {
             Clean();var c=Config();SportsMultiplayer.Configure(JsonUtility.ToJson(c));var net=SportsMultiplayer.Instance;
             try {
-                net.Receive(Packet(c,"run",sender:"c"));Assert.False(net.Running);net.Receive(Packet(c,"run"));Assert.True(net.Running);
+                net.Receive(Packet(c,"run",sender:"c"));Assert.False(net.Running);net.Receive(Packet(c,"run"));for(int i=0;i<30&&!net.Running;i++)yield return null;Assert.True(net.Running);   // (the start is scheduled on the shared clock)
                 var toss=new NetworkInput {action="toss",point=net.TennisState.point,contact=net.TennisState.contact,eventID=1,time=Time.realtimeSinceStartupAsDouble};
                 net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"c"));Assert.AreEqual("intro",net.TennisState.phase);
                 net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"a","older"));Assert.AreEqual("intro",net.TennisState.phase);
@@ -122,6 +127,7 @@ namespace GolfArcade.Tests {
             Clean();var c=Config(local:"b");var sent=new List<string>();SportsMultiplayer.TestOutput=sent.Add;SportsMultiplayer.Configure(JsonUtility.ToJson(c));var net=SportsMultiplayer.Instance;
             try {
                 var state=new NetworkTennisMatch().State;state.phase="rally";state.receiver=1;net.Receive(Packet(c,"snapshot",JsonUtility.ToJson(state)));net.Receive(Packet(c,"run"));
+                for(int i=0;i<30&&!net.Running;i++)yield return null;Assert.True(net.Running);   // (the start is scheduled on the shared clock)
                 SportsMultiplayer.Sample(new NativeSportsSession.Sample {flags=1,target=.5f,aim=.25f,power=.7f,swingStart=1,swing=1,time=Time.realtimeSinceStartupAsDouble},false);
                 var inputs=new List<NetworkInput>();foreach(var json in sent){var p=JsonUtility.FromJson<NetworkPacket>(json);if(p.kind=="input")inputs.Add(JsonUtility.FromJson<NetworkInput>(p.payload));}
                 Assert.AreEqual("move",inputs[0].action);Assert.AreEqual(-.5f,inputs[0].target);Assert.AreEqual(-.25f,inputs[0].aim);
@@ -131,7 +137,11 @@ namespace GolfArcade.Tests {
         [UnityTest] public IEnumerator ReliableGolfCheckpointIncludesFlightPathForLateViewer() {
             Clean();var c=Config("golf");var sent=new List<string>();SportsMultiplayer.TestOutput=sent.Add;SportsMultiplayer.Configure(JsonUtility.ToJson(c));var net=SportsMultiplayer.Instance;
             try {
-                net.Receive(Packet(c,"run"));net.Submit(new NetworkInput {action="swing",power=.5f});net.Receive(Packet(c,"snapshotRequest"));
+                net.Receive(Packet(c,"run"));
+                // the start is scheduled on the shared clock, and the hole opens with its intro before the first shot
+                for(int i=0;i<600&&!(net.Running&&net.GolfState.phase=="aim");i++)yield return null;
+                Assert.AreEqual("aim",net.GolfState.phase);
+                net.Submit(new NetworkInput {action="swing",power=.5f});net.Receive(Packet(c,"snapshotRequest"));
                 bool shot=false,checkpoint=false;
                 foreach(var json in sent){var p=JsonUtility.FromJson<NetworkPacket>(json);if(p.kind=="golfShot")shot=JsonUtility.FromJson<NetworkGolfShot>(p.payload).path.Length>1;if(p.kind=="snapshot"&&p.reliable){var s=JsonUtility.FromJson<NetworkGolfState>(p.payload);if(s.shot!=null)checkpoint=s.shot.path.Length>1;}}
                 Assert.True(shot);Assert.True(checkpoint);yield return null;
@@ -207,7 +217,9 @@ namespace GolfArcade.Tests {
                     Assert.True(bridge.Ready,"Real gameplay camera must render before launch finishes.");Assert.True(SportsMultiplayer.Active);Assert.False(SportsMultiplayer.Instance.Running);
                     bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session=session,action="resume"}));
                     Assert.False((bool)typeof(NativeSportsSession).GetField("paused",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(bridge));
-                    SportsMultiplayer.Instance.Receive(Packet(c,"run"));Assert.True(SportsMultiplayer.Instance.Running);
+                    SportsMultiplayer.Instance.Receive(Packet(c,"run"));
+                    for(int i=0;i<30&&!SportsMultiplayer.Instance.Running;i++)yield return null;   // (the start is scheduled on the shared clock)
+                    Assert.True(SportsMultiplayer.Instance.Running);
                     if(sport=="tennis"){
                         for(int i=0;i<900 && SportsMultiplayer.Instance.TennisState.phase=="intro";i++) yield return null;
                         Assert.AreEqual("serve",SportsMultiplayer.Instance.TennisState.phase);
@@ -218,7 +230,10 @@ namespace GolfArcade.Tests {
                         Assert.False(Object.FindFirstObjectByType<TennisGame>().AutoPlay);
                         yield return null;Assert.False(meter.gameObject.activeSelf);
                     }
-                    else {SportsMultiplayer.Instance.Submit(new NetworkInput {action="swing",power=.5f});Assert.AreEqual("flight",SportsMultiplayer.Instance.GolfState.phase);}
+                    else {
+                        for(int i=0;i<900&&SportsMultiplayer.Instance.GolfState.phase!="aim";i++)yield return null;   // the hole's intro first
+                        SportsMultiplayer.Instance.Submit(new NetworkInput {action="swing",power=.5f});Assert.AreEqual("flight",SportsMultiplayer.Instance.GolfState.phase);
+                    }
                     for(int i=0;i<10;i++)yield return null;
                     bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session=session,action="end"}));Assert.False(SportsMultiplayer.Active);
                 }

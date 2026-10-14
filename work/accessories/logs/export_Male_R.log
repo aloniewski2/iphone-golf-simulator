@@ -1,0 +1,7 @@
+[Male] piece verts 6426 tris 11621 S=0.3927 t=2s
+using fitted weights (glove_wfit)
+GloveR {'res': 2048, 'coverage': 0.606, 'metres_per_uv': 0.3927355114218389, 'px_per_mm': 5.21, 'ao_min': 0.119, 'ao_mean': 0.898}
+[Male] wrote /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/accessories/out/Male/golf_glove t=66s {"inner_clearance_min_mm": 0.7999977096915245, "inner_clearance_mean_mm": 1.1944887952798464, "inner_clearance_p98_mm": 4.000002043321729, "inner_clearance_max_mm": 9.001307189464569, "skin_vertices_not_enclosed": 22, "skin_vertices_tested": 1714, "tris": 11621, "verts": 6426, "metres_per_uv": 0.3927355114218389, "cover_spheres": 305, "px_per_mm": 5.21}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

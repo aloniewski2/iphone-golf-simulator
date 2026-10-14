@@ -1,0 +1,119 @@
+[
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 333.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f00_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.88888888888889,
+"y": 333.0833333333333,
+"r": 13.8,
+"area": 36,
+"img": "f01_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 332.0,
+"r": 13.8,
+"area": 35,
+"img": "f02_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 330.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f03_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 329.0,
+"r": 13.8,
+"area": 35,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 328.0,
+"r": 13.8,
+"area": 35,
+"img": "f05_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 327.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f06_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 328.0,
+"r": 13.8,
+"area": 35,
+"img": "f07_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 329.0,
+"r": 13.8,
+"area": 35,
+"img": "f08_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 330.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f09_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.8,
+"y": 332.0,
+"r": 13.8,
+"area": 35,
+"img": "f10_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.88888888888889,
+"y": 333.0833333333333,
+"r": 13.8,
+"area": 36,
+"img": "f11_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 140.7058823529412,
+"y": 333.4117647058824,
+"r": 13.15,
+"area": 34,
+"img": "f12_back"
+}
+]

@@ -1,0 +1,697 @@
+{
+  "Unity/ProjectSettings/QualitySettings.asset": {
+    "main": "138837f0befc43514148199a51423e547b6316b99a55cde68ee32742228a32fa",
+    "clone": "138837f0befc43514148199a51423e547b6316b99a55cde68ee32742228a32fa",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Return.fbx": {
+    "main": "db6fe6801a81967dfa61a7de042467e45b5d7036ff56289131dfd24c1e63a551",
+    "clone": "db6fe6801a81967dfa61a7de042467e45b5d7036ff56289131dfd24c1e63a551",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_ForehandShort.fbx": {
+    "main": "d3ebde0af1ce0ff89dc07fc0aef554881bed1e3b8dd342ecfd6ceb91cc0882b0",
+    "clone": "d3ebde0af1ce0ff89dc07fc0aef554881bed1e3b8dd342ecfd6ceb91cc0882b0",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Forehand.fbx": {
+    "main": "09a2ab0d4ca043415a993a3bb51dc1bb9ff629b6ac1d2807c89afe0e9fe6c269",
+    "clone": "09a2ab0d4ca043415a993a3bb51dc1bb9ff629b6ac1d2807c89afe0e9fe6c269",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Backhand.fbx": {
+    "main": "b4b62efb869e2d8c75e462b09dcce7970b7878206ba278b9b3ea50406d012360",
+    "clone": "b4b62efb869e2d8c75e462b09dcce7970b7878206ba278b9b3ea50406d012360",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_ForehandOpen.fbx": {
+    "main": "ad58c0910b017e0f53e7fa470896a7f52329f447189541982d852404f36c5b08",
+    "clone": "ad58c0910b017e0f53e7fa470896a7f52329f447189541982d852404f36c5b08",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_ReadyIdle.fbx": {
+    "main": "9bdc8912aa276fbbd0397225c9083d84d3c40a6d2fb822dbc741d2753fb07b19",
+    "clone": "9bdc8912aa276fbbd0397225c9083d84d3c40a6d2fb822dbc741d2753fb07b19",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Scuba.fbx": {
+    "main": "78fa4f5cfd31ec41b1d3d0e14829abe6407c33154dddc74908bd78220a021743",
+    "clone": "be7e69b7a62a6fbd9b24951c2d423b29af65a3cfeb54f6c0d8ae4cfff1e91af1",
+    "equal": false
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Walk.fbx": {
+    "main": "7ac87f3d994fd83ad45de5bb47078f85fbd149fd25ad0675bc050f9fe961b20a",
+    "clone": "7ac87f3d994fd83ad45de5bb47078f85fbd149fd25ad0675bc050f9fe961b20a",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Serve.fbx": {
+    "main": "49038bb44f54be5a6a75edfb873c5a927c359108a4c5bc48f9eef390cb38d7f2",
+    "clone": "49038bb44f54be5a6a75edfb873c5a927c359108a4c5bc48f9eef390cb38d7f2",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_RecoverCenter.fbx": {
+    "main": "1899f8a5004c13643a1b8ad76bc000219002ffa5e8700a0ca8f7ef25a172e5d9",
+    "clone": "1899f8a5004c13643a1b8ad76bc000219002ffa5e8700a0ca8f7ef25a172e5d9",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Spike.fbx": {
+    "main": "c5fe8f94eb864c01c40efc8aed813a99352bc311fa748f738fb5da044a867b62",
+    "clone": "c5fe8f94eb864c01c40efc8aed813a99352bc311fa748f738fb5da044a867b62",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_RunLeft.fbx": {
+    "main": "83ac839292b9755dd44410bce378562dc022af63b14a983f4cbed04140d1c30c",
+    "clone": "83ac839292b9755dd44410bce378562dc022af63b14a983f4cbed04140d1c30c",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_BackhandWide.fbx": {
+    "main": "06ba82f9e6194f5e89eb7983bb6f857607ce5b305ca5d3601c451a5ce50bfeb0",
+    "clone": "06ba82f9e6194f5e89eb7983bb6f857607ce5b305ca5d3601c451a5ce50bfeb0",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Intro_Pushups.fbx": {
+    "main": "37d3794e094a127a831ae713956278ab169dd543affbff800abe31fbae324b1b",
+    "clone": "37d3794e094a127a831ae713956278ab169dd543affbff800abe31fbae324b1b",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_RunRight.fbx": {
+    "main": "a612236850450cc0038c0bcee4ca902b98e6dc685da46ca23d92ffa3a7c97675",
+    "clone": "a612236850450cc0038c0bcee4ca902b98e6dc685da46ca23d92ffa3a7c97675",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_SplitToBackhand.fbx": {
+    "main": "5a41ea09493f936d7a5fede7f60f5fe4f99b4f6ca0778e17538f52e652f046f1",
+    "clone": "5a41ea09493f936d7a5fede7f60f5fe4f99b4f6ca0778e17538f52e652f046f1",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_SliceApproach.fbx": {
+    "main": "4173489e88bfc18cefd35edefe5056b2498d1b15a31c1644e0c9cd3a96cb157d",
+    "clone": "4173489e88bfc18cefd35edefe5056b2498d1b15a31c1644e0c9cd3a96cb157d",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Emote_Thrust.fbx": {
+    "main": "a2348c8b03ee1211029c2b5f76cf4586810f3855f6a977406f2e9a9a8f7d7ba1",
+    "clone": "b0c45632f9b529949f09300f94549a52c43a2ab64c4c598ece61d01be1b5d1d0",
+    "equal": false
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Intro_Wave.fbx": {
+    "main": "e01f4bfb8a35b2fe291547182270b6c21ac7f00f8fdd8622e8652e7135a418e0",
+    "clone": "e01f4bfb8a35b2fe291547182270b6c21ac7f00f8fdd8622e8652e7135a418e0",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_ForehandWide.fbx": {
+    "main": "ec6fd0e6c585e1b2b1b07689d67774b6c50729558fb1b611867c0ad377207926",
+    "clone": "ec6fd0e6c585e1b2b1b07689d67774b6c50729558fb1b611867c0ad377207926",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_VolleyForehand.fbx": {
+    "main": "8ee81aa656bbd8a1704c460363d8ffc054a689326e94b0288f6750eb50700288",
+    "clone": "8ee81aa656bbd8a1704c460363d8ffc054a689326e94b0288f6750eb50700288",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Overhead.fbx": {
+    "main": "7af5a85298ae21d0a1f522c68342cb822b302df557b82531d7d83b6bc761bfc0",
+    "clone": "7af5a85298ae21d0a1f522c68342cb822b302df557b82531d7d83b6bc761bfc0",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_VolleyBackhand.fbx": {
+    "main": "d1465c357afd04d9b9bc456e849e93bcb1a886f66b98e9bae2cc86ff53c36b2f",
+    "clone": "d1465c357afd04d9b9bc456e849e93bcb1a886f66b98e9bae2cc86ff53c36b2f",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_RunForward.fbx": {
+    "main": "712165a5908afd4803b00cceb6f466c60b61aaf99a0789866f45a58b2b075d35",
+    "clone": "712165a5908afd4803b00cceb6f466c60b61aaf99a0789866f45a58b2b075d35",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_SplitToForehand.fbx": {
+    "main": "9515d6088840c8eed7a46d42e63b41af06b74d73657f1ba7eb4e25974139a2a2",
+    "clone": "9515d6088840c8eed7a46d42e63b41af06b74d73657f1ba7eb4e25974139a2a2",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Male/Male_Intro_BringIt.fbx": {
+    "main": "faa807851339998ed317f325f85ecc174aed1294d22898e750d4b10c695a5759",
+    "clone": "faa807851339998ed317f325f85ecc174aed1294d22898e750d4b10c695a5759",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Backhand.fbx": {
+    "main": "d9e69529a444a3ab0fa7806606ed9e955bf4c2c39d36000d0beefc5af65b5a74",
+    "clone": "d9e69529a444a3ab0fa7806606ed9e955bf4c2c39d36000d0beefc5af65b5a74",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Scuba.fbx": {
+    "main": "8afc24522d93c8aee6268d31bd1fafec190902d9c7b57608d16c133bbd762909",
+    "clone": "7f08424d498fdef865829da5b601cb7ab1405f3e8632b077f7d79a3fa8f4b4fc",
+    "equal": false
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Return.fbx": {
+    "main": "9a151ac97496f3d06b4074e20c65888ee269cb07ffa0fb4fc079716fcbbd2976",
+    "clone": "9a151ac97496f3d06b4074e20c65888ee269cb07ffa0fb4fc079716fcbbd2976",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Walk.fbx": {
+    "main": "e9df398ae0caf7ef3fa54e0aa9e522929faa9165769d14b1f54ac1f776aabd49",
+    "clone": "e9df398ae0caf7ef3fa54e0aa9e522929faa9165769d14b1f54ac1f776aabd49",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_VolleyBackhand.fbx": {
+    "main": "a59728c426fdadc1f18b4ad6ce24a627d1b131473a7ad68776426ebc3f6e0ecf",
+    "clone": "a59728c426fdadc1f18b4ad6ce24a627d1b131473a7ad68776426ebc3f6e0ecf",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_RecoverCenter.fbx": {
+    "main": "885fa386ebf2f9a194df18ecb6566350472aa17b0ada77ace2f65715b89fcd36",
+    "clone": "885fa386ebf2f9a194df18ecb6566350472aa17b0ada77ace2f65715b89fcd36",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_ReadyIdle.fbx": {
+    "main": "00728b5f7ab2b14f2bb76ea836b358fe40e35d15f60978ddba11181ced3e6266",
+    "clone": "00728b5f7ab2b14f2bb76ea836b358fe40e35d15f60978ddba11181ced3e6266",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_VolleyForehand.fbx": {
+    "main": "7cd9b03a8d701fa156a9ea90a9d9a9404f8186f871dacf38cf3bc28cd199cab8",
+    "clone": "7cd9b03a8d701fa156a9ea90a9d9a9404f8186f871dacf38cf3bc28cd199cab8",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Spike.fbx": {
+    "main": "265fb37d2cad19afaeb16530fa6742636f29f9915d310931d290fe9188e4b3e1",
+    "clone": "265fb37d2cad19afaeb16530fa6742636f29f9915d310931d290fe9188e4b3e1",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Forehand.fbx": {
+    "main": "0b8f8f9aeec9d53f38180930be9a431fd4bc63e758a97a5c800146ad4b418792",
+    "clone": "0b8f8f9aeec9d53f38180930be9a431fd4bc63e758a97a5c800146ad4b418792",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_ForehandOpen.fbx": {
+    "main": "0c1ce8fdedeffefef56e1b03ec948a90b251e7b6bde88f889aec302c636b4d91",
+    "clone": "0c1ce8fdedeffefef56e1b03ec948a90b251e7b6bde88f889aec302c636b4d91",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Serve.fbx": {
+    "main": "6f83909bca49a050e93ca987a44a11f3912085500fc583bb38bc4ec6cbd5ed3f",
+    "clone": "6f83909bca49a050e93ca987a44a11f3912085500fc583bb38bc4ec6cbd5ed3f",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_ForehandShort.fbx": {
+    "main": "609a61ecc15c366cfe551d3b19c30415e2136579cc85341a46f9c08f5c1d23e9",
+    "clone": "609a61ecc15c366cfe551d3b19c30415e2136579cc85341a46f9c08f5c1d23e9",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_RunLeft.fbx": {
+    "main": "bf7f5128787ee8f75f2ce642eefc9466ba0353eceaf3ee8eedbd6dfec6fdcec6",
+    "clone": "bf7f5128787ee8f75f2ce642eefc9466ba0353eceaf3ee8eedbd6dfec6fdcec6",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Emote_Thrust.fbx": {
+    "main": "fd146cdebd547868476c7442cf5b5a63a50e9fc26707c4ad543773716c986b3b",
+    "clone": "5ec975addd594fac12eef1668c5b0c11fdd5c1ba36013ca6bbb5023483703ede",
+    "equal": false
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_ForehandWide.fbx": {
+    "main": "34b152a692ff303d0d5b68635d332462a1414c0662b90ada9f2d914bb762d761",
+    "clone": "34b152a692ff303d0d5b68635d332462a1414c0662b90ada9f2d914bb762d761",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_SplitToForehand.fbx": {
+    "main": "faac67f7bbb36f839f858760b5b1b542dba7f36fdae4d99376046d22cfa0befc",
+    "clone": "faac67f7bbb36f839f858760b5b1b542dba7f36fdae4d99376046d22cfa0befc",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Intro_BringIt.fbx": {
+    "main": "b6e9d804ba1d3d5e8c80fe69161a97cb0afa014714c8685073605b303c2750d7",
+    "clone": "b6e9d804ba1d3d5e8c80fe69161a97cb0afa014714c8685073605b303c2750d7",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_SplitToBackhand.fbx": {
+    "main": "6a8b1666270652bb0674b650489b685c67c420ab61e536888b15e4c7f9575007",
+    "clone": "6a8b1666270652bb0674b650489b685c67c420ab61e536888b15e4c7f9575007",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_SliceApproach.fbx": {
+    "main": "c419ad37186f8f549fcfe664ba84f371368ab2091b8155c8a5355015fa77c5e8",
+    "clone": "c419ad37186f8f549fcfe664ba84f371368ab2091b8155c8a5355015fa77c5e8",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Overhead.fbx": {
+    "main": "25ba66840a856e1035d9739e37310613449dbcc7b9266d9028ffb5b7fd050e70",
+    "clone": "25ba66840a856e1035d9739e37310613449dbcc7b9266d9028ffb5b7fd050e70",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Intro_Wave.fbx": {
+    "main": "f45322e05606058f84d05244ce1372eb1f0e78b8ec3c878c4ade34fdda9338bd",
+    "clone": "f45322e05606058f84d05244ce1372eb1f0e78b8ec3c878c4ade34fdda9338bd",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_Intro_Pushups.fbx": {
+    "main": "bfdb1e5f4cdfbf2b8eff50ce7c345ea0212ea76c427e16ad237169709fc58605",
+    "clone": "bfdb1e5f4cdfbf2b8eff50ce7c345ea0212ea76c427e16ad237169709fc58605",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_RunRight.fbx": {
+    "main": "88702c4f59892e79999a5053be563127e6fc9602bfe82aef181e2aaccf29180a",
+    "clone": "88702c4f59892e79999a5053be563127e6fc9602bfe82aef181e2aaccf29180a",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_RunForward.fbx": {
+    "main": "b0cc39e95341afe67bf592368449343d95a77d94d362b96bc808ede6c4f9c910",
+    "clone": "b0cc39e95341afe67bf592368449343d95a77d94d362b96bc808ede6c4f9c910",
+    "equal": true
+  },
+  "Unity/Assets/Characters/MatchHeroes/Female/Female_BackhandWide.fbx": {
+    "main": "5be88ec9047de9db2658f26df570b33f5d9a86ec5e2b27e881022503b3a4e047",
+    "clone": "5be88ec9047de9db2658f26df570b33f5d9a86ec5e2b27e881022503b3a4e047",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_10.fbx": {
+    "main": "19b0ef81d82c49cf97fb310a550392cf4578ac083cbfec795952f11f470b6727",
+    "clone": "19b0ef81d82c49cf97fb310a550392cf4578ac083cbfec795952f11f470b6727",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_07.fbx": {
+    "main": "813850bff6d107c0424dd9ca22eeaedf1ba9d3fc7ef6e9f0eed54bc67856c6ed",
+    "clone": "813850bff6d107c0424dd9ca22eeaedf1ba9d3fc7ef6e9f0eed54bc67856c6ed",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look.meta": {
+    "main": "41a20699151f8e472e53720c5325f67fd5691d7b9a37cd2aecf04874e9c2b6d9",
+    "clone": "41a20699151f8e472e53720c5325f67fd5691d7b9a37cd2aecf04874e9c2b6d9",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders.meta": {
+    "main": "ede04d5c50413ef7e10f520cbb55569c362cf3b6a15d29e3c25e3a096b9ce75a",
+    "clone": "ede04d5c50413ef7e10f520cbb55569c362cf3b6a15d29e3c25e3a096b9ce75a",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_07.fbx.meta": {
+    "main": "18e346e0e2f4c02be07ea608bccca0d4391776165bab69b375819b67f8a0a216",
+    "clone": "18e346e0e2f4c02be07ea608bccca0d4391776165bab69b375819b67f8a0a216",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_10.fbx.meta": {
+    "main": "bf25a2beedbd78c8a66d59df6b66e557cb8eaa59121def5e2413b6ace5045867",
+    "clone": "bf25a2beedbd78c8a66d59df6b66e557cb8eaa59121def5e2413b6ace5045867",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_08.fbx.meta": {
+    "main": "3f7371fed3b1eb0aa03a410ca0473197d7a6b6c4034550247e130050db4493b0",
+    "clone": "3f7371fed3b1eb0aa03a410ca0473197d7a6b6c4034550247e130050db4493b0",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_09.fbx.meta": {
+    "main": "65b4dd392ac3cb1929d9f456d8973b2a1900d80dac0c59d192a7c60d7edeac6c",
+    "clone": "65b4dd392ac3cb1929d9f456d8973b2a1900d80dac0c59d192a7c60d7edeac6c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/GolfLookVariants.mat": {
+    "main": "dc05b3378bfd1270e6bf4f679613a339255f3af989bcf3702ef4ccace8ee5974",
+    "clone": "dc05b3378bfd1270e6bf4f679613a339255f3af989bcf3702ef4ccace8ee5974",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/GolfLookVariants.mat.meta": {
+    "main": "b73ada8ce1e81c1bc5b90f4e363f21a31ef5cd7152d90e6634353ba8c89a8415",
+    "clone": "b73ada8ce1e81c1bc5b90f4e363f21a31ef5cd7152d90e6634353ba8c89a8415",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_08.fbx": {
+    "main": "746dd06f9f679a19129a289b1e6b0e8aabc285861bd0dff576b7a3cd781e4b7c",
+    "clone": "746dd06f9f679a19129a289b1e6b0e8aabc285861bd0dff576b7a3cd781e4b7c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/hole_09.fbx": {
+    "main": "9de2906f53cc243501a5e78965eef00956c29b4db7f9c6c44d5c76b30a03c67c",
+    "clone": "9de2906f53cc243501a5e78965eef00956c29b4db7f9c6c44d5c76b30a03c67c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfPlants.shader": {
+    "main": "13dba90b45116852e4913a95b9c22aa203880f20b80b5e5ce4aab1839ff2a8e5",
+    "clone": "13dba90b45116852e4913a95b9c22aa203880f20b80b5e5ce4aab1839ff2a8e5",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfPlants.shader.meta": {
+    "main": "38b2b1b0622a4197f3069bb5ebe77c413247c396e98a1a9598d5c04e3964379e",
+    "clone": "38b2b1b0622a4197f3069bb5ebe77c413247c396e98a1a9598d5c04e3964379e",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfSurf.shader.meta": {
+    "main": "610f81f0e96cdbc66358e08ac2adf31e318c49e73dc1e037492de88c643bf368",
+    "clone": "610f81f0e96cdbc66358e08ac2adf31e318c49e73dc1e037492de88c643bf368",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfLava.shader.meta": {
+    "main": "5adb25a7b88e31f687f4fa92a2a3f8801ff60c357c06b67ce75e5267df1dc0b7",
+    "clone": "5adb25a7b88e31f687f4fa92a2a3f8801ff60c357c06b67ce75e5267df1dc0b7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfSurf.shader": {
+    "main": "8058b43afdf7ad37eb923872e8f8d59e005b42afe7cf0d53440b4bf4e20213a0",
+    "clone": "8058b43afdf7ad37eb923872e8f8d59e005b42afe7cf0d53440b4bf4e20213a0",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Shaders/GolfLava.shader": {
+    "main": "f8198355e81729d701a52d3f768f6f9dc58ae5d1ba1ba6ee2bafd0d4fb8f4a44",
+    "clone": "f8198355e81729d701a52d3f768f6f9dc58ae5d1ba1ba6ee2bafd0d4fb8f4a44",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_N.png": {
+    "main": "9b33bd63d4d5e43efac83af4e2c452383c09edfc884d6751e0f0b3a378caafc8",
+    "clone": "af4d6028cf96090eded69fe53148bc05a351593d97d0361742a4e7fa6c3624cb",
+    "equal": false
+  },
+  "Unity/Assets/Resources/Course/Look/Rock_N.png.meta": {
+    "main": "9d468bd051a3391fc7b6bb7027d7e1e3d84c565089a5b046c2020f2f6df97bf5",
+    "clone": "9d468bd051a3391fc7b6bb7027d7e1e3d84c565089a5b046c2020f2f6df97bf5",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fall_C.png.meta": {
+    "main": "7ec5f9df17c8efe88b8dda0a64c4cd3a8dfbc9bca33660ec31eb394d36407fb5",
+    "clone": "7ec5f9df17c8efe88b8dda0a64c4cd3a8dfbc9bca33660ec31eb394d36407fb5",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_C.png.meta": {
+    "main": "2e7dbcad01146b666fc8cd219ecc5be29cc0cdd714a0210311f2651d7ec042ce",
+    "clone": "2e7dbcad01146b666fc8cd219ecc5be29cc0cdd714a0210311f2651d7ec042ce",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Path_N.png.meta": {
+    "main": "4a80d34fb8acc98a55155145416d305d374acf3023ef2d705afbfcb9d86473e3",
+    "clone": "4a80d34fb8acc98a55155145416d305d374acf3023ef2d705afbfcb9d86473e3",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Masonry_N.png": {
+    "main": "2721f010c6bcd3a7a787d0df5ef2b3d2b741f4b24be1c10ee09ff1308bb5851f",
+    "clone": "2721f010c6bcd3a7a787d0df5ef2b3d2b741f4b24be1c10ee09ff1308bb5851f",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/CliffDark_C.png": {
+    "main": "3ab47c9bc748bab91b43bbeb8a2c37f17271d01074f51068c1f47c13616e2a0e",
+    "clone": "3ab47c9bc748bab91b43bbeb8a2c37f17271d01074f51068c1f47c13616e2a0e",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Cliff_C.png": {
+    "main": "e3ee627d727d15b88b0ebd988de4048025b8f6dbe1cf624001e0d218a307b3fc",
+    "clone": "e3ee627d727d15b88b0ebd988de4048025b8f6dbe1cf624001e0d218a307b3fc",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Masonry_N.png.meta": {
+    "main": "8fab45d5f0f444ff06c9637f89dd7149989b2722a3ed441d6cd5a38653a988e8",
+    "clone": "8fab45d5f0f444ff06c9637f89dd7149989b2722a3ed441d6cd5a38653a988e8",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_E.png.meta": {
+    "main": "3c99d797f952495d897c0cb8215e55e7d6817a80d76d186857bcc02a21b275e3",
+    "clone": "3c99d797f952495d897c0cb8215e55e7d6817a80d76d186857bcc02a21b275e3",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_N.png.meta": {
+    "main": "477ded02de237f37e4629d4da5912ee0c046784550bd588bbff42a21c6d719c7",
+    "clone": "477ded02de237f37e4629d4da5912ee0c046784550bd588bbff42a21c6d719c7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fairway_C.png": {
+    "main": "4859549b33ae77f25e0517986340796192b50c3af6d1cd167c6cb830ebaa0841",
+    "clone": "4859549b33ae77f25e0517986340796192b50c3af6d1cd167c6cb830ebaa0841",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Green_C.png": {
+    "main": "98eb19c9e6c1932361dda1cb858b876ed0a61160a28a6ad7deb9a8e8748bbf69",
+    "clone": "98eb19c9e6c1932361dda1cb858b876ed0a61160a28a6ad7deb9a8e8748bbf69",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fairway_C.png.meta": {
+    "main": "22d8b62f30d077ebc077585fe5b3bedd7b706b5dc0d2f31c7155c707c7cbd3f5",
+    "clone": "22d8b62f30d077ebc077585fe5b3bedd7b706b5dc0d2f31c7155c707c7cbd3f5",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sand_C.png": {
+    "main": "3c14effb8288e0b35a7e8e6fac3b559915b8b9535899872ded179a9ac1dbc89d",
+    "clone": "3c14effb8288e0b35a7e8e6fac3b559915b8b9535899872ded179a9ac1dbc89d",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Green_C.png.meta": {
+    "main": "a7aa46bc7938637f00cf4b55a10fcde37844d4d1bfb663d5158f371c9bdd2521",
+    "clone": "a7aa46bc7938637f00cf4b55a10fcde37844d4d1bfb663d5158f371c9bdd2521",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_E.png": {
+    "main": "eec50c7115987378d2749c229295e664e554093f3df28d521c81167da70b1d09",
+    "clone": "eec50c7115987378d2749c229295e664e554093f3df28d521c81167da70b1d09",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_C.png.meta": {
+    "main": "578410b3c2d46597ea6fb9c6eee55ff9cc6445254b7bf4fd10584dbe5da5a6c7",
+    "clone": "578410b3c2d46597ea6fb9c6eee55ff9cc6445254b7bf4fd10584dbe5da5a6c7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fairway_N.png.meta": {
+    "main": "83780fb955cccaca11dc304163738878f38be18bf4bb937cfed5cf02dece0616",
+    "clone": "83780fb955cccaca11dc304163738878f38be18bf4bb937cfed5cf02dece0616",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Green_N.png.meta": {
+    "main": "b74105272c463716a3936d81d0efbc838cf01f6e8255ee32513d1818281467d4",
+    "clone": "b74105272c463716a3936d81d0efbc838cf01f6e8255ee32513d1818281467d4",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Path_C.png": {
+    "main": "6986eafc9a4311ccc5b4cf02cfeb0de295381d9c4d39717a58ad77ae6a91884b",
+    "clone": "6986eafc9a4311ccc5b4cf02cfeb0de295381d9c4d39717a58ad77ae6a91884b",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Masonry_C.png.meta": {
+    "main": "95decd281c7ef4dd89345cb73319e5e2e1f8e4e722eb338be62f5e5d35bd82c1",
+    "clone": "95decd281c7ef4dd89345cb73319e5e2e1f8e4e722eb338be62f5e5d35bd82c1",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rough_C.png": {
+    "main": "94822d7d8026b78ff726bdbf88449c58c08a92b00b41d3dfb421b266faf385cd",
+    "clone": "94822d7d8026b78ff726bdbf88449c58c08a92b00b41d3dfb421b266faf385cd",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Path_C.png.meta": {
+    "main": "18abcf2ceaed1ba8bc182d451301aae5529a2c288db4822bddbfb3530ab6a6a7",
+    "clone": "18abcf2ceaed1ba8bc182d451301aae5529a2c288db4822bddbfb3530ab6a6a7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rock_N.png": {
+    "main": "1d7baf487e450d773b2c74129dda732892a453e50554e59e215d881fc6de933f",
+    "clone": "1d7baf487e450d773b2c74129dda732892a453e50554e59e215d881fc6de933f",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_N.png.meta": {
+    "main": "6fa7348d6e92069f84920ddfd859c610560ddf848b8ef99ae16850bdda5ba240",
+    "clone": "6fa7348d6e92069f84920ddfd859c610560ddf848b8ef99ae16850bdda5ba240",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_C.png": {
+    "main": "0f3cbda2fda2b69d01ff42f53fa1fcefb61b8a9a9483db02f7e9220d7ba668c7",
+    "clone": "0f3cbda2fda2b69d01ff42f53fa1fcefb61b8a9a9483db02f7e9220d7ba668c7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rock_C.png.meta": {
+    "main": "6dc156e9363407304f41e2a86dacbca05af10dbb79635a74463f4ea80ce4c0de",
+    "clone": "6dc156e9363407304f41e2a86dacbca05af10dbb79635a74463f4ea80ce4c0de",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Scrub_C.png": {
+    "main": "6271b5e365940c0e474137705ddfc2de5ce8520731111411d71b2fdd80bf9710",
+    "clone": "6271b5e365940c0e474137705ddfc2de5ce8520731111411d71b2fdd80bf9710",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_E.png.meta": {
+    "main": "571037f9bda89023114cd9b38a1fa53008acceff10f0d81be87fe8cb5557adf2",
+    "clone": "571037f9bda89023114cd9b38a1fa53008acceff10f0d81be87fe8cb5557adf2",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Surf_C.png": {
+    "main": "5a3d90a6cdb5abb54cf88e118a67e15ff3b2ae3f8a22e3732d3962346f16f954",
+    "clone": "5a3d90a6cdb5abb54cf88e118a67e15ff3b2ae3f8a22e3732d3962346f16f954",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Plants_C.png.meta": {
+    "main": "a36b5d0b7aff659508f8e7342ed3cc984a3b5055c80af2f6d4cfd6b9cac0cf09",
+    "clone": "a36b5d0b7aff659508f8e7342ed3cc984a3b5055c80af2f6d4cfd6b9cac0cf09",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Scrub_N.png": {
+    "main": "83d9d5b2dd9b3d1ad4ef46dd892d861d6339db49794a1ac103c6e9cfb0de15cb",
+    "clone": "83d9d5b2dd9b3d1ad4ef46dd892d861d6339db49794a1ac103c6e9cfb0de15cb",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Surf_C.png.meta": {
+    "main": "7ca5af1c3031a7c9bb9677c5341f0eb944ed2877b1bd7cae6e8e188a8b18f3f1",
+    "clone": "7ca5af1c3031a7c9bb9677c5341f0eb944ed2877b1bd7cae6e8e188a8b18f3f1",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Cliff_N.png.meta": {
+    "main": "b561a17de86c2240b0f0f7aaa54c49034246e05b376fd2ae06c924f3f58536f2",
+    "clone": "b561a17de86c2240b0f0f7aaa54c49034246e05b376fd2ae06c924f3f58536f2",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Lava_N.png": {
+    "main": "3cea83f5fe5a2be8b11d2281baa143f221f1d28214c9a20101654910ca5a867f",
+    "clone": "3cea83f5fe5a2be8b11d2281baa143f221f1d28214c9a20101654910ca5a867f",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rock_C.png": {
+    "main": "0cde8a24402de653852644ba17b6adfeaede0b28a46009d21775f9179e3588ac",
+    "clone": "0cde8a24402de653852644ba17b6adfeaede0b28a46009d21775f9179e3588ac",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sand_N.png.meta": {
+    "main": "c17141286c992ed59f27e81cf4d686284b5a49a9b6af2a11e2b2738ff5bd7422",
+    "clone": "c17141286c992ed59f27e81cf4d686284b5a49a9b6af2a11e2b2738ff5bd7422",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sky_Crater_C.png.meta": {
+    "main": "d922f422807595ea9c6e911782a5aaeee4572d287296291f55290f7b1308994f",
+    "clone": "d922f422807595ea9c6e911782a5aaeee4572d287296291f55290f7b1308994f",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rough_N.png.meta": {
+    "main": "0f8914211ef967baa73a1c2f6ace332c86f23d8e3fac169bd540bb51f6a17276",
+    "clone": "0f8914211ef967baa73a1c2f6ace332c86f23d8e3fac169bd540bb51f6a17276",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rough_N.png": {
+    "main": "a93db1513303652bddfab05c682227c7a96d86038dc142339baa37ab6757c2fd",
+    "clone": "a93db1513303652bddfab05c682227c7a96d86038dc142339baa37ab6757c2fd",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Smoke_C.png": {
+    "main": "d2a7d68a826e0d283a8f7c8bec2afe2608c8e3bce2d5f95fcec11fc13a68fea3",
+    "clone": "d2a7d68a826e0d283a8f7c8bec2afe2608c8e3bce2d5f95fcec11fc13a68fea3",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Path_N.png": {
+    "main": "71b35996ccacb7ac451306ac26b7ba4143d8beabfbf167e3a3cff02969357026",
+    "clone": "71b35996ccacb7ac451306ac26b7ba4143d8beabfbf167e3a3cff02969357026",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Scrub_C.png.meta": {
+    "main": "911071213c2b92b3f41a4150fdad28280f012e070b4be8acb071b8e6f0d8370c",
+    "clone": "911071213c2b92b3f41a4150fdad28280f012e070b4be8acb071b8e6f0d8370c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/CliffDark_C.png.meta": {
+    "main": "73afc1bdf9257168213831074ea4c868a8705a18ca0fecc049ddc62484a5f270",
+    "clone": "73afc1bdf9257168213831074ea4c868a8705a18ca0fecc049ddc62484a5f270",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Scrub_N.png.meta": {
+    "main": "eecfbe5144434eacf66f6138088bf63030d35298d8f36a20cad6df982ae63e29",
+    "clone": "eecfbe5144434eacf66f6138088bf63030d35298d8f36a20cad6df982ae63e29",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sand_N.png": {
+    "main": "e0b2a41c23d9860d327f7aa166de34f681dd2c0903743cbf051b92efb70f7114",
+    "clone": "e0b2a41c23d9860d327f7aa166de34f681dd2c0903743cbf051b92efb70f7114",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Green_N.png": {
+    "main": "db6b4b3a562ccd4aaa5b581b536e416f016f0ee4e90d8ddeef74d7e378195051",
+    "clone": "db6b4b3a562ccd4aaa5b581b536e416f016f0ee4e90d8ddeef74d7e378195051",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/CliffDark_N.png.meta": {
+    "main": "e0fc50539d9f095a039d80c6e7668fc3a73f9981680eab7aa77faa8a0ca75e15",
+    "clone": "e0fc50539d9f095a039d80c6e7668fc3a73f9981680eab7aa77faa8a0ca75e15",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fairway_N.png": {
+    "main": "e426f911f893ab32982a1fe4a2b7b66063326b0c2e07aff892750c3a0339eb1e",
+    "clone": "e426f911f893ab32982a1fe4a2b7b66063326b0c2e07aff892750c3a0339eb1e",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Cliff_N.png": {
+    "main": "d07a2c4a3fb86108bd128ca5554f7c1bfe8e37d5d36118151b5501f4e6c5260c",
+    "clone": "d07a2c4a3fb86108bd128ca5554f7c1bfe8e37d5d36118151b5501f4e6c5260c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Plants_C.png": {
+    "main": "5fc472d97e5eb2aa87060b1f0f07d9d8e342ae7d8280425a7448f7d461098843",
+    "clone": "5fc472d97e5eb2aa87060b1f0f07d9d8e342ae7d8280425a7448f7d461098843",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/CliffDark_N.png": {
+    "main": "82e9c93d3870a279df7aa382efe145e1463de4df50539b4e888af2b6ee41db0b",
+    "clone": "82e9c93d3870a279df7aa382efe145e1463de4df50539b4e888af2b6ee41db0b",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Rough_C.png.meta": {
+    "main": "e199b178746fb7c5279ee01ad543ac0cf5c8f2f8b6a996b65cd9dd2a0bc865d0",
+    "clone": "e199b178746fb7c5279ee01ad543ac0cf5c8f2f8b6a996b65cd9dd2a0bc865d0",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Masonry_C.png": {
+    "main": "b7b4d18d9ce430fd64c1b5116e6551434ff758d031873faa46b6879920034bec",
+    "clone": "b7b4d18d9ce430fd64c1b5116e6551434ff758d031873faa46b6879920034bec",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_E.png": {
+    "main": "b15a7e7ecc4bd3c3157d1d5bf9029ed09130a9e1f92f01b45da0aae1c460217e",
+    "clone": "904477ec1e2d41872f3c189724bdd0afeca17c65b3a769bcde582ee5a1e7f68a",
+    "equal": false
+  },
+  "Unity/Assets/Resources/Course/Look/Cliff_C.png.meta": {
+    "main": "86a84beb03423ba8a36a3f64d968996cba072676f85736c2f380f7e75ab44e97",
+    "clone": "86a84beb03423ba8a36a3f64d968996cba072676f85736c2f380f7e75ab44e97",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Fall_C.png": {
+    "main": "41e8e60449911bf6b2babe7c876f76ddba2f64d4959a85464136604b3451379a",
+    "clone": "41e8e60449911bf6b2babe7c876f76ddba2f64d4959a85464136604b3451379a",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sand_C.png.meta": {
+    "main": "9804b1166dae157dcd9e6a06e7f4a0d82a4e6faed6e3bb7065acd07567fc0d99",
+    "clone": "9804b1166dae157dcd9e6a06e7f4a0d82a4e6faed6e3bb7065acd07567fc0d99",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Smoke_C.png.meta": {
+    "main": "bb5389d02bfe5c13ccc8c425e2f1e9f893e1ae36018a21581a4aee99e90c5c07",
+    "clone": "bb5389d02bfe5c13ccc8c425e2f1e9f893e1ae36018a21581a4aee99e90c5c07",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Sky_Crater_C.png": {
+    "main": "20c07b8f0366ae62a9f24dadd5d081e174a298ae67497de0122baeac3329940c",
+    "clone": "20c07b8f0366ae62a9f24dadd5d081e174a298ae67497de0122baeac3329940c",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Course/Look/Basalt_C.png": {
+    "main": "8d4c38701257a7feda16c1f7d14c0c5285be9666cc68109d120f290fac2215b2",
+    "clone": "34b4accf89de03e1e74c91c0f2b2152367e0627f07d2cb2415e2405cba32540d",
+    "equal": false
+  },
+  "Unity/Assets/ArtDirection/Hero01/HeroLookURP.asset": {
+    "main": "b3491133e0041a31615b10924c0d7aae3df99f61ea86454dd7b6590f4131474b",
+    "clone": "b3491133e0041a31615b10924c0d7aae3df99f61ea86454dd7b6590f4131474b",
+    "equal": true
+  },
+  "Unity/Assets/Characters/HeroBase/Rendering/HeroBaseStudioURP.asset": {
+    "main": "2fc4a836f24edf6a92f5470d56f213d1bcdffe0bab6eff9cda7e158eec852f93",
+    "clone": "2fc4a836f24edf6a92f5470d56f213d1bcdffe0bab6eff9cda7e158eec852f93",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Tennis/Rendering/TennisURP_Renderer.asset": {
+    "main": "19d990d15f3a3c61096048a608b97724f92782158cd23115c1734feb85f899b7",
+    "clone": "19d990d15f3a3c61096048a608b97724f92782158cd23115c1734feb85f899b7",
+    "equal": true
+  },
+  "Unity/Assets/Resources/Tennis/Rendering/TennisURP.asset": {
+    "main": "411827f7c1dcd165cb6e4266853a4c8fe2f456b6ea3eb33b6cc449c81e46cac8",
+    "clone": "411827f7c1dcd165cb6e4266853a4c8fe2f456b6ea3eb33b6cc449c81e46cac8",
+    "equal": true
+  },
+  "GolfArcade/Unity/CharacterAssets/MatchHero_Male.lzfse": {
+    "main": "c374680976e37e00e9de3f5cb6600a556052f500c518d27e3ab6f84d793622f0",
+    "clone": "c374680976e37e00e9de3f5cb6600a556052f500c518d27e3ab6f84d793622f0",
+    "equal": true
+  },
+  "GolfArcade/Unity/CharacterAssets/MatchHero_Female.lzfse": {
+    "main": "76ccacd0dda925f29037803077dff7963eca5d37746238d8967895b2ebc8904f",
+    "clone": "76ccacd0dda925f29037803077dff7963eca5d37746238d8967895b2ebc8904f",
+    "equal": true
+  }
+}

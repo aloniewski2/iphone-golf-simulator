@@ -25,6 +25,9 @@ namespace GolfArcade.Tennis
         public const string Prefix = "PoloMatrix_";
         const string ResourceRoot = "Tennis/KitsTailored/";
         static readonly Dictionary<string, Profile> profiles = new();
+        // The baked polos are hundreds of MB of blend shapes. Held here for the session: otherwise a scene load's
+        // unused-asset sweep drops them and the next hero re-reads one from disk (a ~2 s freeze of the plaza).
+        static readonly Dictionary<string, Mesh> bakedMeshes = new();
         readonly List<Mesh> owned = new();
         public MatchHeroLook look;
         Profile profile;
@@ -128,7 +131,7 @@ namespace GolfArcade.Tennis
             if (!component) component = hero.gameObject.AddComponent<TailoredPoloDeformation>();
             component.look = hero;
             if (source.GetBlendShapeIndex(Prefix + p.anchors[0].shape) >= 0) return source;
-            var baked = Resources.Load<Mesh>(Resource(source));
+            var baked = Baked(Resource(source));
 #if UNITY_EDITOR
             bool authoring = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(ProfileVariable(source)));
             if (authoring) baked = null;
@@ -144,6 +147,27 @@ namespace GolfArcade.Tennis
             component.owned.Add(result);
             Debug.Log($"[TailoredPoloDeformation] {result.name}: {result.vertexCount} vertices, {result.blendShapeCount} fixed shapes; body and skeleton unchanged");
             return result;
+        }
+
+        static Mesh Baked(string resource)
+        {
+            if (bakedMeshes.TryGetValue(resource, out var mesh) && mesh) return mesh;
+            mesh = Resources.Load<Mesh>(resource);
+            if (mesh) bakedMeshes[resource] = mesh;
+            return mesh;
+        }
+
+        /// Loads and holds every baked polo a match can show (both heroes, full and distance). The plaza calls this while it boots
+        /// behind its loading screen: a match building behind the plaza, and its first frames (garment LOD), then read none from disk.
+        /// (Not async: the loading thread holds the persistent-manager lock for a whole polo, stalling any load on the main thread.)
+        public static void LoadAll() { foreach (var _ in LoadAllSteps()) { } }
+        /// LoadAll one baked polo at a time (the Plaza's loading bar moves between them): yields how many are loaded, of 4.
+        public static IEnumerable<int> LoadAllSteps()
+        {
+            int loaded = 0;
+            foreach (var sex in new[] { "Female", "Male" })
+                foreach (var size in new[] { "Full", "Distance" })
+                { Baked(ResourceRoot + sex + "Polo" + size); yield return ++loaded; }
         }
 
         static Vector3 V(float[] a, int i) => new(a[i * 3], a[i * 3 + 1], a[i * 3 + 2]);

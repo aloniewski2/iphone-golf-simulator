@@ -4,7 +4,8 @@ using UnityEngine.Rendering;
 
 namespace GolfArcade.Course
 {
-    /// Artist near meshes and baked distant foliage share instanced submissions.
+    /// Artist meshes share instanced submissions at every distance (the baked distant foliage is kept
+    /// only as data: swapping it in by screen size popped as the camera flew down the hole).
     /// Only rendering changes: the authored placements and gameplay obstacles stay intact.
     public sealed class GolfCoastalInstances : MonoBehaviour
     {
@@ -17,6 +18,7 @@ namespace GolfArcade.Course
         readonly Plane[] planes=new Plane[6];
         public int LastDrawCalls {get;private set;}
         public int LastInstances {get;private set;}
+        const float ShadowMargin=40;
         public void Add(Mesh near,Mesh far,Material[] nearMaterials,Material[] farMaterials,Matrix4x4 local,bool tree)
         {
             if(!groups.TryGetValue(near,out var group)){
@@ -30,21 +32,20 @@ namespace GolfArcade.Course
         {
             LastDrawCalls=LastInstances=0;var camera=Camera.main;if(!camera)return;
             GeometryUtility.CalculateFrustumPlanes(camera,planes);
-            float lens=2*Mathf.Tan(camera.fieldOfView*Mathf.Deg2Rad*.5f);
             foreach(var group in groups.Values){
                 group.near.Clear();group.far.Clear();
                 foreach(var local in group.source){
                     var world=transform.localToWorldMatrix*local;var bounds=group.nearMesh.bounds;
                     var centre=world.MultiplyPoint3x4(bounds.center);
                     float radius=world.MultiplyVector(bounds.extents).magnitude;
-                    float distance=Vector3.Distance(camera.transform.position,centre);
-                    float relative=radius*2/Mathf.Max(1,distance*lens)*QualitySettings.lodBias;
-                    if(relative<(group.tree?.008f:.003f)||!GeometryUtility.TestPlanesAABB(planes,new Bounds(centre,Vector3.one*(radius*2+1))))continue;
-                    bool near=relative>(group.tree?.105f:.14f);
-                    var batch=near?group.near:group.far;batch.Add(world);
-                    if(batch.Count==1023)Draw(group,near,batch);
+                    // The artist mesh at every distance, culled by the view only (trees a little past
+                    // its edge too, so a shadow cast into the picture never pops in with its tree).
+                    float margin=group.tree?ShadowMargin:1;
+                    if(!GeometryUtility.TestPlanesAABB(planes,new Bounds(centre,Vector3.one*(radius*2+margin))))continue;
+                    group.near.Add(world);
+                    if(group.near.Count==1023)Draw(group,true,group.near);
                 }
-                Draw(group,true,group.near);Draw(group,false,group.far);
+                Draw(group,true,group.near);
             }
         }
         void Draw(Group group,bool near,List<Matrix4x4> matrices)

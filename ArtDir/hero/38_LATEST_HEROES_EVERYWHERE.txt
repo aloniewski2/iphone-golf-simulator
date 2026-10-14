@@ -1,0 +1,39 @@
+38 — LATEST HEROES AND CLOTHING EVERYWHERE (Claude Code)
+
+Repo: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator
+Goal: every place a hero is shown (SwiftUI/SceneKit menus, locker, lobby, loading/intro screens, tennis match, golf tee, golf party mode, emotes, previews) uses the newest character and clothing files. Nothing may fall back to an older hero without anyone noticing.
+
+HARD RULES
+- Stage only. No commit, push, stash, checkout, reset, or branch switch. Never `git add -A`. Install changes as hunk patches.
+- Don't delete legacy files. List them, and switch references away from them.
+- Proof renders must be captured with VISUAL_CHARACTER_SKIN_POLISH and VISUAL_BLINK_NORMAL_FIELD OFF.
+- Don't touch LockFeet in HeroTennisDriver.cs, the serve or walk animations, or shader files that other runs own.
+- The Mac has no `rg`, so use grep/find.
+
+STEP 1: BUILD THE INVENTORY (write work/hero-canon/INVENTORY.md)
+List every hero mesh, rig, outfit and texture with its full path, modified time, and every code reference to it (grep .swift and .cs, and exclude work/*/ copies and Payload/). Starting points that I found:
+- Tennis runtime: MatchHero_Male / MatchHero_Female, loaded in GolfArcade/Unity/MatchHeroData.swift (~line 129), plus Unity/Assets/Editor/MatchHeroKit.cs, MatchHeroBuild.cs and MatchHeroLockerExport.cs.
+- Newest tennis clothing (Oct 8): ArtDir/hero/clothing/tailored-2026-10-08/ contains Female_Skirt_Final.blend, Female_Polo_CuffFit*.blend and Male_Polo_CuffRebuilt*.blend, plus proof/ and GATE_RESULTS.md. Check whether these were actually exported into the MatchHero_* runtime assets or only proofed.
+- Newest golf kit: GolfArcade/Unity/CharacterAssets/GolfKitHero_{Male,Female}.lzfse/.json (Oct 7), _Rig.lzfse (Oct 8 3:35 PM), and MatchHero_GolfKit_* / MatchHero_Golf_*_Glove* textures.
+- Likely legacy, to be confirmed: GolfHero_* (Oct 5), HeroV4.bin/.json/_Atlas, HeroMenu, HeroSwing_*, HeroLounge (Sep 29), Custom* (Sep 25), Resources/StandardCharacters, and duplicate sources under work/menu-beta, work/golf-party and work/face-match. HeroV4 in CharacterModelPreview.swift also drives haircut options, so keep that identity data. Only the mesh paths should change.
+
+STEP 2: DECIDE THE CANON (write work/hero-canon/CANON.md)
+For each slot (tennis male, tennis female, golf male, golf female, menu/locker preview, lobby), name exactly one canonical asset with its path and date. If two candidates are close, stop and ask me rather than guessing.
+
+STEP 3: ONE SOURCE OF TRUTH
+Add a single registry, a Swift enum plus a C# static class with the same names, that maps slot to asset name. Route every loader through it. A lint/edit-mode test must fail if any .swift or .cs file outside the registry hard-codes a hero asset name (GolfHero_, HeroV4.bin, HeroMenu, StandardCharacters, Custom*, MatchHero_, GolfKitHero_).
+
+STEP 4: WIRE THE GAPS
+Point each screen at the registry. Golf tee and golf party mode must use GolfKitHero_*. Tennis and the menus must use MatchHero_* with the Oct 8 tailored outfit, if step 1 shows it isn't installed yet. Female hair must render, because the Oct 8 female proofs look bald. Find out why and fix it.
+
+GATES (binary, all must PASS; write work/hero-canon/GATE_RESULTS.md)
+G1 INVENTORY.md and CANON.md exist, and every slot has exactly one asset.
+G2 The registry lint/test fails on a planted hard-coded name, then passes once it's removed.
+G3 grep finds zero runtime references to legacy hero assets outside the registry (work/ copies excluded).
+G4 Proof sheet work/hero-canon/proof/: male and female in each of these, from the game camera: main menu, locker, lobby, loading/intro, tennis ready, tennis serve, golf address, golf follow-through, and one emote. That's 18 stills total, captured without the flags above.
+G5 Female hair is visible in every female still.
+G6 The clothing in the stills matches the Oct 8 tailored proofs (tennis) and the golf kit (golf), compared side by side in compare_*.png.
+G7 Unity edit-mode tests and the iOS build compile with no new failures compared with the baseline you recorded at the start.
+G8 ADNAN EYE: leave this PENDING and let me approve the proof sheet.
+
+REPORT: the canon table, which screens changed, which legacy references were removed, the gate results, and the paths to the proof sheets.

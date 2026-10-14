@@ -1,0 +1,172 @@
+[
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 250.93589743589743,
+"y": 314.35897435897436,
+"r": 23.55,
+"area": 78,
+"frac": 0.97,
+"img": "f04_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 167.9626168224299,
+"y": 195.62616822429908,
+"r": 14.450000000000001,
+"area": 107,
+"frac": 1.0,
+"img": "f05_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 230.77884615384616,
+"y": 195.7403846153846,
+"r": 13.8,
+"area": 104,
+"frac": 1.0,
+"img": "f05_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 219.19540229885058,
+"y": 195.45977011494253,
+"r": 13.15,
+"area": 87,
+"frac": 1.0,
+"img": "f05_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 179.81927710843374,
+"y": 195.81927710843374,
+"r": 13.15,
+"area": 83,
+"frac": 1.0,
+"img": "f05_right"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 233.0,
+"y": 282.6666666666667,
+"r": 10.0,
+"area": 12,
+"frac": 1.0,
+"img": "f06_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 186.06666666666666,
+"y": 284.4,
+"r": 10.0,
+"area": 15,
+"frac": 1.0,
+"img": "f06_right"
+},
+{
+"kind": "hand",
+"what": "hand in body R",
+"x": 157.884,
+"y": 345.234,
+"r": 18,
+"depth": 39.806,
+"n": 384,
+"img": "f01_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 158.477,
+"y": 343.184,
+"r": 18,
+"depth": 39.147,
+"n": 444,
+"img": "f01_front"
+},
+{
+"kind": "hand",
+"what": "hand in body R",
+"x": 239.467,
+"y": 337.128,
+"r": 18,
+"depth": 39.806,
+"n": 384,
+"img": "f01_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 238.597,
+"y": 334.248,
+"r": 18,
+"depth": 39.147,
+"n": 444,
+"img": "f01_back"
+},
+{
+"kind": "hand",
+"what": "hand in body R",
+"x": 171.449,
+"y": 335.752,
+"r": 18,
+"depth": 39.806,
+"n": 384,
+"img": "f01_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 167.867,
+"y": 333.452,
+"r": 18,
+"depth": 39.147,
+"n": 444,
+"img": "f01_left"
+},
+{
+"kind": "hand",
+"what": "hand in body R",
+"x": 231.203,
+"y": 346.839,
+"r": 18,
+"depth": 39.806,
+"n": 384,
+"img": "f01_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 235.061,
+"y": 344.119,
+"r": 18,
+"depth": 39.147,
+"n": 444,
+"img": "f01_right"
+},
+{
+"kind": "hand",
+"what": "hand in body R",
+"x": 116.603,
+"y": 154.411,
+"r": 22,
+"depth": 39.806,
+"n": 384,
+"img": "f01_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 123.422,
+"y": 149.897,
+"r": 22,
+"depth": 39.147,
+"n": 444,
+"img": "f01_handR"
+}
+]

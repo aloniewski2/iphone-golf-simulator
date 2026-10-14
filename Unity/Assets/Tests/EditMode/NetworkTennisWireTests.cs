@@ -99,7 +99,13 @@ namespace GolfArcade.Tests {
 
         [Test] public void EitherFormIsReadAndGarbageIsRefused() {
             var s = Filled(false);
-            Assert.AreEqual(s.tick, NetworkTennisWire.Read(JsonUtility.ToJson(s)).tick, "the full form is still accepted");
+            var full = NetworkTennisWire.Read(JsonUtility.ToJson(s));
+            Assert.AreEqual(s.tick, full.tick, "the full form is still accepted");
+            // The full form must carry the score too. Unity's JsonUtility leaves out a nested struct that is not [Serializable]
+            // (the sandbox writer does not), so this is the check that TennisMatch has the attribute.
+            Assert.AreEqual(s.score.PlayerGames, full.score.PlayerGames);
+            Assert.AreEqual(s.score.PlayerPoints, full.score.PlayerPoints);
+            CollectionAssert.AreEqual(s.score.SetScores, full.score.SetScores);
             Assert.AreEqual(s.tick, NetworkTennisWire.Read(Wire(s)).tick, "and so is the compact one");
             Assert.IsNull(NetworkTennisWire.Read("")); Assert.IsNull(NetworkTennisWire.Read("not json")); Assert.IsNull(NetworkTennisWire.Read(null));
             Assert.IsNull(NetworkTennisWire.Read("{\"v\":2,\"ph\":\"rally\"}"), "a compact update with no players is unusable");
@@ -123,6 +129,27 @@ namespace GolfArcade.Tests {
 
         [Test] public void TheHostsSelfTestPassesWithAWorkingJsonWriterAndReader() {
             Assert.IsTrue(NetworkTennisWire.SelfTest());
+        }
+
+        // JsonUtility silently leaves out any field whose type is not [Serializable]. TennisMatch was exactly that: the full update (the
+        // checkpoints, and the fallback when the compact form fails its self-test) reached the guest without its score, and the
+        // guest's scoreboard sat at 0-0 for the whole match. Unity's JsonUtility is not available to the plain-.NET harness, so this
+        // checks the rule itself: every type inside the full update, however deep, is [Serializable] (or a primitive, string, enum).
+        [Test] public void EveryTypeInsideTheFullUpdateIsSerializableOrJsonUtilityLeavesItOut() {
+            var checkedTypes = new HashSet<Type>();
+            void Walk(Type type, string path) {
+                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance)) {
+                    var t = field.FieldType;
+                    if (t.IsArray) t = t.GetElementType();
+                    else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>)) t = t.GetGenericArguments()[0];
+                    if (t.IsPrimitive || t.IsEnum || t == typeof(string)) continue;
+                    Assert.IsTrue(t.IsDefined(typeof(SerializableAttribute), false),
+                        path + "." + field.Name + " is a " + t.Name + " without [Serializable]: JsonUtility would leave it out of every full update");
+                    if (checkedTypes.Add(t)) Walk(t, t.Name);
+                }
+            }
+            Walk(typeof(NetworkTennisState), nameof(NetworkTennisState));
+            Assert.IsTrue(checkedTypes.Contains(typeof(TennisMatch)), "the walk reached the score");
         }
 
         [Test] public void TheBallIsRoundedToTheMillimetreAndNoFurther() {

@@ -27,6 +27,8 @@ Shader "GolfArcade/TennisCloth"
         _SheenStrength ("Sheen strength", Range(0,2)) = 0.55
         _SheenPower ("Sheen power", Range(1,8)) = 3
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Face culling", Float) = 2
+        // Bald-base pass: 1 = shoe sole line, 2 = sock cuff, drawn from the kit edge measurements in UV3 (HeroKitEdges). 0 = off.
+        [HideInInspector] _EdgeLines ("Kit edge lines", Float) = 0
     }
     HLSLINCLUDE
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -36,7 +38,7 @@ Shader "GolfArcade/TennisCloth"
                 float _WeaveTile, _WeaveAngle;
                 half _WeaveNormal, _WeaveThread, _SheenStrength, _SheenPower;
                 half _UseGarmentMaps, _NormalStrength, _AOStrength;
-                half _FabricVersion;
+                half _FabricVersion, _EdgeLines;
             CBUFFER_END
             TEXTURE2D(_NormalMap); SAMPLER(sampler_NormalMap);
             TEXTURE2D(_MaskMap); SAMPLER(sampler_MaskMap);
@@ -65,11 +67,11 @@ Shader "GolfArcade/TennisCloth"
             #include "HeroLighting.hlsl"
             #include "HeroCloth.hlsl"
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; float4 edge : TEXCOORD3; };
             struct Varyings
             {
                 float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 positionWS : TEXCOORD1; float3 normalWS : TEXCOORD2;
-                float4 tangentWS : TEXCOORD3; half fog : TEXCOORD4;
+                float4 tangentWS : TEXCOORD3; half fog : TEXCOORD4; float4 edge : TEXCOORD5;
             };
 
             Varyings vert (Attributes i)
@@ -80,9 +82,35 @@ Shader "GolfArcade/TennisCloth"
                 VertexNormalInputs nrm = GetVertexNormalInputs(i.normalOS, i.tangentOS);
                 o.normalWS = nrm.normalWS;
                 o.tangentWS = float4(nrm.tangentWS, i.tangentOS.w * GetOddNegativeScale());
-                o.uv = i.uv;
+                o.uv = i.uv; o.edge = i.edge;
                 o.fog = ComputeFogFactor(p.positionCS.z);
                 return o;
+            }
+
+            // Bald-base pass: kit edge lines from per-vertex measurements in metres (HeroKitEdges), anti-aliased with their own derivatives.
+            //   shoe: e.x = height above the sole's bottom (-1 on the upper), e.y = signed height above the sole's top edge, e.z = 1
+            //   sock: e.x = depth below the top opening, e.yz = direction round the leg, e.w = rib count
+            half KitEdgeLines(float4 e)
+            {
+                if (_EdgeLines < 1.5h) {
+                    if (e.z < .5) return 1;
+                    float wy = max(fwidth(e.y), 1e-5);
+                    // the line where the upper stands on the sole: the upper's first 1.5 mm and the sole's top 1 mm
+                    half seam = 1 - smoothstep(.00125 - wy, .00125 + wy, abs(e.y - .00025));
+                    half rubber = 0;
+                    if (e.x >= 0) { float wx = max(fwidth(e.x), 1e-5); rubber = 1 - smoothstep(.0065 - wx, .0065 + wx, e.x); }
+                    return (1 - .45h * seam) * (1 - .18h * rubber);
+                }
+                if (e.w < .5) return 1;
+                float wd = max(fwidth(e.x), 1e-5);
+                half cuff = 1 - smoothstep(.022 - wd, .022 + wd, e.x);
+                float phase = atan2(e.z, e.y) * e.w;
+                half ribFade = 1 - smoothstep(1.2, 2.6, fwidth(phase));      // fade the ribs before they alias (and on the atan seam)
+                half valley = .5h - .5h * cos(phase);
+                half ribs = 1 - .12h * valley * valley * ribFade * cuff;
+                half cuffLine = 1 - smoothstep(.0008 - wd, .0008 + wd, abs(e.x - .022));
+                half cuffTop = 1 - smoothstep(.0012 - wd, .0012 + wd, e.x);
+                return ribs * (1 - .32h * cuffLine) * (1 - .14h * cuffTop);
             }
 
             // Two symmetric comparison taps keep cloth shadow sampling within the six-fetch phone budget.
@@ -136,6 +164,8 @@ Shader "GolfArcade/TennisCloth"
                 half threadBreak = lerp(1, weave.b * 1.28h, _WeaveThread * fade);
                 if (id > 2.5h && id < 4.5h) threadBreak = 1;
                 half3 albedo = lerp(_BaseColor.rgb, _TrimColor.rgb, mask.b) * threadBreak;
+                // Applied to the finished colour: the white kit's highlight shoulder would otherwise roll a darker albedo back to white.
+                half edgeShade = _EdgeLines > .5h ? KitEdgeLines(i.edge) : 1;
                 half aoVisibility = lerp(1, max(mask.r, .70h), _AOStrength);
                 half ao = lerp(1, aoVisibility, .5h);
                 albedo *= lerp(.40h, 1, mask.g);
@@ -180,7 +210,7 @@ Shader "GolfArcade/TennisCloth"
                 } else {
                     colour = (_HeroFilmResponse>.5h ? colour*_Exposure : SoftShoulder(colour * _Exposure)) * lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
                 }
-                return half4(MixFog(HeroClothFinish(colour), i.fog), 1);
+                return half4(MixFog(HeroClothFinish(colour) * edgeShade, i.fog), 1);
             }
             ENDHLSL
         }

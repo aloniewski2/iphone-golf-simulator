@@ -12,7 +12,7 @@ enum SportsDiagnostics {
             if !FileManager.default.fileExists(atPath:url.path) { FileManager.default.createFile(atPath:url.path,contents:nil) }
             guard let handle=try? FileHandle(forWritingTo:url) else { return }
             defer { try? handle.close() }
-            if let end=try? handle.seekToEnd(), end>262144 {
+            if let end=try? handle.seekToEnd(), end>1_048_576 {   // 1 MB: at 256 KB the file held only the last few minutes of play
                 // Keep the most recent half rather than wiping the file: a full reset throws
                 // away the Ready and axis-lock lines that explain everything after them.
                 try? handle.seek(toOffset:end/2)
@@ -69,7 +69,14 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     private static let degradedGrace=2.0
 
     private let queue = DispatchQueue(label: "sports.motion", qos: .userInteractive)
-    private var motionTimer: DispatchSourceTimer?
+    /// CoreMotion delivers here, so every sample is handled on `queue` the moment it is measured.
+    private lazy var motionDelivery: OperationQueue = {
+        let delivery = OperationQueue()
+        delivery.underlyingQueue = queue; delivery.maxConcurrentOperationCount = 1
+        return delivery
+    }()
+    /// A sample this old when its turn comes is skipped: after a stall the queue catches up on the present, not the past.
+    private static let staleSample = 0.06
     private var lastSensorTimestamp = -Double.infinity
     private let ar = ARSession()
     private let motion = CMMotionManager()
@@ -203,25 +210,22 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         // anchored to the TV direction for a whole match.
         let frame: CMAttitudeReferenceFrame = CMMotionManager.availableAttitudeReferenceFrames().contains(.xArbitraryCorrectedZVertical)
             ? .xArbitraryCorrectedZVertical : .xArbitraryZVertical
-        // Keep one latest sensor value instead of queuing a callback for every 10 ms of
-        // motion. Dispatch timers coalesce overdue firings: after heavy work we read NOW,
-        // rather than spend the next second playing through a backlog of old arm motion.
-        motion.startDeviceMotionUpdates(using:frame)
+        // Every sample as it is measured (100 Hz, the iPhone's ceiling). A 10 ms timer reading the latest value beat
+        // against the sensor's own clock: a sample was sometimes read twice and sometimes never (two landed between
+        // ticks), so a fast swing could lose its peak, and each sample waited 0-10 ms for its tick. A stalled queue still
+        // never plays through a backlog of old arm motion: anything `staleSample` old by its turn is skipped.
         lastSensorTimestamp = -Double.infinity
-        let timer=DispatchSource.makeTimerSource(queue:queue)
-        timer.schedule(deadline:.now(),repeating:.milliseconds(10),leeway:.milliseconds(1))
-        timer.setEventHandler { [weak self] in
-            guard let self, let sample=self.motion.deviceMotion,
-                  sample.timestamp>self.lastSensorTimestamp else { return }
+        motion.startDeviceMotionUpdates(using:frame, to:motionDelivery) { [weak self] sample, _ in
+            guard let self, let sample, sample.timestamp>self.lastSensorTimestamp else { return }
             self.lastSensorTimestamp=sample.timestamp
+            guard ProcessInfo.processInfo.systemUptime-sample.timestamp <= Self.staleSample else { return }
             self.consume(sample)
         }
-        motionTimer=timer; timer.resume()
     }
 
     private func stopDeviceMotion() {
-        motionTimer?.cancel(); motionTimer=nil
         motion.stopDeviceMotionUpdates()
+        motionDelivery.cancelAllOperations()
     }
 
     // MARK: - Output to Unity
@@ -383,7 +387,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         let force=sqrt(a.x*a.x+a.y*a.y+a.z*a.z)
         let swing=filter.step(position:x,rate:speed,time:time,valid:tracked,allowSwingWhileUntracked:grace,acceleration:force)
         if time>=nextDiagnostic {
-            nextDiagnostic=time+1
+            nextDiagnostic=time+4
             SportsDiagnostics.write("sensor quality=\(current.rawValue) ar=\(trackingReason) frameAge=\(time-frameAt) reliableAge=\(time-reliableAt) ready=\(calibrated) axisLocked=\(gate.locked) phase=\(filter.phase.rawValue) delta=\(x-neutralX) target=\(filter.target) reachL=\(filter.reachLeft) reachR=\(filter.reachRight) seenL=\(filter.seenLeft) seenR=\(filter.seenRight) rate=\(speed) force=\(force) sign=\(sign) facing=\(strokeFacing)")
         }
         let q=sample.attitude.quaternion, g=sample.gravity
@@ -449,7 +453,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         guard tennis else { return }
         trace[traceHead]=(time,rate,force); traceHead=(traceHead+1)%trace.count
         if filter.onsets>traceOnsets { traceOnsets=filter.onsets; traceDue=time+0.4; traceOutcome="aborted" }
-        if let swing { traceOutcome=String(format:"confirmed power=%.2f",swing) }
+        if let swing { traceOutcome=String(format:"confirmed power=%.2f at=%@ afterPeak=%.0fms",swing,filter.confirmedAtPeak ? "peak" : "proof",(filter.confirmationTime-filter.peakTime)*1000) }
         guard time>=traceDue else { return }
         traceDue = .infinity
         var line="swingtrace outcome=\(traceOutcome) onsets=\(filter.onsets) aborts=\(filter.aborts) t,rate,force:"

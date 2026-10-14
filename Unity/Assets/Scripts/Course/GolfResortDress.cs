@@ -10,7 +10,7 @@ namespace GolfArcade.Course
     public sealed class GolfResortDress : MonoBehaviour
     {
         sealed class Template { public Mesh mesh; public Matrix4x4 toRoot; public int[] paletteSlots; public bool preserveLeafRim; }
-        sealed class Batch { public Material material; public string lodKind; public bool instanced; public readonly List<CombineInstance> pieces = new(), farPieces = new(); }
+        sealed class Batch { public Material material; public string lodKind; public bool instanced; public readonly List<CombineInstance> pieces = new(); }
         readonly List<Mesh> meshes = new();
         readonly List<Material> materials = new();
         readonly Dictionary<string, Batch> batches = new();
@@ -29,7 +29,14 @@ namespace GolfArcade.Course
 
         public static GolfResortDress Apply(GameObject model,Hole hole)
         {
-            var existing=model.GetComponent<GolfResortDress>(); if(existing)return existing;
+            GolfResortDress result=null;var steps=ApplySteps(model,hole,r=>result=r);while(steps.MoveNext()){}return result;
+        }
+
+        /// Apply a pass per step (it yields 0..1; `done` gets the dress, or null): a hole building behind a loading screen or
+        /// the plaza draws between the passes.
+        public static IEnumerator<float> ApplySteps(GameObject model,Hole hole,Action<GolfResortDress> done)
+        {
+            var existing=model.GetComponent<GolfResortDress>(); if(existing){done(existing);yield break;}
             if(hole.Number==12){
                 // Coastal pilot uses one authored island mass and a dedicated
                 // botanical composition; legacy scatter/erosion stays on other holes.
@@ -37,10 +44,10 @@ namespace GolfArcade.Course
                 coastal.ReplacedAuthoredPlants=true;
                 GolfCoastalCliff12.Apply(model,hole);
                 GolfCoastalBotany.Apply(model,hole);
-                GolfCoastalTurf.Apply(model,hole);coastal.CoastalWater(model);return coastal;
+                GolfCoastalTurf.Apply(model,hole);coastal.CoastalWater(model);done(coastal);yield break;
             }
             var kit=Resources.Load<GameObject>("Course/Resort/BotanicalKit");
-            if(!kit){Debug.LogError("Missing golf botanical kit");return null;}
+            if(!kit){Debug.LogError("Missing golf botanical kit");done(null);yield break;}
             var owner=model.AddComponent<GolfResortDress>();owner.hole=hole;
             foreach(var mf in kit.GetComponentsInChildren<MeshFilter>())
                 if(mf.sharedMesh&&mf.sharedMesh.isReadable) {
@@ -49,10 +56,17 @@ namespace GolfArcade.Course
                     for(int i=0;i<slots.Length;i++)slots[i]=i<sourceMaterials.Length&&sourceMaterials[i]?PaletteIndex(sourceMaterials[i].name):Mathf.Min(i,6);
                     owner.templates[mf.name]=new Template{mesh=mf.sharedMesh,toRoot=kit.transform.worldToLocalMatrix*mf.transform.localToWorldMatrix,paletteSlots=slots};
                 }
-            if(owner.templates.Count==0){Debug.LogError("Golf botanical kit requires readable meshes");return owner;}
-            owner.InstallTempleCanopyCandidate();owner.CreateMaterials();owner.ReplaceMarkers();owner.ScatterRough();owner.DressShore();owner.BuildCliffForms();GolfCliffSculpt.Apply(model,hole);if(hole.Number is >=1 and <=3)owner.DressMeadow();owner.BuildBatches();if(hole.Number==9)owner.CoastalWater(model);
+            if(owner.templates.Count==0){Debug.LogError("Golf botanical kit requires readable meshes");done(owner);yield break;}
+            owner.InstallTempleCanopyCandidate();owner.CreateMaterials();
+            var markers=owner.ReplaceMarkersSteps();while(markers.MoveNext())yield return .2f*markers.Current;
+            yield return .2f;
+            owner.ScatterRough();yield return .4f;
+            owner.DressShore();yield return .55f;
+            owner.BuildCliffForms();yield return .7f;
+            GolfCliffSculpt.Apply(model,hole);if(hole.Number is >=1 and <=3)owner.DressMeadow();yield return .85f;
+            owner.BuildBatches();if(hole.Number==9)owner.CoastalWater(model);
             Debug.Log($"[GolfResortDress] hole {hole.Number}: {owner.plants} botanical assets, {owner.triangles} triangles in {owner.batches.Count} bounded batches; original physics retained");
-            return owner;
+            done(owner);
         }
 
         // Accepted temple pilot; other tropical courses remain explicit review candidates.
@@ -211,10 +225,8 @@ namespace GolfArcade.Course
             var world=transform.worldToLocalMatrix*Matrix4x4.TRS(point,Quaternion.Euler(0,angle,0),scale);
             var matrix=world*template.toRoot;
             bool lod=(kind=="PALM"||kind=="PINE"||kind=="OAK")&&!overrideMaterial&&templates.ContainsKey(kind+"_FAR");
-            Mesh far=null;Matrix4x4 farMatrix=matrix;
-            if(lod){var low=templates[kind+"_FAR"];far=PrepareAsset(kind+"_FAR",low,scale,true);farMatrix=world*low.toRoot;}
-            // Small tree cells get genuine runtime LOD: foreground articulated
-            // crowns, cheaper distant crowns, one palette/material per cell.
+            // Small tree cells: articulated crowns at every distance, one palette/material per cell
+            // (the kit's _FAR crowns are no longer swapped in).
             bool instanced=!overrideMaterial&&(kind.StartsWith("SHRUB_")||kind=="FERN"||kind.StartsWith("FLOWER_"));
             // Windmill's rigid broadleaf canopy shares one palette and no local
             // light selection; large batches retain its exact authored geometry.
@@ -224,24 +236,25 @@ namespace GolfArcade.Course
                 var material=overrideMaterial?overrideMaterial:botanical;string key=$"{material.GetInstanceID()}/{x}/{z}/{(lod||instanced?kind:string.Empty)}";
                 if(!batches.TryGetValue(key,out var batch)){batch=new Batch{material=material,lodKind=lod?kind:null,instanced=instanced};batches.Add(key,batch);}
                 batch.pieces.Add(new CombineInstance{mesh=asset,subMeshIndex=sub,transform=matrix});triangles+=cost;
-                if(lod)batch.farPieces.Add(new CombineInstance{mesh=far,subMeshIndex=0,transform=farMatrix});
             }
             plants++;
         }
 
-        void ReplaceMarkers()
+        /// ReplaceMarkers a few milliseconds at a time (it yields how far through the markers it is).
+        IEnumerator<float> ReplaceMarkersSteps()
         {
             // All source tree/bush visual meshes are replaced only when the source includes
             // complete plant foot markers. No collider, source MeshFilter or active flag changes.
             var markers=new List<Transform>();
             foreach(var t in GetComponentsInChildren<Transform>(true))
                 if(t.name.StartsWith("PLANT_")&&t.name.Split('_').Length>=5)markers.Add(t);
-            if(markers.Count==0){ReplaceUnmarkedTrees();return;}
+            if(markers.Count==0){var unmarked=ReplaceUnmarkedTreesSteps();while(unmarked.MoveNext())yield return unmarked.Current;yield break;}
             bool tropical=hole.Number==19||hole.Number==16||hole.Number>=21;
             var rng=new System.Random(7700+hole.Number);
-            int trees=0;
-            foreach(var t in markers){
-                var bits=t.name.Split('_');if(!int.TryParse(bits[3],out int cm)||!int.TryParse(bits[4],out int reach))continue;
+            int trees=0;var slice=System.Diagnostics.Stopwatch.StartNew();
+            for(int m=0;m<markers.Count;m++){
+                if(slice.ElapsedMilliseconds>20){yield return (float)m/markers.Count;slice.Restart();}
+                var t=markers[m];var bits=t.name.Split('_');if(!int.TryParse(bits[3],out int cm)||!int.TryParse(bits[4],out int reach))continue;
                 float sourceScale=(Mathf.Abs(t.lossyScale.x)+Mathf.Abs(t.lossyScale.y)+Mathf.Abs(t.lossyScale.z))/3;
                 float height=cm*.01f*sourceScale,radius=reach*.01f*sourceScale;
                 float angle=(float)rng.NextDouble()*360;
@@ -266,23 +279,25 @@ namespace GolfArcade.Course
             }
         }
 
-        void ReplaceUnmarkedTrees()
+        IEnumerator<float> ReplaceUnmarkedTreesSteps()
         {
             // Legacy islands lack marker empties. Reuse the exact already-extracted obstacle
             // footprint and height so replacement foliage reads where the ball collides.
             bool hasTrees=false;
             foreach(var mf in GetComponentsInChildren<MeshFilter>(true))
                 if(mf.name.StartsWith("TREE")||mf.name.StartsWith("SHRUB")){hasTrees=true;break;}
-            if(!hasTrees||hole.Obstacles==null)return;
-            int count=0;var rng=new System.Random(3051+hole.Number);
-            foreach(var o in hole.Obstacles){
+            if(!hasTrees||hole.Obstacles==null)yield break;
+            int count=0;var rng=new System.Random(3051+hole.Number);var slice=System.Diagnostics.Stopwatch.StartNew();
+            for(int i=0;i<hole.Obstacles.Length;i++){
+                if(slice.ElapsedMilliseconds>20){yield return (float)i/hole.Obstacles.Length;slice.Restart();}
+                var o=hole.Obstacles[i];
                 if(o.Kind!=ObstacleKind.Tree&&o.Kind!=ObstacleKind.Bush)continue;
                 float height=(float)(o.Top-o.Base),radius=(float)o.Radius;
                 if(height<.15f||radius<.2f)continue;
                 string kind=o.Kind==ObstacleKind.Bush?"SHRUB_"+(count%2):hole.Number==14?"CANOPY":"PINE";
                 Add(kind,new Vector3((float)o.X,(float)o.Base,(float)o.D),new Vector3(radius,height,radius),(float)rng.NextDouble()*360);count++;
             }
-            if(count==0)return;
+            if(count==0)yield break;
             foreach(var r in GetComponentsInChildren<MeshRenderer>(true))
                 if(r.name.StartsWith("TREE")||r.name.StartsWith("SHRUB"))r.enabled=false;
             ReplacedAuthoredPlants=true;
@@ -479,11 +494,9 @@ namespace GolfArcade.Course
                     instances.AddComponent<GolfBotanicalInstances>().Initialize(batch.material,batch.pieces);continue;
                 }
                 if(string.IsNullOrEmpty(batch.lodKind)){MakeBatch(transform,name,batch.pieces,batch.material);continue;}
-                var go=new GameObject(name+"_"+batch.lodKind+"_LOD");go.transform.SetParent(transform,false);
-                var high=MakeBatch(go.transform,"RESORT_"+batch.lodKind+"_NEAR",batch.pieces,batch.material);
-                var low=MakeBatch(go.transform,"RESORT_"+batch.lodKind+"_FAR",batch.farPieces,batch.material);
-                var lod=go.AddComponent<LODGroup>();lod.fadeMode=LODFadeMode.None;
-                lod.SetLODs(new[]{new LOD(.30f,new Renderer[]{high}),new LOD(.015f,new Renderer[]{low})});lod.RecalculateBounds();
+                // Tree cells keep their full crowns at every distance (no LOD swap or cull as the
+                // camera nears them); the small cells still let the view frustum cull them.
+                MakeBatch(transform,name+"_"+batch.lodKind+"_NEAR",batch.pieces,batch.material);
             }
         }
         void OnDestroy(){foreach(var mesh in meshes)if(mesh)Destroy(mesh);foreach(var m in materials)if(m)Destroy(m);}

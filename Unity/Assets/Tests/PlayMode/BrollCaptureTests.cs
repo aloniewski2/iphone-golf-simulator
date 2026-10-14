@@ -9,8 +9,8 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// Game footage for the menus' b-roll and for review: numbered 30 fps frames in
-    /// Library/Captures/broll/<name>, encoded to MenuVideo/<sport>-game.mp4 outside Unity.
+    /// Game footage for review and the course picker's clips: numbered 30 fps frames in
+    /// Library/Captures/broll/<name>, encoded outside Unity (Tools/course_clips.sh for the course clips).
     /// Explicit: for review only.
     public class BrollCaptureTests
     {
@@ -70,9 +70,9 @@ namespace GolfArcade.PlayTests
             yield return Record(Fresh("golf-game"), 30 * 10);
         }
 
-        /// The course screen's circling shot of each course's holes (the old COURSE screen), for the
+        /// The course screen's circling shot of every hole of each course (the old COURSE screen), for the
         /// app's course picker: Library/Captures/broll/course-<key>/<hole>/f####.jpg, 1280x720,
-        /// eight seconds a hole; Tools/course_clips.sh cuts them into MenuArt/course-<key>.mp4.
+        /// five seconds a hole; Tools/course_clips.sh cuts them into MenuArt/course-golf-<key>.mp4.
         [UnityTest, Explicit, Timeout(1800000)] public IEnumerator CaptureCourseOrbits()
         {
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
@@ -82,8 +82,8 @@ namespace GolfArcade.PlayTests
             yield return null;
             var shots = new (string key, int[] holes)[]
             {
-                ("cliffside", new[] { 12, 13, 7 }), ("postcards", new[] { 8, 9, 10 }),
-                ("wildisles", new[] { 17, 19, 20 }), ("magma", new[] { 21, 22, 23 }),
+                ("cliffside", new[] { 7, 8, 9, 12, 15 }), ("wildisles", new[] { 13, 14, 17, 18, 19, 20 }),
+                ("magma", new[] { 10, 16, 21, 22, 23 }),   // = Course.Cliffside() / WildIsles() / Magma()
             };
             var hidden = new System.Collections.Generic.List<Canvas>();
             // COURSE_CLIP_HOLES=21,22 films just those holes again
@@ -105,7 +105,7 @@ namespace GolfArcade.PlayTests
                     Time.captureFramerate = 30;
                     try
                     {
-                        for (int i = 0; i < 30 * 8; i++)
+                        for (int i = 0; i < 30 * 5; i++)
                         {
                             golf.GameplayCamera.aspect = 1280f / 720f;
                             yield return new WaitForEndOfFrame();

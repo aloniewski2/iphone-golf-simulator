@@ -308,6 +308,8 @@ struct IslandSettingsScreen: View {
         case "hand": return Item(title: "Plays", detail: "Which hand holds the racket.", control: .choice(["Right", "Left"], p?.handedness == .left ? 1 : 0))
         case "relock": return Item(title: "Court direction", detail: "Point at the TV again at the start of your next match.", control: .action("Set again", danger: false))
         case "timing": return Item(title: "Swing timing check", detail: "Re-measure your TV's picture delay at the start of your next match.", control: .action("Run next match", danger: false))
+        case "swingPrediction": return Item(title: "Swing prediction", detail: "A strong swing counts the moment it peaks, not a moment after. From your next match; turn off to compare.", control: .toggle(s.swingPrediction))
+        case "fastInput": return Item(title: "120 Hz swing input", detail: "Reads your swing twice as often during a match on a TV, which stays at a steady 60. From your next match; turn off to compare.", control: .toggle(s.fastInput))
         case let g where g.hasPrefix("guide-"):
             let deck = GuideDeck(rowID: g)
             return Item(title: deck?.title ?? "Guide", detail: deck?.detail ?? "", control: .link)
@@ -315,9 +317,13 @@ struct IslandSettingsScreen: View {
         case "overscan": return Item(title: "Screen edge margin", detail: "Pulls the picture in from the edges if your TV crops it.", control: .stepper(s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%"))
         case "sound": return Item(title: "Sound", detail: "Menu and match sound.", control: .toggle(s.sound))
         case "haptics": return Item(title: "Haptics", detail: "Taps and buzzes on the phone.", control: .toggle(s.haptics))
+        case "hapticStrength": return Item(title: "Hit strength", detail: "How hard each hit lands in your hand.", control: .choice(RacketFeel.strengths.map(\.name), RacketFeel.strengthIndex(s.hapticStrength)))
+        case "racketSound": return Item(title: "Racket sound on the phone", detail: "A short knock from the phone's own speaker on each hit, in time with your swing.", control: .toggle(s.racketSound))
+        case "feelTest": return Item(title: "Feel test", detail: menu.feelTestLabel.isEmpty ? "Every hit and moment, one per press: perfect, mishit, smash, supercharged, point won…" : menu.feelTestLabel, control: .action("Next", danger: false))
+        case "partyVoice": return Item(title: "Voice & party chat", detail: "Microphone, volume, language filter, blocking and safety.", control: .action("Open", danger: false))
+        case "partyRecording": return Item(title: "Recording", detail: "Record the TV with the game's sound and your party's voices, saved to Photos.", control: .action("Open", danger: false))
         case "bigText": return Item(title: "Larger text on the remote", detail: "Bigger words on the phone while it is your TV remote.", control: .toggle(s.bigText))
         case "reduceMotion": return Item(title: "Reduce motion", detail: "Still pictures instead of moving backdrops.", control: .toggle(s.reduceMotion))
-        case "classic": return Item(title: "Classic options menu", detail: "The plain list of every option. For testing.", control: .action("Open", danger: false))
         default: return Item(title: "Frame-time benchmark", detail: "Launch the app with -benchTennis to run it.", control: .action("Info", danger: false))
         }
     }
@@ -430,6 +436,11 @@ struct IslandPartyScreen: View {
     private var title: String {
         switch menu.screen { case .multiplayer: "Multiplayer"; case .localChoice: "Local"; case .localPlayers: "How many players?"; case .onlineChoice: "Online"; default: "Play" }
     }
+    /// `person.4.fill` is not in every release of SF Symbols; three people stand in for it rather than a blank icon.
+    private static func playersIcon(_ count: Int) -> String {
+        let name = "person.\(count).fill"
+        return UIImage(systemName: name) != nil ? name : "person.3.fill"
+    }
     var body: some View {
         IslandShell(title: title, compact: compact) {
             VStack(alignment: .leading, spacing: compact ? 16 : 24) {
@@ -443,7 +454,7 @@ struct IslandPartyScreen: View {
                     IslandLobbyRow(title: "Join a Friend", subtitle: "Find a game on the same Wi-Fi", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
                 case .localPlayers:
                     ForEach(2...4, id: \.self) { count in
-                        IslandLobbyRow(title: "\(count) Players", subtitle: "Starts right away", icon: "person.\(count).fill", id: "localPlayers\(count)", menu: menu, compact: compact)
+                        IslandLobbyRow(title: "\(count) Players", subtitle: "Starts right away", icon: Self.playersIcon(count), id: "localPlayers\(count)", menu: menu, compact: compact)
                     }
                 case .onlineChoice:
                     IslandLobbyRow(title: "Quick Match", subtitle: "Find players for golf or tennis", icon: "bolt.fill", id: "onlineQuick", menu: menu, compact: compact)

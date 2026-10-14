@@ -26,8 +26,9 @@ namespace GolfArcade.Tennis
                            HitPerfect, MissWhiff, CelebratePoint, SadPointLost, MatchWin, MatchLose, Walk,
                            ForehandWide, ForehandShort, BackhandWide, SliceApproach, Return, VolleyBackhand,
                            ForehandOpen, SplitToForehand, SplitToBackhand, RecoverCenter,
-                           EmoteScuba, EmoteThrust, EmoteSpike, IntroWave, IntroBringIt, IntroPushups }   // EMOTES: three taunts and three intros (match heroes only)
-        const int Count = 33;
+                           EmoteScuba, EmoteThrust, EmoteSpike, IntroWave, IntroBringIt, IntroPushups,   // EMOTES: three taunts and three intros (match heroes only)
+                          EmoteJumpJoy, EmoteFistPump, EmoteStomp, EmoteSlump, EmoteShock, EmoteVictory, EmoteDefeat }   // EMOTE STANDARD: joy, excited, mad, sad, shock, big win, big loss
+        const int Count = 40;
         // Visual tempo only: contact remains anchored to the actor's authoritative hit time. (The match heroes play at 1.0: their
         // clips already carry the real swing speed, with the racket fastest at contact.)
         public static float AnimationTempo = 1.2f;
@@ -229,6 +230,17 @@ namespace GolfArcade.Tennis
             if(Environment.GetEnvironmentVariable("TENNIS_ARM_REPAIR")!="0")foreach(var id in new[]{Clip.Forehand,Clip.Backhand}) {
                 var repaired=Resources.Load<AnimationClip>("Tennis/Performance/"+sex+"_"+id+"ArmCorrected");
                 if(repaired)for(int i=0;i<combined.Count;i++)if(combined[i].id==id){var slot=combined[i];slot.clip=repaired;combined[i]=slot;break;}
+            }
+            // EMOTE STANDARD: the point and match reactions are the emotion set's full-body clips when the hero has them
+            // (they replace the one-arm Performance gestures): won point = jump for joy / fist pump, lost point = slump (or stomp,
+            // see OnReacted), whiff = hands on head, match won = victory spin, match lost = drop to the knees.
+            foreach (var (to, from) in new[] { (Clip.CelebratePoint, Clip.EmoteJumpJoy), (Clip.HitPerfect, Clip.EmoteFistPump), (Clip.SadPointLost, Clip.EmoteSlump),
+                                               (Clip.MissWhiff, Clip.EmoteShock), (Clip.MatchWin, Clip.EmoteVictory), (Clip.MatchLose, Clip.EmoteDefeat) })
+            {
+                ClipSlot src = default; foreach (var s in combined) if (s.id == from && s.clip) { src = s; break; }
+                if (!src.clip) continue;
+                combined.RemoveAll(s => s.id == to);
+                combined.Add(new ClipSlot { id = to, clip = src.clip });
             }
             slots = combined.ToArray();
         }
@@ -442,7 +454,7 @@ namespace GolfArcade.Tennis
             { PointEmotesPlayed++; LastEmote = Clip.MissWhiff.ToString(); return; }
             emoteRoll++;
             var c = moment == TennisActor.Moment.Match ? (won ? Clip.MatchWin : Clip.MatchLose)
-                : won ? (emoteRoll % 2 == 0 ? Clip.CelebratePoint : Clip.HitPerfect) : Clip.SadPointLost;
+                : won ? (emoteRoll % 2 == 0 ? Clip.CelebratePoint : Clip.HitPerfect) : (emoteRoll % 2 == 0 || !valid[(int)Clip.EmoteStomp] ? Clip.SadPointLost : Clip.EmoteStomp);
             // Generic reaction assets are authored on this body's own 53-bone rig.
             if (!valid[(int)c]) { MissingReactions++; LastMissingReaction = c.ToString(); return; }
             PointEmotesPlayed++; LastEmote = c.ToString();
@@ -487,7 +499,9 @@ namespace GolfArcade.Tennis
         // they ease in from READY, run once, and give way to the next serve / swing / run. Match heroes only; nothing else in the driver changes for the clips that exist already.
         public static readonly Clip[] Taunts = { Clip.EmoteScuba, Clip.EmoteThrust, Clip.EmoteSpike };
         public static readonly Clip[] Intros = { Clip.IntroWave, Clip.IntroBringIt, Clip.IntroPushups };
-        public static bool IsEmote(Clip c) => c >= Clip.EmoteScuba && c <= Clip.IntroPushups;
+        public static bool IsEmote(Clip c) => c >= Clip.EmoteScuba && c <= Clip.EmoteDefeat;
+        /// EMOTE STANDARD: the emotion set (also the match's own point / match reactions, see ResolvePerformanceClips).
+        public static readonly Clip[] Standard = { Clip.EmoteJumpJoy, Clip.EmoteFistPump, Clip.EmoteStomp, Clip.EmoteSlump, Clip.EmoteShock, Clip.EmoteVictory, Clip.EmoteDefeat };
         /// The taunt the player picked (-1 = rotate through the three); set by whatever UI offers the pick.
         public static int PickedTaunt = -1;
         /// The taunts and intros this driver has played (proof / tests).
@@ -505,7 +519,7 @@ namespace GolfArcade.Tennis
             if (actionActive || (actor && actor.Swinging)) return false;
             juice = c; juiceActive = true; juiceTime = 0; perfectPending = false; hasQueued = false;
             EmotesPlayed++; LastEmotePlayed = c.ToString(); LastEmote = c.ToString();
-            if (game && Array.IndexOf(Taunts, c) >= 0) game.HoldNextPoint((length[(int)c] + .4f) * TennisGame.GameSpeed);      // the next serve waits for the taunt (the game's timers run at GameSpeed x real time)
+            if (game && (Array.IndexOf(Taunts, c) >= 0 || Array.IndexOf(Standard, c) >= 0)) game.HoldNextPoint((length[(int)c] + .4f) * TennisGame.GameSpeed);      // the next serve waits for the taunt / emote (the game's timers run at GameSpeed x real time)
             return true;
         }
         /// The player picks a taunt ("Scuba", "Thrust", "Spike" or 0..2) or lets the game rotate them.
@@ -520,11 +534,9 @@ namespace GolfArcade.Tennis
         }
         /// The intro emote (the match presentation asks for it): the hero's own pick, else one chosen by its name (the same hero always greets the same way).
         public int IntroPick = -1;
-        public bool PlayIntroEmote()
-        {
-            int i = IntroPick >= 0 ? IntroPick : (isPlayer ? 0 : (int)((uint)name.GetHashCode() % (uint)Intros.Length));
-            return PlayEmote(Intros[Mathf.Abs(i) % Intros.Length]);
-        }
+        /// The clip PlayIntroEmote plays.
+        public Clip IntroClip { get { int i = IntroPick >= 0 ? IntroPick : (isPlayer ? 0 : (int)((uint)name.GetHashCode() % (uint)Intros.Length)); return Intros[Mathf.Abs(i) % Intros.Length]; } }
+        public bool PlayIntroEmote() => PlayEmote(IntroClip);
         bool GameEndedTaunt(bool won, bool allowTaunt = true)
         {
             // a taunt only after a GAME (the match's game / set counters moved), never after an ordinary point

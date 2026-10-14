@@ -1,0 +1,179 @@
+== 1/5 Unity clone: /var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T//cv2-hero-sync-clone
+== 2/5 export (MatchHeroLockerExport: Run, RunDistance, RunGolf)
+== 3/5 install into GolfArcade/Unity/CharacterAssets
+  updated GolfKitHero_Female.json
+  updated GolfKitHero_Female.lzfse
+  updated GolfKitHero_Female_Rig.lzfse
+  updated GolfKitHero_Male.json
+  updated GolfKitHero_Male.lzfse
+  updated GolfKitHero_Male_Rig.lzfse
+  updated MatchHero_Female.json
+  updated MatchHero_Female.lzfse
+  updated MatchHero_Female_Distance.json
+  updated MatchHero_Female_Distance.lzfse
+  updated MatchHero_Female_Distance_Rig.lzfse
+  updated MatchHero_Female_Distance_Swing_00.lzfse
+  updated MatchHero_Female_Distance_Swing_01.lzfse
+  updated MatchHero_Female_Distance_Swing_02.lzfse
+  updated MatchHero_Female_Distance_Swing_03.lzfse
+  updated MatchHero_Female_Distance_Swing_04.lzfse
+  updated MatchHero_Female_Distance_Swing_05.lzfse
+  updated MatchHero_Female_Distance_Swing_06.lzfse
+  updated MatchHero_Female_Distance_Swing_07.lzfse
+  updated MatchHero_Female_Distance_Swing_08.lzfse
+  updated MatchHero_Female_Distance_Swing_09.lzfse
+  updated MatchHero_Female_Distance_Swing_10.lzfse
+  updated MatchHero_Female_Distance_Swing_11.lzfse
+  updated MatchHero_Female_Rig.lzfse
+  updated MatchHero_Female_Swing_00.lzfse
+  updated MatchHero_Female_Swing_01.lzfse
+  updated MatchHero_Female_Swing_02.lzfse
+  updated MatchHero_Female_Swing_03.lzfse
+  updated MatchHero_Female_Swing_04.lzfse
+  updated MatchHero_Female_Swing_05.lzfse
+  updated MatchHero_Female_Swing_06.lzfse
+  updated MatchHero_Female_Swing_07.lzfse
+  updated MatchHero_Female_Swing_08.lzfse
+  updated MatchHero_Female_Swing_09.lzfse
+  updated MatchHero_Female_Swing_10.lzfse
+  updated MatchHero_Female_Swing_11.lzfse
+  updated MatchHero_KitV2_Golf_Female_Belt_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_Belt_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_Belt_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_Belt_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_Bottom_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_Bottom_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_Bottom_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_Bottom_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_GloveL_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_GloveL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_GloveL_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_GloveL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_GloveR_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_GloveR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_GloveR_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_GloveR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_ShoeL_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_ShoeL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_ShoeL_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_ShoeL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_ShoeR_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_ShoeR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_ShoeR_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_ShoeR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_Top_M.png
+  WARNING: MatchHero_KitV2_Golf_Female_Top_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Female_Top_N.png
+  WARNING: MatchHero_KitV2_Golf_Female_Top_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Belt_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_Belt_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Belt_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_Belt_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Bottom_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_Bottom_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Bottom_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_Bottom_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_GloveL_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_GloveL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_GloveL_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_GloveL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_GloveR_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_GloveR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_GloveR_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_GloveR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_ShoeL_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_ShoeL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_ShoeL_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_ShoeL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_ShoeR_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_ShoeR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_ShoeR_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_ShoeR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Top_M.png
+  WARNING: MatchHero_KitV2_Golf_Male_Top_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Golf_Male_Top_N.png
+  WARNING: MatchHero_KitV2_Golf_Male_Top_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_Bottom_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_Bottom_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_Bottom_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_Bottom_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_ShoeL_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_ShoeL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_ShoeL_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_ShoeL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_ShoeR_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_ShoeR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_ShoeR_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_ShoeR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_SockL_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_SockL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_SockL_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_SockL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_SockR_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_SockR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_SockR_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_SockR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_Top_M.png
+  WARNING: MatchHero_KitV2_Tennis_Female_Top_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Female_Top_N.png
+  WARNING: MatchHero_KitV2_Tennis_Female_Top_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_Bottom_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_Bottom_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_Bottom_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_Bottom_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_ShoeL_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_ShoeL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_ShoeL_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_ShoeL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_ShoeR_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_ShoeR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_ShoeR_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_ShoeR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_SockL_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_SockL_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_SockL_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_SockL_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_SockR_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_SockR_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_SockR_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_SockR_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_Top_M.png
+  WARNING: MatchHero_KitV2_Tennis_Male_Top_M.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_KitV2_Tennis_Male_Top_N.png
+  WARNING: MatchHero_KitV2_Tennis_Male_Top_N.png changed but its .ktx (what the garment shader samples) was not regenerated
+  updated MatchHero_Male.json
+  updated MatchHero_Male.lzfse
+  updated MatchHero_Male_Distance.json
+  updated MatchHero_Male_Distance.lzfse
+  updated MatchHero_Male_Distance_Rig.lzfse
+  updated MatchHero_Male_Distance_Swing_00.lzfse
+  updated MatchHero_Male_Distance_Swing_01.lzfse
+  updated MatchHero_Male_Distance_Swing_02.lzfse
+  updated MatchHero_Male_Distance_Swing_03.lzfse
+  updated MatchHero_Male_Distance_Swing_04.lzfse
+  updated MatchHero_Male_Distance_Swing_05.lzfse
+  updated MatchHero_Male_Distance_Swing_06.lzfse
+  updated MatchHero_Male_Distance_Swing_07.lzfse
+  updated MatchHero_Male_Distance_Swing_08.lzfse
+  updated MatchHero_Male_Distance_Swing_09.lzfse
+  updated MatchHero_Male_Distance_Swing_10.lzfse
+  updated MatchHero_Male_Distance_Swing_11.lzfse
+  updated MatchHero_Male_Rig.lzfse
+  updated MatchHero_Male_Swing_00.lzfse
+  updated MatchHero_Male_Swing_01.lzfse
+  updated MatchHero_Male_Swing_02.lzfse
+  updated MatchHero_Male_Swing_03.lzfse
+  updated MatchHero_Male_Swing_04.lzfse
+  updated MatchHero_Male_Swing_05.lzfse
+  updated MatchHero_Male_Swing_06.lzfse
+  updated MatchHero_Male_Swing_07.lzfse
+  updated MatchHero_Male_Swing_08.lzfse
+  updated MatchHero_Male_Swing_09.lzfse
+  updated MatchHero_Male_Swing_10.lzfse
+  updated MatchHero_Male_Swing_11.lzfse
+  118 file(s) changed
+== 4/5 goldens + provenance
+  provenance: 6 exports, 191 guarded look sources
+== 5/5 lobby vs game sheets
+  sheets + PARITY.md in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/hero-sync/sheets
+== done. Review: git diff --stat -- GolfArcade/Unity/CharacterAssets GolfArcadeTests/VisualGolden; sheets in work/hero-sync/sheets/

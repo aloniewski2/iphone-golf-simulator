@@ -71,6 +71,32 @@ namespace GolfArcade.Tests
         }
 
         [Test]
+        public void ARockBuriedUnderTheGreenNeverBlocksAPutt()
+        {
+            // Needle's green sits on a sea stack: the model's rock mass under it reads as a rock a dozen yards across
+            // whose top (6.28) is below the green it holds up (6.85). A putt rolls over the grass, not into the stone.
+            var stack = Obstacle.Round(ObstacleKind.Rock, 0, 6, -1.8, 6.28, 12.5);
+            var hole = Straight(stack);
+            hole.Ground = _ => 6.85;
+            var shot = new CourseShot(GolfClub.Putter, Full(1), 0, new CoursePoint(0, 0), hole);
+            var clear = new CourseShot(GolfClub.Putter, Full(1), 0, new CoursePoint(0, 0), Straight());
+            Assert.AreEqual(clear.Rest.D, shot.Rest.D, 1e-9, "the ball runs exactly as it would with nothing there");
+            Assert.AreEqual(0, shot.Knocks.Count, "and meets nothing");
+        }
+
+        [Test]
+        public void ARockStandingAboveTheGroundStillStopsAPutt()
+        {
+            // the same rock with its top above the ground it stands on is a rock in the way
+            var stone = Obstacle.Round(ObstacleKind.Rock, 0, 6, 6.85, 8.0, 1.2);
+            var hole = Straight(stone);
+            hole.Ground = _ => 6.85;
+            var shot = new CourseShot(GolfClub.Putter, Full(1), 0, new CoursePoint(0, 0), hole);
+            Assert.Less(shot.Rest.D, 6, "it never gets past the stone");
+            Assert.GreaterOrEqual(shot.Knocks.Count, 1);
+        }
+
+        [Test]
         public void ABushCatchesARollingBall()
         {
             var bush = Obstacle.Round(ObstacleKind.Bush, 0, 6, 0, 1.2, 1.0);

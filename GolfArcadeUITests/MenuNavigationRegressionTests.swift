@@ -65,9 +65,10 @@ final class MenuNavigationRegressionTests: XCTestCase {
         XCTAssertTrue(app.buttons["hub-round"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["hub-tutorial"].exists)
         app.buttons["hub-round"].tap()
-        for key in ["cliffside", "postcards", "wildisles", "magma"] {
+        for key in ["cliffside", "wildisles", "magma"] {
             XCTAssertTrue(app.buttons["map-\(key)"].exists)
         }
+        XCTAssertFalse(app.buttons["map-postcards"].exists)
         app.buttons["menu-back"].tap()
         XCTAssertTrue(app.buttons["hub-round"].waitForExistence(timeout: 5))
         app.buttons["menu-back"].tap()

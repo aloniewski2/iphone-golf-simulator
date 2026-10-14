@@ -1,0 +1,22 @@
+[
+{"img":"f03_front","kind":"hand under cloth","side":"R","x":130.012,"y":353.362,"depth":13.637,"n":86},
+{"img":"f03_back","kind":"hand under cloth","side":"R","x":267.09,"y":347.69,"depth":13.637,"n":86},
+{"img":"f03_left","kind":"hand under cloth","side":"R","x":181.936,"y":341.157,"depth":13.637,"n":86},
+{"img":"f03_right","kind":"hand under cloth","side":"R","x":220.977,"y":361.278,"depth":13.637,"n":86},
+{"img":"f03_handR","kind":"hand under cloth","side":"R","x":118.687,"y":150.69,"depth":13.637,"n":86},
+{"img":"f04_front","kind":"hand under cloth","side":"R","x":132.149,"y":353.265,"depth":24.942,"n":135},
+{"img":"f04_back","kind":"hand under cloth","side":"R","x":265.315,"y":348.15,"depth":24.942,"n":135},
+{"img":"f04_left","kind":"hand under cloth","side":"R","x":183.702,"y":341.583,"depth":24.942,"n":135},
+{"img":"f04_right","kind":"hand under cloth","side":"R","x":218.846,"y":361.154,"depth":24.942,"n":135},
+{"img":"f04_handR","kind":"hand under cloth","side":"R","x":116.362,"y":149.168,"depth":24.942,"n":135},
+{"img":"f05_front","kind":"hand under cloth","side":"R","x":133.067,"y":351.913,"depth":31.09,"n":178},
+{"img":"f05_back","kind":"hand under cloth","side":"R","x":263.44,"y":344.842,"depth":31.09,"n":178},
+{"img":"f05_left","kind":"hand under cloth","side":"R","x":177.036,"y":339.545,"depth":31.09,"n":178},
+{"img":"f05_right","kind":"hand under cloth","side":"R","x":226.472,"y":358.355,"depth":31.09,"n":178},
+{"img":"f05_handR","kind":"hand under cloth","side":"R","x":113.617,"y":153.516,"depth":31.09,"n":178},
+{"img":"f06_front","kind":"hand under cloth","side":"R","x":142.171,"y":347.867,"depth":33.91,"n":238},
+{"img":"f06_back","kind":"hand under cloth","side":"R","x":253.452,"y":337.919,"depth":33.91,"n":238},
+{"img":"f06_left","kind":"hand under cloth","side":"R","x":165.958,"y":335.491,"depth":33.91,"n":238},
+{"img":"f06_right","kind":"hand under cloth","side":"R","x":238.428,"y":350.832,"depth":33.91,"n":238},
+{"img":"f06_handR","kind":"hand under cloth","side":"R","x":102.658,"y":171.493,"depth":33.91,"n":238}
+]

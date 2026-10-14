@@ -71,7 +71,8 @@ typealias HeroColor = NSColor
 
     /// One submesh's material. `colour` (sRGB) is the locker's pick for it (skin tone, racket colour, a kit role's tint), nil = the authored colour of the look.
     /// `sceneScale` is the hero's scale on the stage (a metre of the export is that many scene units): the weave's nominal tile is `tileMetres * sceneScale` scene units.
-    static func material(_ sub: MatchHeroData.Sub, colour: SIMD3<Float>?, sceneScale: Float = 1, trimColour: SIMD3<Float>? = nil) -> SCNMaterial {
+    /// `part` (when known) says which extra texcoord channels its geometry carries: the body's lid-liner distances, the kit's edge measurements.
+    static func material(_ sub: MatchHeroData.Sub, colour: SIMD3<Float>?, sceneScale: Float = 1, trimColour: SIMD3<Float>? = nil, part: MatchHeroData.Part? = nil) -> SCNMaterial {
         let mat: SCNMaterial
         let tint: SIMD3<Float>
         if let look = sub.look {
@@ -80,13 +81,14 @@ typealias HeroColor = NSColor
                 mat=SCNMaterial();mat.lightingModel = .physicallyBased;mat.diffuse.contents=flatColour(tint)
                 mat.metalness.contents=look.metallic ?? 0;mat.roughness.contents=1-look.smoothness
             } else {
-                mat = look.isCloth ? cloth(look, tint: tint, sceneScale: sceneScale, trim: trimColour) : character(look, tint: tint)
+                mat = look.isCloth ? cloth(look, tint: tint, sceneScale: sceneScale, trim: trimColour, edges: part?.hasEdges == true) : character(look, tint: tint, lid: part?.hasLid == true)
             }
         } else {
             tint = colour ?? SIMD3(repeating: 1)
             mat = SCNMaterial(); mat.lightingModel = .blinn; mat.diffuse.contents = flatColour(tint)
         }
         if sub.look?.anatomicalFace != true { configurePaint(mat, role: sub.material, crafted: sub.look?.craftedPaint ?? 0) }
+        if let part, part.kind == "body", part.hasEdges, let look = sub.look, !look.isCloth { addKitContact(mat, part: part, look: look) }
         if ProcessInfo.processInfo.environment["VISUAL_CHARACTER_SKIN_POLISH"] == "1", let look=sub.look, look.anatomicalFace == true,
            sub.material.contains("Iris") || sub.material.contains("Sclera") {
             let spec:Float=sub.material.contains("Iris") ? 0.85:0.52
@@ -99,7 +101,7 @@ typealias HeroColor = NSColor
     }
 
     // ---- TennisCharacter: skin, eyes, face decals, racket frame and strings
-    private static func character(_ look: MatchHeroData.Look, tint: SIMD3<Float>) -> SCNMaterial {
+    private static func character(_ look: MatchHeroData.Look, tint: SIMD3<Float>, lid: Bool = false) -> SCNMaterial {
         let m = SCNMaterial(); m.lightingModel = .blinn
         let lum=simd_dot(tint,SIMD3<Float>(0.2126,0.7152,0.0722))
         m.diffuse.contents = flatColour(SIMD3<Float>(repeating:lum)+(tint-SIMD3<Float>(repeating:lum))*look.saturation)
@@ -130,13 +132,41 @@ typealias HeroColor = NSColor
             m.setValue(vector(look.headRight,flipZ:true),forKey:"headRight");m.setValue(vector(look.headUp,flipZ:true),forKey:"headUp");m.setValue(vector(look.headForward,flipZ:true),forKey:"headForward");m.setValue(vector(look.headEye,flipZ:false),forKey:"headEye")
             m.shaderModifiers=[.geometry:skinGeometry,.surface:hasRelativeMap ? headSurface.replacingOccurrences(of:"#pragma body",with:"#pragma body\n"+relativeTintBody):headSurface,.lightingModel:athleteLighting]
         }
-        guard look.bumpTriplanar > 0.5, !look.bumpMap.isEmpty, let map = image(look.bumpMap, linear: true) else { return m }
+        let face = regional && look.faceSkin == true && (look.skinFinish ?? 0) > 0.5
+        if face {
+            // MatchHeroLook.SkinSaturationFor: the picked tone's own saturation (light / mid tones .74, deep .88), as Unity sets it on every skin change
+            m.setValue(SCNVector4(look.wrap, look.smoothness, look.specularStrength ?? 1, skinSaturation(for: tint)), forKey: "athleteSurface")
+        }
+        guard look.bumpTriplanar > 0.5, !look.bumpMap.isEmpty, let map = image(look.bumpMap, linear: true) else {
+            if face { m.shaderModifiers = [.geometry: faceSkinGeometry(lid: lid, bindChannel: (look.skinPigmentUV ?? 0) > 0.5), .surface: "#pragma arguments\n" + headSurfaceArguments + "\n" + faceSkinDeclarations + "#pragma body\n" + faceSkinBody(lid: lid), .lightingModel: faceSkinLighting, .fragment: faceSkinFinish] }
+            return m
+        }
         let prop = SCNMaterialProperty(contents: map)
         prop.wrapS = .repeat; prop.wrapT = .repeat; prop.mipFilter = .linear; prop.minificationFilter = .linear; prop.magnificationFilter = .linear
         m.setValue(prop, forKey: "skinBumpMap")
         m.setValue(SCNVector4(look.bumpScale, look.bumpTile, 0, 0), forKey: "skinBump")
         m.shaderModifiers = [.geometry: skinGeometry, .surface: regional ? skinSurface.replacingOccurrences(of:"#pragma body",with:headSurfaceArguments+"\n#pragma body"+(hasRelativeMap ? "\n"+relativeTintBody:""))+headSurfaceBody:skinSurface, .lightingModel: athleteLighting]
+        if face {
+            // Unity's HeroFaceSkin (the in-game head): the same registered face, its analytic lips / lid liner / blush / beard and its face light.
+            m.shaderModifiers = [.geometry: faceSkinGeometry(lid: lid, bindChannel: (look.skinPigmentUV ?? 0) > 0.5),
+                                 .surface: skinSurface.replacingOccurrences(of: "#pragma body", with: headSurfaceArguments + "\n" + faceSkinDeclarations + "#pragma body") + faceSkinBody(lid: lid),
+                                 .lightingModel: faceSkinLighting, .fragment: faceSkinFinish]
+        }
         return m
+    }
+
+    /// CLOTHING V2: the garments' soft contact shadow on the skin (MatchHeroLook.ApplyKitV2Cover, mesh UV3.x, exported in the body's edge channel),
+    /// applied like Unity's skin shaders (`colour *= 1 - _KitContact * contact`). The channel comes after UV0 (if any), the bind pose (2) and the lid liner (if any).
+    static let kitContactShadow: Float = 0.55
+    static func addKitContact(_ m: SCNMaterial, part: MatchHeroData.Part, look: MatchHeroData.Look) {
+        guard var geometry = m.shaderModifiers?[.geometry] else { return }
+        let channel = (part.uvOffset ?? -1 >= 0 ? 1 : 0) + 2 + (part.hasLid ? 1 : 0)
+        geometry = geometry.replacingOccurrences(of: "float3 bindPos;", with: "float3 bindPos;\nfloat kitContact;") + "\nout.kitContact = _geometry.texcoords[\(channel)].x * \(kitContactShadow);\n"
+        var mods = m.shaderModifiers ?? [:]
+        mods[.geometry] = geometry
+        let shade = "\n_output.color.rgb *= 1.0 - in.kitContact;\n"
+        if let fragment = mods[.fragment] { mods[.fragment] = fragment + shade } else { mods[.fragment] = "#pragma body\n" + shade }
+        m.shaderModifiers = mods
     }
 
     static let relativeTintBody = "_surface.diffuse.rgb*=heroTint.rgb;\n"
@@ -349,8 +379,8 @@ typealias HeroColor = NSColor
     """
 
     // ---- TennisCloth: the kit and the racket grip
-    private static func cloth(_ look: MatchHeroData.Look, tint: SIMD3<Float>, sceneScale: Float, trim: SIMD3<Float>?) -> SCNMaterial {
-        if (look.useGarmentMaps ?? 0) > 0.5 { return garment(look, tint: tint, trim: trim) }
+    private static func cloth(_ look: MatchHeroData.Look, tint: SIMD3<Float>, sceneScale: Float, trim: SIMD3<Float>?, edges: Bool = false) -> SCNMaterial {
+        if (look.useGarmentMaps ?? 0) > 0.5 { return garment(look, tint: tint, trim: trim, edges: edges) }
         let m = SCNMaterial(); m.lightingModel = .blinn   // the per-light maths is replaced by the lighting modifier below
         // the kit's seam / collar / placket / hem map on its own UV (clamped); the grip has none (no UVs on the racket)
         if !look.baseMap.isEmpty, let seams = image(look.baseMap, linear: false, maxPixels: 1024) {
@@ -378,9 +408,9 @@ typealias HeroColor = NSColor
         return m
     }
 
-    /// Calibration of the locker's SceneKit light rig against the Unity court's: TennisCloth's exposure (0.7) is tuned to the court's sun, and the same number under the locker's three
-    /// directional lights + ambient would read a white shirt as grey. The soft shoulder still keeps a lit white from clipping.
-    static var sceneExposure: Float = 1.4
+    /// Calibration of the plain (no garment maps) cloth against Unity's TennisCloth under the same light rig (work/hero-sync sheets, 2026-10-12): 1, i.e. Unity's own
+    /// exposure. The old 1.4 was tuned against a comparison whose Unity side had a fifth of the ambient and its lights mirrored, and drew the polos and skirt ~40 % too bright.
+    static var sceneExposure: Float = 1.0
     /// The weave is 8 threads per tile (2.0 - 2.9 cm): on a phone the whole hero is ~0.6 px per mm, so a thread is about 1.5 px and can only alias. The weave is faded out by how many pixels a thread
     /// covers on screen, measured from the surface's world-space pixel footprint (not from the UVs, whose density differs from island to island): full strength from `weaveThreadPixelsFull` px per thread,
     /// gone at `weaveThreadPixelsOff`. A close-up (the locker's torso, a shoe) shows the threads; a whole body shows the seams, the trim, the sheen and the fold shading.
@@ -445,6 +475,203 @@ typealias HeroColor = NSColor
     }
     """
     static var headSurface:String {"#pragma arguments\n"+headSurfaceArguments+"\n#pragma body\n"+headSurfaceBody}
+
+    /// MatchHeroLook.SkinSaturationFor (sRGB tone): deep tones keep more richness (.88), light and mid tones get .74.
+    static func skinSaturation(for tone: SIMD3<Float>) -> Float {
+        let luminance = simd_dot(tone, SIMD3<Float>(0.2126, 0.7152, 0.0722))
+        let t = min(max((luminance - 0.15) / 0.30, 0), 1), s = t * t * (3 - 2 * t)
+        return 0.88 + (0.74 - 0.88) * s
+    }
+
+    /// The skin's geometry modifier with HeroFaceSkin's lid-liner distances as a varying (the channel after the bind pose: 3 after UV0, else 2).
+    static func faceSkinGeometry(lid: Bool, bindChannel: Bool) -> String {
+        guard lid else { return skinGeometry }
+        return skinGeometry.replacingOccurrences(of: "float3 bindPos;", with: "float3 bindPos;\nfloat2 lidDistance;")
+            + "\nout.lidDistance = _geometry.texcoords[\(bindChannel ? 3 : 2)];\n"
+    }
+
+    /// Port of HeroFaceSkin's registered face (`_SkinFinish` 1 male / 2 female, `_SkinPigmentUV` on): the same regions, pigments and order, in the same head frame.
+    /// The lighting it needs per pixel goes to faceSkinLighting in fields the blinn model does not use: roughness = wrap, metalness = face amount, shininess = smoothness.
+    /// Two-sided regions use |x| (the cross term of the mirrored Gaussian is below 1e-6 for every region here).
+    static func faceSkinBody(lid: Bool) -> String { faceSkinBodyStart + (lid ? faceSkinLidLiner : "") + faceSkinBodyEnd }
+    /// HeroFaceSkin's SkinRegion and its skin-grain value noise, as global functions of the surface modifier.
+    static let faceSkinDeclarations = """
+    #pragma declaration
+    float SkinRegion(float3 p,float3 c,float3 r){float3 q=(p-c)/r;return exp(-2.0*dot(q,q));}
+    float SkinHash(float3 p){p=fract(p*0.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
+    float SkinNoise(float3 p){
+        float3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+        return mix(mix(mix(SkinHash(i),SkinHash(i+float3(1,0,0)),f.x),mix(SkinHash(i+float3(0,1,0)),SkinHash(i+float3(1,1,0)),f.x),f.y),
+                   mix(mix(SkinHash(i+float3(0,0,1)),SkinHash(i+float3(1,0,1)),f.x),mix(SkinHash(i+float3(0,1,1)),SkinHash(i+float3(1,1,1)),f.x),f.y),f.z);
+    }
+
+    """
+    static let faceSkinBodyStart = """
+    float3 hd=in.bindPos-headOrigin.xyz;
+    float3 hp=float3(dot(hd,headRight.xyz),dot(hd,headUp.xyz),dot(hd,headForward.xyz))-headEye.xyz;
+    float3 hs=float3(abs(hp.x),hp.y,hp.z);
+    bool maleFace=skinFinish<1.5;
+    float faceAmount=smoothstep(-0.19,-0.12,hp.y)*(1.0-smoothstep(0.14,0.19,abs(hp.x)));
+    float3 q=(hs-float3(0.044,-0.052,-0.005))/float3(0.032,0.031,0.080);float cheeks=exp(-2.0*dot(q,q));
+    q=(hp-float3(0.0,-0.040,0.018))/float3(0.022,0.038,0.070);float nose=exp(-2.0*dot(q,q));
+    q=(hp-float3(0.0,0.062,-0.027))/float3(0.054,0.044,0.075);float forehead=exp(-2.0*dot(q,q));
+    q=maleFace ? (hs-float3(0.102,-0.015,-0.095))/float3(0.018,0.042,0.030) : (hs-float3(0.092,-0.025,-0.055))/float3(0.020,0.042,0.055);float ears=exp(-2.0*dot(q,q));
+    float warmth=saturate(cheeks*0.85+nose*0.40+ears*0.7);
+    float3 c=skinPigmentUV>0.5 ? heroTint.rgb : _surface.diffuse.rgb;
+    c*=mix(float3(1.0),maleFace ? float3(1.0,0.99,0.97) : float3(1.08,1.09,1.04),faceAmount);
+    float nx=hp.x/0.025, ny=(hp.y-(maleFace ? -0.047 : -0.045))/0.007;
+    float noseUnderside=exp(-2.0*nx*nx-2.0*ny*ny)*smoothstep(0.015,0.026,hp.z);
+    if(maleFace){float cx=(abs(hp.x)-0.016)/0.005, cy=(hp.y+0.042)/0.0022;float cavity=exp(-2.0*cx*cx-2.0*cy*cy)*smoothstep(0.013,0.025,hp.z);c*=mix(float3(1.0),float3(0.58,0.44,0.38),cavity*0.40);}
+    float mx=abs(hp.x)/(maleFace ? 0.035 : 0.028);
+    float seam=(maleFace ? -0.0683 : -0.0675)+(maleFace ? 0.0035 : 0.0045)*mx*mx;
+    float fullness=saturate(1.0-mx*mx);
+    float cu=(abs(hp.x)-0.008)/0.005;
+    float cupid=0.0015*exp(-cu*cu)*fullness;
+    float upperLipLine=seam+0.0055*fullness+cupid, lowerLipLine=seam-0.0075*fullness;
+    float mouthFront=smoothstep(-0.006,0.009,hp.z);
+    float lipMask=smoothstep(lowerLipLine-0.0009,lowerLipLine+0.0009,hp.y)*(1.0-smoothstep(upperLipLine-0.0009,upperLipLine+0.0009,hp.y))*(1.0-smoothstep(0.94,1.04,mx))*mouthFront;
+    float sy=(hp.y-seam)/0.00085;
+    float seamMask=exp(-sy*sy)*(1.0-smoothstep(0.88,1.03,mx))*mouthFront;
+    c*=mix(float3(1.0),maleFace ? float3(1.04,0.70,0.68) : float3(1.06,0.68,0.65),lipMask);
+    c*=mix(float3(1.0),float3(0.50,0.30,0.26),seamMask*0.78);
+
+    """
+    static let faceSkinLidLiner = """
+    float upperRim=1.0-smoothstep(0.0010,maleFace ? 0.0025 : 0.0048,in.lidDistance.x);
+    float lowerRim=1.0-smoothstep(0.0,0.0012,in.lidDistance.y);
+    c*=mix(float3(1.0),float3(0.12,0.065,0.040),upperRim*0.96);
+    c*=mix(float3(1.0),float3(0.74,0.60,0.55),lowerRim*0.30);
+
+    """
+    static let faceSkinBodyEnd = """
+    c*=mix(float3(1.0),float3(1.03,0.965,0.89),warmth);
+    q=maleFace ? (hs-float3(0.050,-0.032,-0.010))/float3(0.024,0.020,0.060) : (hs-float3(0.046,-0.031,-0.005))/float3(0.025,0.021,0.060);
+    float blush=saturate(exp(-2.0*dot(q,q)));
+    c*=mix(float3(1.0),float3(1.06,0.66,0.70),blush);
+    // skin pass: the ears and the nose tip a touch warmer; soft warm form shading (same regions as HeroFaceSkin)
+    c*=mix(float3(1.0),float3(1.04,0.93,0.86),ears*0.45);
+    float noseTip=SkinRegion(hp,maleFace ? float3(0.0,-0.037,0.054) : float3(0.0,-0.037,0.032),float3(0.011,0.010,0.020));
+    c*=mix(float3(1.0),float3(1.05,0.93,0.86),noseTip*0.55);
+    float browHollow=SkinRegion(hs,maleFace ? float3(0.034,0.020,0.017) : float3(0.036,0.029,0.006),float3(0.021,0.007,0.035));
+    float innerCorner=SkinRegion(hs,maleFace ? float3(0.016,-0.006,0.025) : float3(0.016,-0.006,0.010),float3(0.007,0.011,0.035));
+    float noseSide=SkinRegion(hs,maleFace ? float3(0.021,-0.042,0.044) : float3(0.020,-0.042,0.016),float3(0.007,0.011,0.035));
+    float smileLine=SkinRegion(hs,maleFace ? float3(0.028,-0.056,0.039) : float3(0.026,-0.056,0.011),float3(0.007,0.013,0.035));
+    float cheekHollow=SkinRegion(hs,maleFace ? float3(0.056,-0.071,0.014) : float3(0.053,-0.071,-0.004),float3(0.020,0.018,0.040));
+    float jawSide=SkinRegion(hs,maleFace ? float3(0.064,-0.106,-0.020) : float3(0.060,-0.100,-0.040),float3(0.022,0.026,0.050));
+    float neckWidth=1.0-smoothstep(maleFace ? 0.055 : 0.048,maleFace ? 0.080 : 0.070,abs(hp.x));
+    float neck=smoothstep(-0.125,-0.160,hp.y)*(1.0-smoothstep(-0.270,-0.330,hp.y))*neckWidth;
+    float form=saturate(browHollow*0.85+innerCorner*0.70+noseSide*0.65+smileLine*0.35+cheekHollow*0.60+jawSide*0.55+neck*0.95)*(1.0-lipMask);
+    c*=1.0+float3(0.06,0.055,0.04)*smoothstep(-0.04,0.10,hp.y)*faceAmount;
+    c*=mix(float3(1.0),float3(0.80,0.66,0.55),form);
+    if(maleFace){
+        q=(hp-float3(0.0,-0.126,-0.010))/float3(0.086,0.048,0.095);float jaw=exp(-2.0*dot(q,q));
+        q=(hp-float3(0.0,-0.058,0.040))/float3(0.037,0.012,0.045);float upperLip=exp(-2.0*dot(q,q));
+        q=(hs-float3(0.060,-0.077,0.002))/float3(0.032,0.052,0.055);float lowerCheeks=exp(-2.0*dot(q,q));
+        float beard=saturate(jaw*0.70+upperLip*0.52+lowerCheeks*0.48)*(1.0-lipMask*0.95);
+        beard*=smoothstep(-0.145,-0.120,hp.y)*smoothstep(-0.055,-0.025,hp.z);
+        c*=mix(float3(1.0),float3(0.82,0.85,0.89),beard);
+        float3 cell=floor(hp*1300.0);
+        float stipple=smoothstep(0.65,0.90,fract(sin(dot(cell,float3(12.9898,78.233,45.164)))*43758.5453));
+        float resolved=1.0-smoothstep(0.0005,0.0015,max(length(dfdx(hp)),length(dfdy(hp))));
+        c*=1.0-stipple*beard*0.15*resolved;
+    }
+    // skin pass: matte smoothness, lower wrap
+    float surfaceSmoothness=mix(0.26,0.30,saturate(nose+forehead*0.55));
+    float facialSmoothness=mix(mix(0.27,0.32,saturate(nose+forehead*0.75)),0.34,lipMask);
+    surfaceSmoothness=mix(surfaceSmoothness,facialSmoothness,faceAmount);
+    float surfaceWrap=mix(mix(0.20,0.24,faceAmount),0.26,lipMask);
+    // skin pass: golden grade (relative: every tone pick keeps its depth) and a faint grain, faded before it can alias
+    c*=float3(1.0,1.035,0.92);
+    float grainFootprint=max(length(dfdx(in.bindPos)),length(dfdy(in.bindPos)));
+    float fineGrain=SkinNoise(in.bindPos*330.0)-0.5, coarseGrain=SkinNoise(in.bindPos*55.0)-0.5;
+    c*=1.0+fineGrain*0.05*(1.0-smoothstep(0.0008,0.0025,grainFootprint));
+    c*=mix(float3(1.0),float3(1.03,0.975,0.95),coarseGrain*1.2*(1.0-smoothstep(0.004,0.012,grainFootprint)));
+    float lum=dot(c,float3(0.2126,0.7152,0.0722));
+    c=mix(float3(lum),c,athleteSurface.w);
+    _surface.diffuse=float4(c,1.0);
+    // SceneKit already lights the final diffuse with the ambient light, and _surface.ambient is ADDED on top (negative works). HeroFaceSkin now warms its
+    // ambient (x .82-.97 x (1, .86, .72)): add the difference to the old one, which the default matched within 1-2 % under the lobby rig.
+    float3 ambientOld=mix(float3(0.82),float3(0.985,0.94,0.89),faceAmount), ambientNew=mix(0.82,0.97,faceAmount)*float3(1.0,0.86,0.72);
+    _surface.ambient=float4(c*(ambientNew-ambientOld),1.0);
+    // The warm lift under the nose is unlit in HeroFaceSkin, so it goes in as emission.
+    _surface.emission=float4(c*float3(0.17,0.13,0.11)*noseUnderside*0.5,0.0);
+    _surface.shininess=surfaceSmoothness;
+    _surface.roughness=surfaceWrap;
+    _surface.metalness=faceAmount;
+    """
+
+    /// HeroSkinShade blended into HeroFaceSkin's FaceSkinShade by the face amount (same wrap, light bleed and sheen), the skin rim at .30.
+    static let faceSkinLighting = """
+    #pragma arguments
+    float4 athleteSurface;
+    float4 athleteWarmth;
+    float4 athleteRim;
+    float4 headOrigin;
+    float skinFinish;
+    float skinPolish;
+    #pragma body
+    float3 n=normalize(_surface.normal), v=normalize(_surface.view), l=normalize(_light.direction);
+    float nl=dot(n,l), snl=saturate(nl);
+    float faceAmount=_surface.metalness, wrap=_surface.roughness, smoothness=_surface.shininess;
+    float3 h=normalize(l+v); float nh=saturate(dot(n,h));
+    float wrapped=saturate((nl+wrap)/(1.0+wrap));
+    float edge=saturate(wrapped-snl);
+    float broad=pow(nh,18.0+smoothness*18.0)*0.075;
+    if(skinPolish>0.5){float glossWeight=0.16+0.84*saturate((smoothness-0.32)/0.06);broad=(pow(nh,5.0+smoothness*6.0)*0.035+pow(nh,18.0+smoothness*18.0)*0.40)*glossWeight;}
+    float visibility=smoothstep(-0.06,0.24,nl);
+    float3 bodyDiffuse=float3(wrapped*0.84)+athleteWarmth.rgb*edge;
+    // skin pass: matte (a faint wide sheen, highlight strength .40), a little lift on the lit face planes, a reddish-brown light bleed, a softer rim
+    float faceWrapped=mix(wrapped,saturate((nl+0.30)/1.30),smoothstep(0.15,0.65,nl)*faceAmount*0.35);
+    float sheen=pow(nh,8.0+smoothness*10.0)*0.045;
+    float3 faceDiffuse=float3(faceWrapped*0.84)+float3(0.24,0.10,0.04)*saturate(faceWrapped-snl);
+    float spec=mix(broad,sheen,faceAmount)*min(athleteSurface.z,0.40)*visibility;
+    float rim=pow(1.0-saturate(dot(n,v)),athleteRim.y)*athleteRim.x;
+    _lightingContribution.diffuse+=_light.intensity.rgb*mix(bodyDiffuse,faceDiffuse,faceAmount);
+    _lightingContribution.specular+=_light.intensity.rgb*(float3(spec)+rim*0.30*(float3(0.35)+0.65*_surface.diffuse.rgb));
+    """
+
+    /// HeroCharacterFinish outside the court profile: HeroHighlightRoll(colour, .76, .96), a late shoulder on the brightest channel (hue kept), so a light
+    /// skin tone keeps its form under the key light instead of clipping to white.
+    static let faceSkinFinish = """
+    #pragma body
+    {
+        float3 skinOut=_output.color.rgb;
+        float skinPeak=max(max(skinOut.r,skinOut.g),max(skinOut.b,1e-4)), skinExcess=max(skinPeak-0.76,0.0);
+        float skinRolled=skinPeak<=0.76 ? skinPeak : 0.76+0.20*skinExcess/(0.20+skinExcess);
+        _output.color.rgb=skinOut*(skinRolled/skinPeak);
+    }
+    """
+
+    /// TennisCloth's kit edge lines (KitEdgeLines): the shoe's sole line and rubber band, the sock's cuff, cuff line and ribs, from HeroKitEdges' per-vertex measurements in metres.
+    static let kitEdgeGeometry = """
+    #pragma varyings
+    float4 kitEdge;
+    #pragma body
+    out.kitEdge=float4(_geometry.texcoords[1],_geometry.texcoords[2]);
+    """
+    static let kitEdgeFragment = """
+
+    float4 e=in.kitEdge;
+    float wy=max(fwidth(e.y),1e-5), wx=max(fwidth(e.x),1e-5);
+    float phase=atan2(e.z,e.y)*e.w, wp=fwidth(phase);
+    float edgeShade=1.0;
+    if(kitEdgeLines<1.5){
+        if(e.z>0.5){
+            float seamLine=1.0-smoothstep(0.00125-wy,0.00125+wy,abs(e.y-0.00025));
+            float rubber=e.x>=0.0 ? 1.0-smoothstep(0.0065-wx,0.0065+wx,e.x) : 0.0;
+            edgeShade=(1.0-0.45*seamLine)*(1.0-0.18*rubber);
+        }
+    }else if(e.w>0.5){
+        float cuff=1.0-smoothstep(0.022-wx,0.022+wx,e.x);
+        float ribFade=1.0-smoothstep(1.2,2.6,wp);
+        float valley=0.5-0.5*cos(phase);
+        float ribs=1.0-0.12*valley*valley*ribFade*cuff;
+        float cuffLine=1.0-smoothstep(0.0008-wx,0.0008+wx,abs(e.x-0.022));
+        float cuffTop=1.0-smoothstep(0.0012-wx,0.0012+wx,e.x);
+        edgeShade=ribs*(1.0-0.32*cuffLine)*(1.0-0.14*cuffTop);
+    }
+    _output.color.rgb*=edgeShade;
+    """
 
     /// Skin: TennisCharacter's triplanar soft normal, in Unity's space (the file negates z): three axis projections from the bind-pose position, weighted by the skinned object-space normal
     /// and added to it, then back to view space.
@@ -576,7 +803,7 @@ typealias HeroColor = NSColor
             return texture
         } catch { print("GARMENT_TEXTURE_ERROR \(name): \(error)"); return nil }
     }
-    static func garment(_ look: MatchHeroData.Look, tint: SIMD3<Float>, trim: SIMD3<Float>?) -> SCNMaterial {
+    static func garment(_ look: MatchHeroData.Look, tint: SIMD3<Float>, trim: SIMD3<Float>?, edges: Bool = false) -> SCNMaterial {
         let m = SCNMaterial(); m.lightingModel = .blinn
         m.diffuse.contents = flatColour(tint)
         guard let n = compressed(look.normalMap ?? ""), let mask = compressed(look.maskMap ?? ""), let atlas = compressed(look.weaveMap) else { fatalError("Incomplete garment maps") }
@@ -597,6 +824,12 @@ typealias HeroColor = NSColor
         m.setValue(SCNVector4(look.exposure * 1.0, look.knee, 0, 0), forKey: "shoulder")
         let golf = (look.fabricVersion ?? 1) > 1.5
         m.shaderModifiers = [.surface: golf ? garmentSurfaceV2 : garmentSurface, .lightingModel: golf ? garmentLightingV2 : garmentLighting, .fragment: garmentShoulder]
+        if edges, let kind = look.edgeLines, kind > 0.5 {
+            // TennisCloth's kit edge lines (HeroKitEdges data in texcoord channels 1-2), multiplied into the finished colour as Unity does
+            m.setValue(kind, forKey: "kitEdgeLines")
+            m.shaderModifiers?[.geometry] = kitEdgeGeometry
+            m.shaderModifiers?[.fragment] = garmentShoulder.replacingOccurrences(of: "#pragma body", with: "float kitEdgeLines;\n#pragma body") + kitEdgeFragment
+        }
         return m
     }
     static let garmentShoulder = clothShoulder + "\n_output.color.rgb *= mix(0.68, 1.0, _surface.metalness) * mix(0.75, 1.0, _surface.specular.a);\n"

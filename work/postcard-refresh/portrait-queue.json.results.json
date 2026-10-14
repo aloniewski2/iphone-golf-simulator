@@ -1,0 +1,23 @@
+[
+  {
+    "name": "postcard-refresh-render-gates-portrait",
+    "exit": 1,
+    "seconds": 52.3,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-second-portrait",
+    "exit": 0,
+    "seconds": 38.52,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-tennis-final",
+    "exit": 0,
+    "seconds": 50.01,
+    "shaderErrors": [],
+    "compileErrors": []
+  }
+]

@@ -54,15 +54,13 @@ namespace GolfArcade.PlayTests
                             Assert.IsFalse(original.GetComponent<Renderer>().enabled,"legacy crowns hidden "+number);
                             Assert.Greater(resort.PlantCount,0,"replacement plants "+number);
                             Assert.Greater(resort.TriangleCount,0,"replacement geometry "+number);
-                            var palmLods=resort.GetComponentsInChildren<LODGroup>(true).Where(g=>g.name.EndsWith("_PALM_LOD")).ToArray();
-                            Assert.Greater(palmLods.Length,0,"authored palm replacement LODs "+number);
-                            foreach(var group in palmLods)
+                            // Full crowns at every distance: no LOD swap pops as the camera nears them.
+                            Assert.AreEqual(0,resort.GetComponentsInChildren<LODGroup>(true).Length,"no distance LOD on replacement plants "+number);
+                            var palmCells=resort.GetComponentsInChildren<MeshRenderer>(true).Where(r=>r.name.EndsWith("_PALM_NEAR")).ToArray();
+                            Assert.Greater(palmCells.Length,0,"authored palm replacement cells "+number);
                             {
-                                var levels=group.GetLODs();Assert.AreEqual(2,levels.Length,"near/far palms "+number);
-                                foreach(var level in levels)
                                 {
-                                    Assert.Greater(level.renderers.Length,0,"nonempty palm LOD "+number);
-                                    foreach(var renderer in level.renderers)
+                                    foreach(var renderer in palmCells)
                                     {
                                         Assert.IsNotNull(renderer);
                                         var filter=renderer.GetComponent<MeshFilter>();Assert.IsNotNull(filter);

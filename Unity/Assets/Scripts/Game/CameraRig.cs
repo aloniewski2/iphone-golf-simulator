@@ -143,6 +143,26 @@ namespace GolfArcade.Game
             shotFrame=povThisFrame=false;cueUp=Vector3.up;targetRoll=0;
         }
 
+        /// The golfer, whole, in the clear space the hole-out card leaves them: between the banner and the way on on the phone,
+        /// and in the left half of the big screen, where the card is a column on the right. They face the lens to react and emote.
+        public void FrameHoleOut(Transform golfer)
+        {
+            if (Mathf.Abs(resultAspect-Camera.aspect)>.01f) SnapNext();
+            resultAspect=Camera.aspect;
+            bool portrait=Camera.aspect<1.2f;
+            var facing=GroundDirection(golfer.forward);
+            FrameStage(golfer.position,facing,0,portrait?.30f:.09f,portrait?.71f:.92f,4f);
+            if (!portrait)
+            {
+                var right=Vector3.Cross(Vector3.up,-facing);
+                float distance=Vector3.Distance(targetPosition,targetLookAt);
+                float halfWidth=distance*Mathf.Tan(Camera.fieldOfView*Mathf.Deg2Rad/2)*Camera.aspect;
+                var shift=right*halfWidth*.46f;      // the golfer a quarter of the way in from the left edge
+                targetPosition+=shift;targetLookAt+=shift;
+            }
+            shotFrame=povThisFrame=false;cueUp=Vector3.up;targetRoll=0;
+        }
+
         public bool LandingView { get; private set; }
         Vector3 landingCamera;
         public const float LaunchHoldSeconds = 1.5f;
@@ -525,6 +545,12 @@ namespace GolfArcade.Game
         /// Frame like a camera of this horizontal field of view: what a landscape render was
         /// composed with, kept across this screen's width whatever its shape (clamped, so a
         /// portrait phone does not turn into a fisheye).
+        /// Frame with this vertical field of view until RestoreFov (a hole's opening and its introductions).
+        public void SetVerticalFov(float degrees)
+        {
+            if (!fovOverridden) { restFov = Camera.fieldOfView; fovOverridden = true; }
+            Camera.fieldOfView = Mathf.Clamp(degrees, 5f, 85f);
+        }
         public void SetHorizontalFov(float degrees)
         {
             if (!fovOverridden) { restFov = Camera.fieldOfView; fovOverridden = true; }

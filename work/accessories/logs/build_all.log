@@ -1,0 +1,9 @@
+wrote product sheets (2724, 3550)
+wrote closeups
+wrote hero sheets
+rendered ['Cheer:4', 'Cheer:6', 'FistPump:5', 'FistPump:29', 'Idle:18', 'Idle:10', 'RunForward:1', 'RunForward:4', 'Walk:0', 'Walk:12', 'Wave:0', 'Wave:6']
+wrote pose sheet Male 24
+rendered ['Cheer:10', 'Cheer:6', 'FistPump:29', 'FistPump:30', 'Idle:0', 'Idle:16', 'RunForward:3', 'RunForward:4', 'Walk:9', 'Walk:2', 'Wave:4', 'Wave:6']
+wrote pose sheet Female 24
+Male PASS {"verts": 19437, "tris": 29656, "tris_le_30k": true, "texture": 4096, "weights_sum_ok": true, "max_influences": 4, "bone_index_range_ok": true, "bones": ["Back_Bag", "UpperChest", "Chest", "Spine", "Hips", "RightShoulder", "RightUpperArm"], "bones_valid": true, "no_armblend": true, "uv_in_unit": true, "normals_unit": true, "bin_size_ok": true, "bindposes_floats": true, "maps": {"N": true, "M": true}, "slot": "BackCarry", "parent_bone": "UpperChest", "socket": "Back_Bag", "pieces": ["Kit_Bag"], "tag": "Bag", "contract_keys": true}
+Female PASS {"verts": 19438, "tris": 29656, "tris_le_30k": true, "texture": 4096, "weights_sum_ok": true, "max_influences": 4, "bone_index_range_ok": true, "bones": ["Back_Bag", "UpperChest", "Chest", "Spine", "Hips", "RightShoulder", "RightUpperArm"], "bones_valid": true, "no_armblend": true, "uv_in_unit": true, "normals_unit": true, "bin_size_ok": true, "bindposes_floats": true, "maps": {"N": true, "M": true}, "slot": "BackCarry", "parent_bone": "UpperChest", "socket": "Back_Bag", "pieces": ["Kit_Bag"], "tag": "Bag", "contract_keys": true}

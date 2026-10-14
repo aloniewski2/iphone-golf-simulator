@@ -1,0 +1,152 @@
+[
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 142.218,
+"y": 306.943,
+"r": 18,
+"depth": 38.199,
+"n": 9,
+"img": "f02_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 255.66,
+"y": 303.618,
+"r": 18,
+"depth": 38.199,
+"n": 9,
+"img": "f02_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 183.826,
+"y": 300.081,
+"r": 18,
+"depth": 38.199,
+"n": 9,
+"img": "f02_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 218.304,
+"y": 311.098,
+"r": 18,
+"depth": 38.199,
+"n": 9,
+"img": "f02_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 101.005,
+"y": 181.681,
+"r": 22,
+"depth": 38.199,
+"n": 9,
+"img": "f02_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 138.19,
+"y": 308.926,
+"r": 18,
+"depth": 39.698,
+"n": 44,
+"img": "f03_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 260.333,
+"y": 306.715,
+"r": 18,
+"depth": 39.698,
+"n": 44,
+"img": "f03_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 189.591,
+"y": 302.106,
+"r": 18,
+"depth": 39.698,
+"n": 44,
+"img": "f03_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 211.893,
+"y": 314.32,
+"r": 18,
+"depth": 39.698,
+"n": 44,
+"img": "f03_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 131.191,
+"y": 218.078,
+"r": 22,
+"depth": 39.698,
+"n": 44,
+"img": "f03_handR"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 150.802,
+"y": 297.929,
+"r": 18,
+"depth": 36.736,
+"n": 51,
+"img": "f04_front"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 248.9,
+"y": 297.435,
+"r": 18,
+"depth": 36.736,
+"n": 51,
+"img": "f04_back"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 197.352,
+"y": 293.559,
+"r": 18,
+"depth": 36.736,
+"n": 51,
+"img": "f04_left"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 202.947,
+"y": 302.269,
+"r": 18,
+"depth": 36.736,
+"n": 51,
+"img": "f04_right"
+},
+{
+"kind": "hand",
+"what": "hand under cloth R",
+"x": 108.882,
+"y": 182.202,
+"r": 22,
+"depth": 36.736,
+"n": 51,
+"img": "f04_handR"
+}
+]

@@ -1,0 +1,12 @@
+result Intro_Wave started=True seen=True frames=75 k=1.0936
+result Intro_BringIt started=True seen=True frames=105 k=1.0936
+result Intro_Pushups started=True seen=True frames=105 k=1.0936
+result Emote_Scuba started=True seen=True frames=75 k=1.0936
+result Emote_Thrust started=True seen=True frames=75 k=1.0936
+result Emote_Spike started=True seen=True frames=75 k=1.0936
+holeout Intro_Wave started=True seen=True frames=75 k=1.0936
+holeout Intro_BringIt started=True seen=True frames=105 k=1.0936
+holeout Intro_Pushups started=True seen=True frames=105 k=1.0936
+holeout Emote_Scuba started=True seen=True frames=75 k=1.0936
+holeout Emote_Thrust started=True seen=True frames=75 k=1.0936
+holeout Emote_Spike started=True seen=True frames=75 k=1.0936

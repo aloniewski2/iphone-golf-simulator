@@ -1,0 +1,16 @@
+[
+  {
+    "name": "postcard-refresh-render-gates-post-on",
+    "exit": 1,
+    "seconds": 47.89,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "postcard-refresh-second-post-on",
+    "exit": 0,
+    "seconds": 46.14,
+    "shaderErrors": [],
+    "compileErrors": []
+  }
+]

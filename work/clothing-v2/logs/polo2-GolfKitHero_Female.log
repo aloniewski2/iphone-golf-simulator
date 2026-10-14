@@ -1,0 +1,14 @@
+ARMHOLES cut: 320 faces removed
+POLO obstacle: V2 shorts, 9292 outer faces
+FIT worst move at [0.138 0.011 1.229] -> [0.135 0.06  1.206]
+FIT moved 3265 verts, max 54.9 mm, min clearance 4.1 mm
+LONG faces removed: 2
+FINS removed after fit: 10
+COLLAR bounds [-0.093 -0.113  1.356] [0.093 0.087 1.436] neck pts 128 [-0.071 -0.07   1.376] [0.071 0.065 1.414]
+SLEEVE side 1: loop verts 68, ring0 z 1.159..1.354 x 0.123..0.150, end [0.179 0.012 1.201], bbox z 1.153..1.354
+SLEEVE side -1: loop verts 68, ring0 z 1.163..1.356 x -0.150..-0.125, end [-0.178  0.015  1.2  ], bbox z 1.153..1.356
+Info: Saved as "polo_v2.blend"
+POLO parts: shell 20547 faces, collar 1065, placket 150, buttons 2, cuffs 0
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

@@ -1,0 +1,55 @@
+GolfKitHero_Male rest check max |dx| (m) 4.819865131455714e-07 test verts 8286
+  GolfKitHero_Male:Cheer     bag   20.0 mm (f 4)  strap    1.8 mm (f 6)  head   40.9 mm
+  GolfKitHero_Male:Chip      bag   20.0 mm (f 5)  strap  -18.1 mm (f19)  head   66.9 mm
+  GolfKitHero_Male:Drive     bag  -60.7 mm (f42)  strap  -23.2 mm (f32)  head   26.0 mm
+  GolfKitHero_Male:Emote_Scuba bag   19.6 mm (f 0)  strap  -27.2 mm (f23)  head   25.2 mm
+  GolfKitHero_Male:Emote_Spike bag -500.2 mm (f 7)  strap  -21.1 mm (f 0)  head   26.9 mm
+  GolfKitHero_Male:Emote_Thrust bag   19.6 mm (f 0)  strap  -29.0 mm (f21)  head   34.8 mm
+  GolfKitHero_Male:FistPump  bag   20.0 mm (f 5)  strap  -28.4 mm (f29)  head   40.9 mm
+  GolfKitHero_Male:HalfSwing bag   20.0 mm (f23)  strap  -22.8 mm (f35)  head   50.6 mm
+  GolfKitHero_Male:Idle      bag   20.0 mm (f10)  strap    6.8 mm (f18)  head   40.9 mm
+  GolfKitHero_Male:Intro_BringIt bag   19.6 mm (f 0)  strap  -25.9 mm (f36)  head   29.0 mm
+  GolfKitHero_Male:Intro_Pushups bag -421.2 mm (f27)  strap  -33.7 mm (f33)  head   38.7 mm
+  GolfKitHero_Male:Intro_Wave bag   19.6 mm (f 0)  strap  -22.0 mm (f23)  head   37.1 mm
+  GolfKitHero_Male:IronSwing bag  -36.6 mm (f40)  strap  -23.7 mm (f29)  head   50.1 mm
+  GolfKitHero_Male:Putt      bag   20.0 mm (f13)  strap  -12.5 mm (f21)  head   82.7 mm
+  GolfKitHero_Male:RunForward bag   19.7 mm (f 1)  strap   -6.9 mm (f 4)  head   39.1 mm
+  GolfKitHero_Male:Walk      bag   19.9 mm (f 0)  strap   -1.0 mm (f12)  head   40.1 mm
+  GolfKitHero_Male:Wave      bag   20.0 mm (f 0)  strap    1.8 mm (f 6)  head   40.9 mm
+MatchHero_Male rest check max |dx| (m) 2.4997743786059345e-07 test verts 8286
+  MatchHero_Male:ReadyIdle   bag   19.6 mm (f 7)  strap  -26.9 mm (f14)  head   38.7 mm
+  MatchHero_Male:ForehandArmCorrected bag  -86.3 mm (f 5)  strap  -30.5 mm (f13)  head   28.7 mm
+  MatchHero_Male:BackhandArmCorrected bag   19.4 mm (f 7)  strap  -30.1 mm (f 7)  head   24.7 mm
+  MatchHero_Male:Serve       bag    0.9 mm (f 7)  strap  -34.2 mm (f20)  head   25.6 mm
+  MatchHero_Male:VolleyForehand bag   19.2 mm (f 4)  strap  -37.5 mm (f 6)  head   27.6 mm
+  MatchHero_Male:Overhead    bag -242.8 mm (f 6)  strap  -32.1 mm (f13)  head   26.1 mm
+  MatchHero_Male:ForehandWide bag   19.5 mm (f 5)  strap  -36.7 mm (f12)  head   29.7 mm
+  MatchHero_Male:ForehandShort bag   -9.8 mm (f 2)  strap  -27.4 mm (f11)  head   38.7 mm
+  MatchHero_Male:BackhandWide bag -160.8 mm (f 7)  strap  -33.9 mm (f 1)  head   24.8 mm
+  MatchHero_Male:SliceApproach bag   19.3 mm (f 6)  strap  -32.4 mm (f14)  head   38.7 mm
+  MatchHero_Male:Return      bag   19.4 mm (f 4)  strap  -32.0 mm (f10)  head   28.5 mm
+  MatchHero_Male:VolleyBackhand bag   19.0 mm (f 3)  strap  -38.9 mm (f 2)  head   38.7 mm
+  MatchHero_Male:ForehandOpen bag   -9.8 mm (f 3)  strap  -30.6 mm (f11)  head   27.2 mm
+  MatchHero_Male:SplitToForehand bag   19.6 mm (f 0)  strap  -30.6 mm (f 6)  head   31.0 mm
+  MatchHero_Male:SplitToBackhand bag   19.6 mm (f 7)  strap  -36.2 mm (f 1)  head   38.7 mm
+  MatchHero_Male:RecoverCenter bag   19.5 mm (f 2)  strap  -26.9 mm (f10)  head   37.9 mm
+  MatchHero_Male:Walk        bag   19.9 mm (f 0)  strap   -1.0 mm (f12)  head   40.1 mm
+  MatchHero_Male:RunForward  bag   19.7 mm (f 6)  strap   -2.8 mm (f 5)  head   39.1 mm
+  MatchHero_Male:RunLeft     bag   19.8 mm (f 1)  strap   -1.4 mm (f 5)  head   37.7 mm
+  MatchHero_Male:RunRight    bag   19.8 mm (f 1)  strap   -9.6 mm (f 3)  head   40.6 mm
+  MatchHero_Male:Emote_Scuba bag -521.0 mm (f48)  strap  -27.0 mm (f 1)  head   29.7 mm
+  MatchHero_Male:Emote_Thrust bag -381.9 mm (f34)  strap  -43.7 mm (f12)  head   33.7 mm
+  MatchHero_Male:Emote_Spike bag -119.0 mm (f13)  strap  -32.6 mm (f12)  head   17.5 mm
+  MatchHero_Male:Intro_Wave  bag   19.6 mm (f 0)  strap  -26.9 mm (f 0)  head   36.2 mm
+  MatchHero_Male:Intro_BringIt bag   19.6 mm (f 0)  strap  -26.9 mm (f 0)  head   25.9 mm
+  MatchHero_Male:Intro_Pushups bag -355.1 mm (f 6)  strap  -34.6 mm (f24)  head   38.7 mm
+  MatchHero_Male:Idle        bag   19.6 mm (f25)  strap  -25.4 mm (f36)  head   38.7 mm
+  MatchHero_Male:HitPerfect  bag   19.6 mm (f18)  strap  -24.5 mm (f 0)  head   38.6 mm
+  MatchHero_Male:MissWhiff   bag   19.6 mm (f 3)  strap  -24.5 mm (f 0)  head   38.6 mm
+  MatchHero_Male:CelebratePoint bag   19.6 mm (f18)  strap  -24.5 mm (f 0)  head   38.6 mm
+  MatchHero_Male:SadPointLost bag   19.6 mm (f15)  strap  -24.5 mm (f 0)  head   38.7 mm
+  MatchHero_Male:MatchWin    bag   19.6 mm (f21)  strap  -24.5 mm (f 0)  head   38.6 mm
+  MatchHero_Male:MatchLose   bag   19.6 mm (f15)  strap  -24.5 mm (f 0)  head   38.7 mm
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:49:19)
+
+Blender quit

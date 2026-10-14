@@ -17,7 +17,10 @@ namespace GolfArcade.Game {
         public double TutorialHeading => heading;
         public GolfArcade.UI.Hud TutorialHud => hud;
         public int TutorialHole => holeIndex;
-        public void PrepareNativeAddress(string courseKey = null) {
+        public void PrepareNativeAddress(string courseKey = null) { var steps = PrepareNativeAddressSteps(courseKey); while (steps.MoveNext()) { } }
+        /// PrepareNativeAddress with the first hole built a slice per step (it yields 0..1): a round launched from a plaza
+        /// bay builds behind the plaza, which keeps drawing between the slices.
+        public System.Collections.Generic.IEnumerator<float> PrepareNativeAddressSteps(string courseKey = null) {
             NativeControlled = true; controllerMapHole = -1;
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
@@ -28,7 +31,13 @@ namespace GolfArcade.Game {
             setup = GameSetup.Solo(ProfileStore.Active, selected.Key);
             // the day's forecast round: the date is the seed, the same round for everyone that day
             if (DailyRound > 0) setup.Seed = DailyRound;
-            StartRound();
+            deferFirstHole = true; StartRound(); deferFirstHole = false;
+            if (firstHoleSteps != null)
+            {
+                var build = firstHoleSteps; firstHoleSteps = null;
+                loadingHole = true;   // the frame loop stands still on the half-built hole
+                try { while (build.MoveNext()) yield return build.Current; } finally { loadingHole = false; }
+            }
             golfPresentation.Cancel(); pendingNativeIntro=true;
             BeginAim(false); hud.ShowPlayHud(true); RefreshControls();
             rig.SnapNext(); rig.ApplyFrame();
@@ -37,7 +46,7 @@ namespace GolfArcade.Game {
             if(Current==State.Intro) { SkipPresentation(); return; }
             if (Current == State.Replay || (Current == State.Result && replayFirst)) { SkipReplay(); return; }
             if (Current == State.Result) { ContinueShotResult(); return; }
-            if (Current != State.RoundDone) return;
+            if (Current != State.RoundDone || networkConfigured) return;   // (a multiplayer round's end belongs to the lobby)
             if (NativeHasNextHole) NextHole(); else PlayAgain();
 
         }
@@ -85,6 +94,7 @@ namespace GolfArcade.Game {
             sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
             sheet.SetScreen(true);
             sheet.Skip.Pressed = () => { if (Current is State.Replay or State.Result) SkipReplay(); else SkipPresentation(); };
+            for (int i = 0; i < sheet.IntroEmotes.Length; i++) { int slot = i; sheet.IntroEmotes[i].Pressed = () => ChooseIntroEmote(slot); }
             sheet.StartSwing.Pressed = () => NativeStartSwing();
             sheet.Pause.gameObject.SetActive(true);
             sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();
@@ -142,7 +152,7 @@ namespace GolfArcade.Game {
         }
         [System.Serializable] public sealed class ControllerReading {
             public PartyControllerReading party;
-            public int hole,par,clubIndex;
+            public int hole,holeId,par,clubIndex;
             public string name,clubName,mapImage;
             public double yards,wind,windDegrees,clubYards,aimDegrees;
             public ControllerPoint ball,pin,landing,direction;
@@ -158,7 +168,7 @@ namespace GolfArcade.Game {
             if(hole==null || !hud || !minimapCamera) return null;
             bool putting = hole.LieAt(ballAt).IsPuttingSurface();
             var reading=new ControllerReading {
-                hole=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
+                hole=hole.PlayNumber,holeId=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
                 wind=Wind.SpeedMPH,windDegrees=Wind.RelativeTo(heading),
                 clubIndex=System.Array.IndexOf(GolfArcade.Shot.GolfClubs.All,club),
                 clubName=GolfArcade.Shot.GolfClubs.DisplayName(club),clubYards=GolfArcade.Shot.GolfClubs.ReferenceDistanceYards(club),

@@ -1,0 +1,31 @@
+female=False hero=True model=Hero/golfer_m unity=6000.3.24f1
+renderer Body active=True enabled=True verts=44168 bones=53 mats=Skin_OriginalSurfacePigment (hero)
+renderer OriginalSeamFeatures active=True enabled=True verts=3824 bones=53 mats=Reference_Face_Brow (hero)|Reference_Face_Sclera (hero)|Reference_Face_Iris (hero)|Reference_Face_Pupil (hero)|Reference_Face_Limbal (hero)|Reference_Face_Catch (hero)
+renderer CLUB_DRIVER active=True enabled=True verts=1716 bones=54 mats=CLUB grip (shared golf profile)|CLUB accent (shared golf profile)|CLUB carbon (shared golf profile)|CLUB black (shared golf profile)|CLUB satin (shared golf profile)|CLUB gunmetal (shared golf profile)|CLUB groove (shared golf profile)
+renderer CLUB_IRON active=False enabled=True verts=1232 bones=54 mats=CLUB grip (shared golf profile)|CLUB accent (shared golf profile)|CLUB chrome (shared golf profile)|CLUB black (shared golf profile)|CLUB groove (shared golf profile)
+renderer CLUB_PUTTER active=False enabled=True verts=1248 bones=54 mats=CLUB grip (shared golf profile)|CLUB accent (shared golf profile)|CLUB chrome (shared golf profile)|CLUB black (shared golf profile)|CLUB satin (shared golf profile)|CLUB gunmetal (shared golf profile)|CLUB white (shared golf profile)
+renderer CLUB_WEDGE active=False enabled=True verts=1280 bones=54 mats=CLUB grip (shared golf profile)|CLUB accent (shared golf profile)|CLUB chrome (shared golf profile)|CLUB black (shared golf profile)|CLUB satin (shared golf profile)|CLUB groove (shared golf profile)
+renderer Face active=True enabled=False verts=3520 bones=54 mats=Face_Pupil|Face_Iris|Face_Limbal|Face_Sclera|Face_Catch|Face_BrowSoft|Face_Brow|Face_LidLine|Face_LidCrease|Face_Nostril|Face_LipUp|Face_Lip|Face_Seam
+renderer Hair_Afro active=True enabled=False verts=5359 bones=54 mats=Hair_M|Hair_Dark
+renderer Hair_Bob active=True enabled=False verts=2931 bones=54 mats=HairCard_Bob|Hair_Scalp
+renderer Hair_Braid active=True enabled=False verts=6030 bones=54 mats=HairCard_Braid|Hair_Scalp
+renderer Hair_Classic active=True enabled=False verts=8792 bones=54 mats=Hair_M|Hair_Scalp
+renderer Hair_Crop active=True enabled=False verts=2334 bones=54 mats=HairCard_Crop|Hair_Scalp
+renderer Hair_Fringe active=True enabled=False verts=2385 bones=54 mats=HairCard_Fringe|Hair_Scalp
+renderer Hair_Long active=True enabled=False verts=4471 bones=54 mats=HairCard_Long|Hair_Scalp
+renderer Hair_Mop active=True enabled=False verts=3087 bones=54 mats=HairCard_Mop|Hair_Scalp
+renderer Hair_Ponytail active=True enabled=False verts=5256 bones=54 mats=HairCard_Ponytail|Hair_Scalp
+renderer Hair_Quiff active=True enabled=False verts=4401 bones=54 mats=HairCard_Quiff|Hair_Scalp
+renderer Hair_SideBob active=True enabled=False verts=6499 bones=54 mats=HairCard_SideBob|Hair_Scalp
+renderer Kit_Bottom active=True enabled=False verts=4894 bones=54 mats=Kit_Shorts|Kit_ShortsBand
+renderer Kit_Shoe_L active=True enabled=False verts=3933 bones=54 mats=Kit_Shoe|Kit_Sole
+renderer Kit_Shoe_R active=True enabled=False verts=3935 bones=54 mats=Kit_Shoe|Kit_Sole
+renderer Kit_Sock_L active=True enabled=False verts=1507 bones=54 mats=Kit_Sock
+renderer Kit_Sock_R active=True enabled=False verts=1508 bones=54 mats=Kit_Sock
+renderer Kit_Top active=True enabled=False verts=6782 bones=54 mats=Kit_Shirt|Kit_ShirtTrim
+renderer Kit_Top active=True enabled=True verts=12920 bones=53 mats=Kit_Shirt (hero)
+renderer Kit_Bottom active=True enabled=True verts=14290 bones=53 mats=Kit_Shorts (hero)|Kit_GolfHardware (hero)
+renderer Kit_Glove_L active=True enabled=True verts=4957 bones=53 mats=Kit_GolfGlove (hero)
+renderer Kit_Glove_R active=True enabled=False verts=5012 bones=53 mats=Kit_GolfGlove (hero)
+renderer Kit_Shoe_L active=True enabled=True verts=9791 bones=53 mats=Kit_Shoe (hero)
+renderer Kit_Shoe_R active=True enabled=True verts=9745 bones=53 mats=Kit_Shoe (hero)

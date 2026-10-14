@@ -1,0 +1,17 @@
+{
+  "host": {
+    "lookDoneToRemoteHeroSeconds": 0.002779083326458931,
+    "emoteSelectionToRemoteHeroSeconds": 0.0070810416946187615
+  },
+  "guest": {
+    "lookDoneToRemoteHeroSeconds": 0.00019854167476296425,
+    "emoteSelectionToRemoteHeroSeconds": 0.0008077083621174097
+  },
+  "fullLoop": {
+    "hostResults": 2,
+    "guestResults": 1,
+    "rematch": true,
+    "forcedDisconnect": true,
+    "hostFinished": true
+  }
+}

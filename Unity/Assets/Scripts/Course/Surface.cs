@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace GolfArcade.Course
 {
     /// The shape of the ground a ball rolls over, in yards. The roll accelerates down its
-    /// gradient, the green-reading grid is draped over its height and coloured by its slope, so
-    /// what the player sees is exactly what the putt will do.
+    /// gradient and the green read's grain points down it, so what the player reads in the grass
+    /// is what the putt will do.
     public interface ISurface
     {
         /// Height above the hole's datum.

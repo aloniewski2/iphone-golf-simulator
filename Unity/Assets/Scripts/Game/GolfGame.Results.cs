@@ -12,7 +12,7 @@ namespace GolfArcade.Game
         ShotResultPanel shotResultPanel;
         string[] resultEmotes = TennisEmotes.Normalize(null);
         public void EquipResultEmotes(string[] ids) => resultEmotes = TennisEmotes.Normalize(ids);
-        public bool ShowingShotResult => Current == State.Result && shotResultPanel && shotResultPanel.gameObject.activeSelf;
+        public bool ShowingShotResult => Current == State.Result && ((shotResultPanel && shotResultPanel.gameObject.activeSelf) || HoleOutShowing);
         public string ShotStatistics { get; private set; }
         public string ShotResultTitle { get; private set; }
         public string ResultEmote => golfer ? golfer.Performing : null;
@@ -26,7 +26,7 @@ namespace GolfArcade.Game
             if(PresentationPolicy.Cut(GolfBoundaryKey)==PresentationCut.Full)PresentationPolicy.Seen(GolfBoundaryKey);
         }
         bool boundaryPresented;
-        float ResultSkipAfter => LastShot!=null && LastShot.IsHoled ? (holeIndex+1>=course.Holes.Length?1.5f:holeStrokes==1?1f:.5f) : 0f;
+        float ResultSkipAfter => !networkConfigured ? LocalResultSeconds : LastShot!=null && LastShot.IsHoled ? (holeIndex+1>=course.Holes.Length?1.5f:holeStrokes==1?1f:.5f) : 0f;
         bool resultHeroCamera;
         void NextPresentationHole() { Enter(State.RoundDone); NextHole(); }
         void ShowShotResult()
@@ -48,28 +48,55 @@ namespace GolfArcade.Game
             if (!shotResultPanel) shotResultPanel = ShotResultPanel.Create(transform, rig.Camera);
             BuildSwingCurve();
             string outcome = shot.IsHoled ? "HOLED!" : shot.PenaltyStrokes > 0 ? "PENALTY +1" : shot.Lie.Label();
+            holeOutShown = false; holeOutCard?.Hide();
+            if (shot.IsHoled && UsesHoleOutCard)
+            {
+                // the hole's result, the round so far and the way on are one card; the shot's stats panel stays away
+                ShowHoleOut(shot);
+            }
+            else
+            {
             shotResultPanel.Show(quality, putt ? UiKit.ArcadeYellow : GradeColor(lastReport.Grade), outcome, SwingTiles(true), detail,
                 curvePoints, curveReach, curveTarget,
                 shot.IsHoled || Match?.IsContest == true ? "SCORECARD" : "NEXT SHOT", resultEmotes.Select(TennisEmotes.Name).ToArray(), ContinueShotResult, PlayResultEmote);
             shotResultPanel.AnimateStats(shot.Total,shot.Roll,shot.Apex,putt);
-            // The result waits on a front view so equipped emotes read clearly.
-            golfer.Perform("Idle");
-            resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;
-            if(resultHeroCamera) {bigMomentUsed=true;rig.FrameCharacterResult(golfer.transform);} else rig.FrameShotResult();
+            }
+            // The result waits on a front view so equipped emotes read clearly; on a hole out the golfer reacts to the
+            // score and is framed whole in the clear of the card, free to emote
+            resultHold = 0;
+            if (holeOutShown)
+            {
+                resultHeroCamera = false;
+                var reaction = HoleOutReaction(shot);
+                golfer.Perform(reaction, loop: reaction == "Idle");
+                rig.FrameHoleOut(golfer.transform);
+            }
+            else
+            {
+                golfer.Perform("Idle");
+                resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;
+                if(resultHeroCamera) {bigMomentUsed=true;rig.FrameCharacterResult(golfer.transform);} else rig.FrameShotResult();
+            }
             rig.SnapNext(); rig.ApplyFrame();
         }
 
         public bool PlayResultEmote(int selection)
         {
+            // during a hole's opening the emote buttons pick the golfer's intro emote
+            if (Current == State.Intro) return ChooseIntroEmote(selection);
             if (!ShowingShotResult || Time.timeScale <= 0 || selection < 0 || selection > 2) return false;
             string move = TennisEmotes.ExportName(resultEmotes[selection]);
-            return move != null && golfer.Perform(move, loop: false);
+            bool played = move != null && golfer.Perform(move, loop: false);
+            // the game waits for the emote to finish (and a beat after it) before it moves on by itself
+            if (played && networkConfigured) resultHold = Mathf.Max(resultHold, stateTime + TennisEmotes.Duration(resultEmotes[selection]) + 0.8f);
+            return played;
         }
 
         public void ContinueShotResult()
         {
-            // (a multiplayer round's host moves play on to the next player)
-            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter || networkConfigured) return;
+            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter) return;
+            // a multiplayer round: the player who swung moves play on, as they would alone (the host passes the turn)
+            if (networkConfigured) { NetworkResultDone(); return; }
             boundaryPresented = LastShot.IsHoled;
             AfterResult();
         }

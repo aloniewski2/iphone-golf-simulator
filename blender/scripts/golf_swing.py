@@ -14,6 +14,10 @@ THE BODY, in degrees and metres
             turn a little further than the chest (`girdle`: the lead shoulder slides across the chest in the backswing)
   head      turns less than the chest, stays tipped to look at the ball
   feet      planted: the lead foot flared, the trail heel comes up through the ball; knees from the legs' two-bone solve
+SWING FIX 2026-10-12 (work/swing-fix, measured against tour swings in work/swing-compare): the lead arm hangs straight at address (ARMS_WANT, ARM_WEIGHT,
+ADDRESS_LEAN) and is held long through the backswing, the downswing and the release (the "straight" curve, LEAD_STRAIGHT); the downswing keeps the wrists' hinge to
+the delivery (the P5 / P6 keys, FS); the hips and chest open earlier and the spine tilts away more so the trail arm reaches the ball without the body diving at it
+(hip_p6 / hip_imp / imp_turn / imp_side, the impact zone's slope); the backswing turns rather than sways. Per-club values: FS_CLUB, HS, CHIP_TOP, CHIP_LEAN.
 THE CLUB AND THE ARMS
   The club is the thing authored: the lead hand's place relative to the shoulders (in the chest's own turning frame: the arms stay in front of the chest), the shaft's direction,
   the face's roll about the shaft. The hands sit on the grip, palms facing each other across it, and the arms are solved from the shoulders to the wrists.
@@ -563,6 +567,26 @@ class Golfer:
         g, Rc = ck
         GL = S + Rch @ self.rfu(g(t) * self.reach)
         R = Rch @ Rc(t)
+        w = p.get("straight", 0.0)
+        if w > 1e-3:
+            # A golfer's lead arm stays long from the takeaway to the top and down to the delivery (and again through the release): between two keys the hands' curve would
+            # cut inside the arm's reach (a chord of the sphere about the shoulder) and fold the elbow, so the grip is carried out along the shoulder->grip line until the lead
+            # arm is LEAD_STRAIGHT of his reach (never pulled in, never past what the arm can hold onto)
+            Sp = P.child_head("LeftUpperArm", "LeftShoulder")
+            d = GL - Sp
+            lo, hi = d.length, d.length * 1.25
+            def stretch_at(L):
+                o_ = Sp + d.normalized() * L - R @ Vector((0, 0, geo.top - self.GRIP_LEAD))
+                m_, _g = self.arms(P, p, R, o_, geo, club)
+                return (P.heads["LeftHand"] - Sp).length / self.reach, m_
+            st0, _m0 = stretch_at(lo)
+            if st0 < LEAD_STRAIGHT:
+                for _ in range(12):
+                    mid = (lo + hi) / 2
+                    st, m_ = stretch_at(mid)
+                    if st < LEAD_STRAIGHT and max(m_.values()) < 0.002: lo = mid
+                    else: hi = mid
+                GL = Sp + d.normalized() * (d.length + (lo - d.length) * w)
         origin = GL - R @ Vector((0, 0, geo.top - self.GRIP_LEAD))
         miss, gam = self.arms(P, p, R, origin, geo, club)
         self.legs(P, p)
@@ -583,7 +607,7 @@ class Golfer:
         bent and the pelvis and feet placed as a golfer's are (`tpl` = the posture a golfer of this club starts from). A pattern search over (bend, pelvis x, pelvis height, ankle x)."""
         geo = self.geos[club]
         lie = math.radians(shaft_lie)
-        key = dict(t=0, s_h=Vector((-math.cos(lie), 0, -math.sin(lie))), face=Vector((0, -1, 0)), at_ball=ball)
+        key = dict(t=0, s_h=address_shaft(club, lie), face=Vector((0, -1, 0)), at_ball=ball)
         yc = ball_fwd           # (the stance's centre: the ball is `ball_fwd` toward the target from it, and the ball is at y = 0)
 
         def build(v):
@@ -599,7 +623,7 @@ class Golfer:
             err = 0.0
             for s, side, w in (("L", "Left", want[0]), ("R", "Right", want[1])):
                 Sp = P.child_head(f"{side}UpperArm", f"{side}Shoulder")
-                err += ((P.heads[f"{side}Hand"] - Sp).length / self.reach - w) ** 2 * 100.0 + info["miss"][s] ** 2 * 4000.0
+                err += ((P.heads[f"{side}Hand"] - Sp).length / self.reach - w) ** 2 * ARM_WEIGHT + info["miss"][s] ** 2 * ADDRESS_MISS_WEIGHT
             # a golfer's knees are bent 20-35 degrees
             for s, side in SIDES:
                 hipj = P.child_head(f"{side}UpperLeg", "Hips")
@@ -612,7 +636,7 @@ class Golfer:
             err += max(0.0, 0.04 - (v[1] - v[3])) ** 2 * 30 + max(0.0, (v[1] - v[3]) - 0.2) ** 2 * 30
             # stay near what a golfer does
             err += sum(((a - b) / sc) ** 2 for a, b, sc in zip(v, list(tpl) + [13.0], (14.0, 0.14, 0.10, 0.20, 5.0))) * 0.02
-            err += max(0.0, v[4] - 17.0) ** 2 * 0.2 + max(0.0, 7.0 - v[4]) ** 2 * 0.2
+            err += max(0.0, v[4] - SIDE_MAX) ** 2 * 0.2 + max(0.0, 7.0 - v[4]) ** 2 * 0.2
             err += max(0.0, MIN_BEND[club] - v[0]) ** 2 * 0.5 + max(0.0, v[3] - 0.17) ** 2 * 80.0
             return err
 
@@ -630,15 +654,27 @@ class Golfer:
                 steps = [s * 0.5 for s in steps]
                 if steps[1] < 0.002: break
         cv = build(v)
+        if DEBUG_MISS: print(f"ADDRESS {club}: bend {v[0]:.1f} pelvis x {v[1]:.3f} z {v[2]:.3f} ankle x {v[3]:.3f} side {v[4]:.1f}  cost {best:.3f}")
         return v, cv, best
 
 
 # ======================================================================= the swings
 STANCE_TPL = {"Driver": (32, 0.27, 0.86, 0.17), "Iron": (36, 0.18, 0.855, 0.08), "Wedge": (38, 0.15, 0.85, 0.05), "Putter": (46, 0.06, 0.80, -0.06)}      # (bend, pelvis x, pelvis z, ankle x)
-ARMS_WANT = {"Driver": (0.90, 0.92), "Iron": (0.96, 0.95), "Wedge": (0.95, 0.92), "Putter": (0.95, 0.92)}       # how far each arm is stretched at address, of his reach
+ARMS_WANT = {"Driver": (0.99, 0.96), "Iron": (0.99, 0.96), "Wedge": (0.98, 0.95), "Putter": (0.95, 0.92)}       # how far each arm is stretched at address, of his reach
 STANCE_HALF = {"Driver": 0.23, "Iron": 0.19, "Wedge": 0.17, "Putter": 0.15}       # half the ankles' distance
+ADDRESS_MISS_WEIGHT = 60000.0   # (the hands stay on the grip at address whatever the arms want)
+ARM_WEIGHT = 600.0      # how hard the address search holds the arms to ARMS_WANT (a golfer's lead arm hangs straight)
+SIDE_MAX = 20.0         # the most the spine tilts away from the target at address
 MIN_BEND = {"Driver": 30.0, "Iron": 33.0, "Wedge": 36.0, "Putter": 44.0}       # the least a golfer bends from the hips for the club
 BALL_FWD = {"Driver": 0.05, "Iron": 0.0, "Wedge": -0.02, "Putter": 0.0}        # how far the ball is toward the target from the stance's centre
+
+
+ADDRESS_LEAN = {"Driver": -0.10, "Iron": 0.0, "Wedge": 0.0, "Putter": 0.0}     # the shaft's lean at address (+ hands ahead of the head, toward the target; a driver's ball is forward, the hands a touch behind it)
+
+
+def address_shaft(club, lie):
+    """The shaft's direction at address, from the hands to the head."""
+    return Vector((-math.cos(lie), ADDRESS_LEAN[club], -math.sin(lie))).normalized()
 
 
 def rodrigues(v, axis, ang):
@@ -667,14 +703,14 @@ def key(t, s_h, face, roll=0.0, **kw):
     return d
 
 
-def impact_zone(club, ball, lie, IMP, lean=0.17):
+def impact_zone(club, ball, lie, IMP, lean=0.17, slope=0.8, span=0.45):
     """Keys through the ball: the club head moves along the target line on the arc of its swing (a circle of its own radius about the golfer's shoulders), the shaft's lean going from
     the head behind the hands (before the ball) to the head ahead of them (after it), the face closing a little. s is authored time (frames): one key a frame either side and two."""
     R_arc = 1.45 + 0.55 * (club == "Driver")
     ks = []
-    for dt, u in ((-2, -0.45), (-1, -0.22), (0, 0.0), (1, 0.22), (2, 0.45)):
+    for dt, u in ((-2, -0.45), (-1, -0.22), (0, 0.0), (1, 0.22 * span / 0.45), (2, span)):
         pt = ball + Vector((0, -u, u * u / (2 * R_arc)))
-        s_h = Vector((-math.cos(lie), lean - 0.8 * u, -math.sin(lie)))
+        s_h = Vector((-math.cos(lie), lean - slope * u, -math.sin(lie)))
         ks.append(key(IMP + dt, s_h, Vector((0, -1, 0)), 35.0 * u / 0.45, at_ball=pt, sole=CLUB_SOLE_Z[club] + u * u / (2 * R_arc)))
     return ks
 
@@ -753,31 +789,54 @@ class Swing:
         return self
 
 
-FIN_HANDS = (-0.40, 0.30, 0.62)       # the finish: the hands high, beside the lead ear (right, forward, up of the mid-shoulder, in his reach, in the chest's frame)
+FIN_HANDS = (-0.40, 0.30, 0.62)
+# the full swing's hand keys (right, forward, up of the mid-shoulder point in his reach, in the chest's frame) and the shaft's angle round the swing plane (plane_dir) at the
+# downswing keys: a straight lead arm at the top, P5 and P6, and the hinge held until P6
+FS = dict(k46=(0.30, 0.52, 0.40), top=(0.28, 0.48, 0.575), trans=(0.34, 0.54, 0.44), trans_th=250, p5=(0.52, 0.60, -0.19), p5_th=185, p6=(0.05, 0.63, -0.64), p6_th=100, hip_p6=-10.0, hip_imp=-36.0, sh_p6=30.0, zone_slope=0.6, p8=(-0.26, 0.68, -0.38), p9=(-0.24, 0.64, 0.14), p8_shaft=(0.2, -0.97, 0.12), hip_top=(45, 98), hip_top_iron=(42, 92), push_top=0.02, slide_imp=0.07, imp_side=12.0, imp_turn=-20.0, imp_lean=0.06)
+CHIP_TOP = (0.16, -0.02, 0.06)      # where the chip's hands go at the top, from address (chest frame, his reach): back toward the trail shoulder, a little up
+CHIP_LEAN = 0.16        # the chip's shaft lean at impact (hands ahead)
+HS = dict(top_th=185, trans_th=165, span=0.28)        # the half swing's shaft at the top (round the plane)
+FS_CLUB = {"Iron": dict(top=(0.24, 0.46, 0.52), imp_side=8.0, imp_turn=-12.0, imp_lean=0.10, hip_imp=-32.0)}       # a club's own keys where its stance (nearer the ball, bent further over) needs them
+IMP_BEND_FROM = -6.0
+LEAD_STRAIGHT = 0.982        # the lead arm's stretch (of his reach) the "straight" curve holds it to
+DEBUG_MISS = False          # (prints the address posture, the impact bend each search settles on and where the hands fall short of the grip)       # the finish: the hands high, beside the lead ear (right, forward, up of the mid-shoulder, in his reach, in the chest's frame)
 
 
-def full_swing(golfer, club, top=54, impact=66, finish=86, end=100, imp_bend=None, imp_side=8.0, imp_turn=-6.0, retime=True):
+def full_swing(golfer, club, top=54, impact=66, finish=86, end=100, imp_bend=None, imp_side=None, imp_turn=None, retime=True):
     """The full swing (a driver, an iron): address, takeaway, the top, the first move down, impact, follow-through, finish. Times are frames at 30 per second.
     `imp_bend` is how much further than at address he is bent forward at impact (a golfer stays in his posture and the club pulls the arms out): when not given, as little as lets both
     arms reach the grip."""
+    F = dict(FS, **FS_CLUB.get(club, {}))
+    if imp_side is None: imp_side = F["imp_side"]
+    if imp_turn is None: imp_turn = F["imp_turn"]
     if imp_bend is None:
-        for ib in [2.0 + 1.5 * i for i in range(0, 10)]:
+        for ib in [IMP_BEND_FROM + 1.5 * i for i in range(0, 16)]:
             sw = full_swing(golfer, club, top, impact, finish, end, ib, imp_side, imp_turn, False)
+            if DEBUG_MISS:
+                out = []
+                for x in [impact - 3 + 0.5 * k for k in range(19)]:
+                    P_, inf_ = sw.pose_s(x)
+                    if max(inf_["miss"].values()) > 0.003:
+                        g_ = sw.ck[0](x)
+                        out.append(f"{x:.2f}: L {inf_['miss']['L'] * 100:.1f} R {inf_['miss']['R'] * 100:.1f} hands {tuple(round(v, 2) for v in g_)}")
+                print(f"  ib {ib:+.1f}: " + " | ".join(out))
             if sw.worst_miss(impact - 3, impact + 6) < 0.003: break
+        if DEBUG_MISS: print(f"FULL {club}: imp_bend {ib:+.1f}")
         return sw.retime(2.2) if retime else sw
     TOP, IMP, FIN, END = top, impact, finish, end
     drv = club == "Driver"
+    F = dict(FS, **FS_CLUB.get(club, {}))
     ball = Vector((-0.75, 0, CLUB_BALL_Z[club]))
     lie_d = LIE[club]; lie = math.radians(lie_d)
     size = golfer.size
     v, cv0, _c = golfer.address_solve(club, lie_d, ball, ARMS_WANT[club], STANCE_TPL[club], STANCE_HALF[club] * size, BALL_FWD[club])
     st = cv0["stance"]
     c0 = {k: cc.v[0] for k, cc in cv0["curves"].items()}
-    hipT, shT = (50, 98) if drv else (46, 92)
+    hipT, shT = F["hip_top"] if drv else F["hip_top_iron"]
     K = lambda *pairs: list(pairs)
     cur = {
-        "hip_turn":      K((0, 0), (19, hipT * 0.43), (37, hipT * 0.78), (TOP, hipT), (TOP + 2, hipT * 0.96), (TOP + 4, hipT * 0.74), (IMP - 4, hipT * 0.13), (IMP, -32), (IMP + 4, -55), (IMP + 9, -72), (FIN, -88), (END, -88)),
-        "shoulder_turn": K((0, 0), (19, shT * 0.46), (37, shT * 0.78), (TOP, shT), (TOP + 2, shT * 0.99), (TOP + 4, shT * 0.91), (IMP - 4, shT * 0.52), (IMP, imp_turn), (IMP + 4, -45), (IMP + 9, -85), (FIN, -116), (END, -116)),
+        "hip_turn":      K((0, 0), (19, hipT * 0.43), (37, hipT * 0.78), (TOP, hipT), (TOP + 2, hipT * 0.96), (TOP + 4, hipT * 0.74), (IMP - 4, F["hip_p6"]), (IMP, F["hip_imp"]), (IMP + 4, -55), (IMP + 9, -72), (FIN, -88), (END, -88)),
+        "shoulder_turn": K((0, 0), (19, shT * 0.46), (37, shT * 0.78), (TOP, shT), (TOP + 2, shT * 0.99), (TOP + 4, shT * 0.91), (IMP - 4, F["sh_p6"]), (IMP, imp_turn), (IMP + 4, -45), (IMP + 9, -85), (FIN, -116), (END, -116)),
         "girdle":        K((0, 0), (19, 6), (37, 12), (TOP, 14), (IMP - 4, 8), (IMP, 0), (IMP + 4, -4), (FIN, 0), (END, 0)),
         "head_turn":     K((0, 0), (19, 12), (37, 22), (TOP, 28), (IMP - 4, 14), (IMP, 0), (IMP + 4, -8), (IMP + 9, -30), (FIN, -60), (END, -62)),
         "pelvis_bend":   K((0, c0["pelvis_bend"]), (TOP, c0["pelvis_bend"]), (IMP, c0["pelvis_bend"] + imp_bend + 1), (IMP + 9, c0["pelvis_bend"] - 14), (FIN, c0["pelvis_bend"] - 22), (END, c0["pelvis_bend"] - 22)),
@@ -788,27 +847,34 @@ def full_swing(golfer, club, top=54, impact=66, finish=86, end=100, imp_bend=Non
         "hip_side":      K((0, 3), (TOP, 6), (IMP, 8), (IMP + 9, 6), (FIN, 2), (END, 2)),
         "spine_side":    K((0, c0["spine_side"]), (TOP, c0["spine_side"] + 3), (IMP, c0["spine_side"] + 7), (IMP + 9, c0["spine_side"] + 4), (FIN, c0["spine_side"] - 2), (END, c0["spine_side"] - 2)),
         "chest_side":    K((0, c0["chest_side"]), (TOP, c0["chest_side"] + 4), (IMP, c0["chest_side"] + imp_side), (IMP + 9, c0["chest_side"] + 4), (FIN, c0["chest_side"] - 2), (END, c0["chest_side"] - 2)),
-        "slide":         K((0, 0), (19, -0.03 * size), (37, -0.06 * size), (TOP, -0.07 * size), (TOP + 4, -0.045 * size), (IMP - 4, 0.0), (IMP, 0.035 * size), (IMP + 9, 0.12 * size), (FIN, 0.17 * size), (END, 0.18 * size)),
-        "push":          K((0, 0), (TOP, -0.01 * size), (IMP, 0.0), (FIN, -0.07 * size), (END, -0.08 * size)),
-        "lift":          K((0, 0), (TOP, 0.0), (IMP - 4, 0.01 * size), (IMP, 0.02 * size), (IMP + 9, 0.06 * size), (FIN, 0.08 * size), (END, 0.08 * size)),
+        "slide":         K((0, 0), (19, -0.015 * size), (37, -0.03 * size), (TOP, -0.035 * size), (TOP + 4, -0.02 * size), (IMP - 4, 0.02 * size), (IMP, F["slide_imp"] * size), (IMP + 9, 0.12 * size), (FIN, 0.17 * size), (END, 0.18 * size)),
+        "push":          K((0, 0), (TOP, F["push_top"] * size), (IMP, 0.0), (FIN, -0.07 * size), (END, -0.08 * size)),
+        "lift":          K((0, 0), (TOP, 0.0), (IMP - 4, 0.015 * size), (IMP, 0.035 * size), (IMP + 9, 0.06 * size), (FIN, 0.08 * size), (END, 0.08 * size)),
         "lead_flare":    K((0, 18), (IMP, 18), (FIN, 38), (END, 38)), "trail_flare": K((0, 8), (IMP, 8), (FIN, -26), (END, -26)), "lead_heel": K((0, 0), (END, 0)),
         "trail_heel":    K((0, 0), (IMP - 4, 0), (IMP, 0.02), (IMP + 4, 0.06), (IMP + 9, 0.09), (FIN, 0.10), (END, 0.10)),
         "elbow_out":     K((0, 0.5), (END, 0.5)), "elbow_fwd": K((0, 0.0), (END, 0.0)),
+        # the lead arm held long: in from the takeaway, through the top and the downswing to the delivery, off through the impact zone (the club at the ball decides the
+        # hands there), on again for the release (both arms extended down the line), off as the arms fold into the finish
+        "straight":      K((0, 0), (6, 0), (12, 1), (IMP - 3, 1), (IMP - 2, 0), (IMP + 2, 0), (IMP + 3, 1), (IMP + 5, 1), (IMP + 8, 0), (END, 0)),
     }
     cv = {"curves": curves(cur), "stance": st}
     ks = [
-        key(0, Vector((-math.cos(lie), 0, -math.sin(lie))), Vector((0, -1, 0)), at_ball=ball),
+        key(0, address_shaft(club, lie), Vector((0, -1, 0)), at_ball=ball),
         key(10, plane_dir(lie_d, 45), Vector((-0.5, -0.8, 0)), 14, hands=(0.14, 0.50, -0.62)),
         key(19, Vector((0.0, 0.99, 0.10)), Vector((-1, 0, 0.05)), 28, hands=(0.42, 0.65, -0.39)),
         key(28, plane_dir(lie_d, 128), Vector((-1, 0, 0.1)), 20, hands=(0.45, 0.62, -0.12)),
         key(37, plane_dir(lie_d, 165), Vector((-1, 0, 0.2)), 10, hands=(0.38, 0.58, 0.12)),
-        key(46, plane_dir(lie_d, 225), Vector((-1, 0, 0.4)), 0, hands=(0.30, 0.52, 0.40)),
-        key(TOP, Vector((0.065, -0.97, 0.2)), Vector((-0.7, 0, 0.7)), 0, hands=(0.24, 0.50, 0.52)),
-        key(TOP + 4, plane_dir(lie_d, 205), Vector((-0.7, 0, 0.7)), 20, hands=(0.40, 0.50, 0.30)),
-        key(IMP - 4, Vector((0.15, 0.9, 0.25)), Vector((-1, 0, 0.4)), 40, hands=(0.46, 0.58, -0.45)),
-    ] + impact_zone(club, ball, lie, IMP) + [
-        key(IMP + 4, Vector((0.2, -0.9, 0.4)), None, hands=(-0.14, 0.80, -0.10)),
-        key(IMP + 9, Vector((0.2, -0.3, 0.93)), None, hands=(-0.25, 0.70, 0.20)),
+        key(46, plane_dir(lie_d, 225), Vector((-1, 0, 0.4)), 0, hands=F["k46"]),
+        key(TOP, Vector((0.065, -0.97, 0.2)), Vector((-0.7, 0, 0.7)), 0, hands=F["top"]),
+        # the downswing keeps the wrists' hinge: the hands come down to the lead arm's parallel with the shaft still pointing up the plane (P5), to the trail thigh with the shaft
+        # parallel to the ground (P6), and only then does the club release into the ball (the impact zone's keys)
+        key(TOP + 3, plane_dir(lie_d, F["trans_th"]), Vector((-0.7, 0, 0.7)), 5, hands=F["trans"]),
+        key(IMP - 6, plane_dir(lie_d, F["p5_th"]), Vector((-1, 0, 0.3)), 20, hands=F["p5"]),
+        key(IMP - 3, plane_dir(lie_d, F["p6_th"]), Vector((-1, 0, 0.4)), 40, hands=F["p6"]),
+    ] + impact_zone(club, ball, lie, IMP, F["imp_lean"], F["zone_slope"]) + [
+        # P8: both arms extended down the line, the hands at the lead hip and the shaft parallel to the ground pointing at the target; P9: the shaft up, the lead arm folding
+        key(IMP + 4, Vector(F["p8_shaft"]), None, hands=F["p8"]),
+        key(IMP + 9, Vector((0.2, -0.3, 0.93)), None, hands=F["p9"]),
         key(FIN, Vector((-0.9, -0.3, -0.3)), None, hands=FIN_HANDS),
         key(END, Vector((-0.9, -0.3, -0.3)), None, hands=FIN_HANDS),
     ]
@@ -839,21 +905,29 @@ def _flat(c0, END, **over):
     return cur
 
 
-def half_swing(golfer, top=44, impact=54, finish=72, end=86, imp_bend=None, imp_side=7.0, retime=True):
+def half_swing(golfer, top=44, impact=54, finish=72, end=86, imp_bend=None, imp_side=6.0, retime=True):
     """A pitch: the backswing to the lead arm's parallel (the club vertical), the same back through, a short balanced finish. The iron's geometry."""
     club = "Iron"
     if imp_bend is None:
-        for ib in [2.0 + 1.5 * i for i in range(0, 10)]:
+        for ib in [IMP_BEND_FROM + 1.5 * i for i in range(0, 16)]:
             sw = half_swing(golfer, top, impact, finish, end, ib, imp_side, False)
+            if DEBUG_MISS:
+                out = []
+                for x in [impact - 3 + 0.5 * k for k in range(19)]:
+                    P_, inf_ = sw.pose_s(x)
+                    if max(inf_["miss"].values()) > 0.003:
+                        out.append(f"{x:.1f}: L {inf_['miss']['L'] * 100:.1f} R {inf_['miss']['R'] * 100:.1f} hands {tuple(round(v, 2) for v in sw.ck[0](x))}")
+                print(f"  hb {ib:+.1f}: " + " | ".join(out))
             if sw.worst_miss(impact - 3, impact + 6) < 0.003: break
+        if DEBUG_MISS: print(f"HALF: imp_bend {ib:+.1f}")
         return sw.retime(1.9) if retime else sw
     TOP, IMP, FIN, END = top, impact, finish, end
     ball, lie_d, lie, st, c0 = _base(golfer, club)
     size = golfer.size
     K = lambda *pairs: list(pairs)
     cur = _flat(c0, END, **{
-        "hip_turn":      K((0, 0), (14, 10), (30, 20), (TOP, 28), (TOP + 2, 26), (TOP + 4, 18), (IMP - 3, 4), (IMP, -24), (IMP + 4, -42), (IMP + 8, -58), (FIN, -70), (END, -70)),
-        "shoulder_turn": K((0, 0), (14, 26), (30, 46), (TOP, 58), (TOP + 2, 57), (TOP + 4, 50), (IMP - 3, 26), (IMP, -4), (IMP + 4, -34), (IMP + 8, -62), (FIN, -92), (END, -92)),
+        "hip_turn":      K((0, 0), (14, 10), (30, 20), (TOP, 28), (TOP + 2, 26), (TOP + 4, 18), (IMP - 3, -6), (IMP, -30), (IMP + 4, -48), (IMP + 8, -58), (FIN, -70), (END, -70)),
+        "shoulder_turn": K((0, 0), (14, 26), (30, 46), (TOP, 58), (TOP + 2, 57), (TOP + 4, 50), (IMP - 3, 22), (IMP, -12), (IMP + 2, -30), (IMP + 4, -46), (IMP + 8, -62), (FIN, -92), (END, -92)),
         "girdle":        K((0, 0), (TOP, 8), (IMP, 0), (END, 0)),
         "head_turn":     K((0, 0), (TOP, 16), (IMP, 0), (IMP + 8, -14), (FIN, -45), (END, -47)),
         "pelvis_bend":   K((0, c0["pelvis_bend"]), (TOP, c0["pelvis_bend"]), (IMP, c0["pelvis_bend"] + imp_bend + 1), (IMP + 8, c0["pelvis_bend"] - 8), (FIN, c0["pelvis_bend"] - 14), (END, c0["pelvis_bend"] - 14)),
@@ -869,16 +943,17 @@ def half_swing(golfer, top=44, impact=54, finish=72, end=86, imp_bend=None, imp_
         "lift":          K((0, 0), (IMP, 0.015 * size), (FIN, 0.05 * size), (END, 0.05 * size)),
         "trail_heel":    K((0, 0), (IMP - 3, 0), (IMP, 0.015), (IMP + 4, 0.05), (FIN, 0.08), (END, 0.08)),
         "lead_flare":    K((0, 18), (IMP, 18), (FIN, 34), (END, 34)), "trail_flare": K((0, 8), (IMP, 8), (FIN, -20), (END, -20)),
+        "straight":      K((0, 0), (6, 0), (12, 1), (IMP - 3, 1), (IMP - 2, 0), (IMP + 2, 0), (IMP + 3, 1), (IMP + 5, 1), (IMP + 8, 0), (END, 0)),
     })
     cv = {"curves": curves(cur), "stance": st}
     ks = [
         key(0, Vector((-math.cos(lie), 0, -math.sin(lie))), Vector((0, -1, 0)), at_ball=ball),
         key(14, plane_dir(lie_d, 70), Vector((-1, 0, 0.05)), 20, hands=(0.30, 0.60, -0.45)),
         key(30, plane_dir(lie_d, 128), Vector((-1, 0, 0.1)), 18, hands=(0.38, 0.60, -0.15)),
-        key(TOP, plane_dir(lie_d, 160), Vector((-1, 0, 0.2)), 10, hands=(0.38, 0.58, 0.10)),
-        key(TOP + 4, plane_dir(lie_d, 140), Vector((-1, 0, 0.3)), 20, hands=(0.40, 0.55, -0.10)),
+        key(TOP, plane_dir(lie_d, HS["top_th"]), Vector((-1, 0, 0.2)), 10, hands=(0.38, 0.58, 0.10)),
+        key(TOP + 4, plane_dir(lie_d, HS["trans_th"]), Vector((-1, 0, 0.3)), 20, hands=(0.40, 0.55, -0.10)),
         key(IMP - 4, Vector((0.15, 0.85, 0.35)), Vector((-1, 0, 0.4)), 40, hands=(0.44, 0.58, -0.40)),
-    ] + impact_zone(club, ball, lie, IMP, 0.14) + [
+    ] + impact_zone(club, ball, lie, IMP, 0.10, 0.6, HS["span"]) + [
         key(IMP + 4, Vector((0.2, -0.9, 0.4)), None, hands=(-0.12, 0.78, -0.12)),
         key(IMP + 8, Vector((0.25, -0.5, 0.85)), None, hands=(-0.22, 0.70, 0.10)),
         key(FIN, Vector((0.45, -0.2, 0.87)), None, hands=(-0.26, 0.62, 0.22)),
@@ -892,17 +967,24 @@ def chip(golfer, top=30, impact=42, finish=62, end=76, imp_bend=None):
     """A chip: the arms and chest rock as one, a little wrist; the wedge."""
     club = "Wedge"
     if imp_bend is None:
-        for ib in [0.0 + 1.5 * i for i in range(0, 10)]:
+        for ib in [-4.0 + 1.5 * i for i in range(0, 12)]:
             sw = chip(golfer, top, impact, finish, end, ib)
+            if DEBUG_MISS:
+                out = []
+                for t in range(top, min(end, impact + 8)):
+                    inf_ = sw.pose(t)[1]
+                    if max(inf_["miss"].values()) >= 0.004: out.append(f"{t}: L {inf_['miss']['L'] * 100:.1f} R {inf_['miss']['R'] * 100:.1f}")
+                print(f"  cb {ib:+.1f}: " + " | ".join(out))
             if max(max(sw.pose(t)[1]["miss"].values()) for t in range(top, min(end, impact + 8))) < 0.004: break
+        if DEBUG_MISS: print(f"CHIP: imp_bend {ib:+.1f}")
         return sw
     TOP, IMP, FIN, END = top, impact, finish, end
     ball, lie_d, lie, st, c0 = _base(golfer, club)
     size = golfer.size
     K = lambda *pairs: list(pairs)
     cur = _flat(c0, END, **{
-        "hip_turn":      K((0, 0), (TOP, 6), (TOP + 2, 5), (IMP - 3, 0), (IMP, -8), (IMP + 6, -18), (FIN, -26), (END, -28)),
-        "shoulder_turn": K((0, 0), (TOP, 26), (TOP + 2, 25), (IMP - 3, 10), (IMP, -4), (IMP + 6, -26), (FIN, -40), (END, -42)),
+        "hip_turn":      K((0, 0), (TOP, 6), (TOP + 2, 5), (IMP - 3, -8), (IMP, -20), (IMP + 6, -30), (FIN, -34), (END, -35)),
+        "shoulder_turn": K((0, 0), (TOP, 26), (TOP + 2, 25), (IMP - 3, 4), (IMP, -14), (IMP + 6, -32), (FIN, -44), (END, -45)),
         "head_turn":     K((0, 0), (TOP, 6), (IMP, 0), (FIN, -24), (END, -26)),
         "slide":         K((0, 0), (TOP, -0.01 * size), (IMP, 0.02 * size), (FIN, 0.05 * size), (END, 0.05 * size)),
         "lift":          K((0, 0), (IMP, 0.0), (FIN, 0.02 * size), (END, 0.02 * size)),
@@ -910,12 +992,13 @@ def chip(golfer, top=30, impact=42, finish=62, end=76, imp_bend=None):
         "pelvis_bend":   K((0, c0["pelvis_bend"]), (TOP, c0["pelvis_bend"] + imp_bend * 0.5), (IMP, c0["pelvis_bend"] + imp_bend + 1), (FIN, c0["pelvis_bend"] - 5), (END, c0["pelvis_bend"] - 5)),
         "spine_bend":    K((0, c0["spine_bend"]), (TOP, c0["spine_bend"] + imp_bend * 0.5), (IMP, c0["spine_bend"] + imp_bend + 1), (FIN, c0["spine_bend"] - 6), (END, c0["spine_bend"] - 6)),
         "chest_bend":    K((0, c0["chest_bend"]), (TOP, c0["chest_bend"] + imp_bend * 0.5), (IMP, c0["chest_bend"] + imp_bend + 1), (FIN, c0["chest_bend"] - 6), (END, c0["chest_bend"] - 6)),
+        "straight":      K((0, 0), (4, 0), (8, 1), (IMP - 2, 1), (IMP - 1, 0), (IMP + 1, 0), (IMP + 3, 1), (FIN - 6, 1), (FIN, 0.5), (END, 0.5)),
     })
     cv = {"curves": curves(cur), "stance": st}
     ks = [
         key(0, Vector((-math.cos(lie), 0, -math.sin(lie))), Vector((0, -1, 0)), at_ball=ball),
-        key(TOP, Vector((0, 0, 0)), Vector((0, 0, 0)), like=0, dhands=(0.0, 0.0, 0.07)),
-        key(IMP, Vector((-math.cos(lie) * 0.96, 0.22, -math.sin(lie) * 0.96)), Vector((0, -1, 0)), at_ball=ball),
+        key(TOP, Vector((0, 0, 0)), Vector((0, 0, 0)), like=0, dhands=CHIP_TOP),
+        key(IMP, Vector((-math.cos(lie) * 0.96, CHIP_LEAN, -math.sin(lie) * 0.96)), Vector((0, -1, 0)), at_ball=ball),
         key(FIN, Vector((0, 0, 0)), Vector((0, 0, 0)), like=0, dhands=(-0.12, 0.04, 0.12)),
         key(END, Vector((0, 0, 0)), Vector((0, 0, 0)), like=0, dhands=(-0.12, 0.04, 0.12)),
     ]

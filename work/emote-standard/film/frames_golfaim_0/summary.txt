@@ -1,0 +1,1 @@
+golfaim footwork=off steps=0 frames=188

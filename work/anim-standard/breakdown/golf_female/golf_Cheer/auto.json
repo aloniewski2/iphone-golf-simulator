@@ -1,0 +1,119 @@
+[
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 153.05555555555554,
+"y": 122.22222222222223,
+"r": 12.5,
+"area": 18,
+"img": "f00_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 146.16666666666666,
+"y": 117.66666666666667,
+"r": 11.850000000000001,
+"area": 12,
+"img": "f01_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 144.1578947368421,
+"y": 114.05263157894737,
+"r": 11.850000000000001,
+"area": 19,
+"img": "f02_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 144.1578947368421,
+"y": 111.05263157894737,
+"r": 11.850000000000001,
+"area": 19,
+"img": "f04_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 145.9,
+"y": 112.7,
+"r": 10.55,
+"area": 10,
+"img": "f05_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 153.05882352941177,
+"y": 116.29411764705883,
+"r": 12.5,
+"area": 17,
+"img": "f06_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 158.35294117647058,
+"y": 121.3529411764706,
+"r": 11.2,
+"area": 17,
+"img": "f07_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 162.25,
+"y": 125.25,
+"r": 11.2,
+"area": 16,
+"img": "f08_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 234.0,
+"y": 128.11428571428573,
+"r": 13.8,
+"area": 35,
+"img": "f09_front"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 164.10526315789474,
+"y": 127.89473684210526,
+"r": 11.850000000000001,
+"area": 19,
+"img": "f09_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 162.35294117647058,
+"y": 128.35294117647058,
+"r": 11.2,
+"area": 17,
+"img": "f10_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 158.64705882352942,
+"y": 126.88235294117646,
+"r": 11.850000000000001,
+"area": 17,
+"img": "f11_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 153.05555555555554,
+"y": 122.22222222222223,
+"r": 12.5,
+"area": 18,
+"img": "f12_back"
+}
+]

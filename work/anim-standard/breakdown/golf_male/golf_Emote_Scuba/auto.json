@@ -1,0 +1,192 @@
+[
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.64383561643837,
+"y": 224.21917808219177,
+"r": 12.5,
+"area": 73,
+"frac": 1.0,
+"img": "f02_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.7027027027027,
+"y": 235.8783783783784,
+"r": 13.15,
+"area": 74,
+"frac": 1.0,
+"img": "f03_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 199.61111111111111,
+"y": 261.5,
+"r": 11.2,
+"area": 18,
+"frac": 1.0,
+"img": "f03_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 182.78571428571428,
+"y": 261.92857142857144,
+"r": 10.0,
+"area": 14,
+"frac": 1.0,
+"img": "f03_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 178.6315789473684,
+"y": 266.39473684210526,
+"r": 11.850000000000001,
+"area": 38,
+"frac": 1.0,
+"img": "f03_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.61363636363637,
+"y": 240.61363636363637,
+"r": 11.2,
+"area": 44,
+"frac": 1.0,
+"img": "f04_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 199.85714285714286,
+"y": 265.2142857142857,
+"r": 10.55,
+"area": 14,
+"frac": 1.0,
+"img": "f04_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 183.08333333333334,
+"y": 265.6666666666667,
+"r": 10.0,
+"area": 12,
+"frac": 1.0,
+"img": "f04_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 178.3095238095238,
+"y": 269.7857142857143,
+"r": 12.5,
+"area": 42,
+"frac": 1.0,
+"img": "f04_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.60824742268042,
+"y": 223.01030927835052,
+"r": 14.450000000000001,
+"area": 97,
+"frac": 1.0,
+"img": "f05_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.475,
+"y": 231.75,
+"r": 11.2,
+"area": 40,
+"frac": 1.0,
+"img": "f06_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.66265060240963,
+"y": 237.9156626506024,
+"r": 13.8,
+"area": 83,
+"frac": 1.0,
+"img": "f07_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 199.21212121212122,
+"y": 264.27272727272725,
+"r": 13.15,
+"area": 33,
+"frac": 1.0,
+"img": "f07_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 179.38666666666666,
+"y": 268.4,
+"r": 15.1,
+"area": 75,
+"frac": 1.0,
+"img": "f07_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.7605633802817,
+"y": 233.25352112676057,
+"r": 12.5,
+"area": 71,
+"frac": 1.0,
+"img": "f08_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 199.8,
+"y": 258.8,
+"r": 10.55,
+"area": 15,
+"frac": 1.0,
+"img": "f08_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 177.96428571428572,
+"y": 263.5357142857143,
+"r": 11.850000000000001,
+"area": 28,
+"frac": 1.0,
+"img": "f08_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.5744680851064,
+"y": 226.53191489361703,
+"r": 11.2,
+"area": 47,
+"frac": 1.0,
+"img": "f09_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 164.6891891891892,
+"y": 223.93243243243242,
+"r": 13.15,
+"area": 74,
+"frac": 1.0,
+"img": "f10_left"
+}
+]

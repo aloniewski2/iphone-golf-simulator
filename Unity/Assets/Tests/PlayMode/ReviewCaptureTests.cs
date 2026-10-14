@@ -311,7 +311,7 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-11-splash-result.png"));
         }
 
-        /// Putting on the sculpted green: the read (grid, beads, ribbon, flag out), the roll
+        /// Putting on the sculpted green: the read (the grain, the start dots, flag out), the roll
         /// watched from where it was read, and the hole cam as the ball arrives.
         [UnityTest]
         public IEnumerator CapturesTheGreenRead()
@@ -333,7 +333,7 @@ namespace GolfArcade.PlayTests
             yield return new WaitForSecondsRealtime(0.8f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6-read.png"));
             // Changing the line: holding the right arrow turns the putt a few degrees a second —
-            // fine enough to read a putt with — and the ribbon follows.
+            // fine enough to read a putt with — and the start dots follow.
             var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
             var events = UnityEngine.EventSystems.EventSystem.current ?? Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
             var press = new UnityEngine.EventSystems.PointerEventData(events);

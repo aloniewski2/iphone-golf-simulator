@@ -1,0 +1,24 @@
+1-short-putt: hole 12 ball (1.5, 200.1) lie Green club Putter to pin 2.7 yd, wind 6 mph toward 40° (6 mph into)
+  aim line points 73, aim dots 0, farthest 0.0 yd = 0 % of the putt (2.7 yd)
+  HUD wind "WIND  6 mph  ↗", lie "-" "-"
+  green read Contours:15194v,Beads:1876v
+2-long-breaking-putt: hole 12 ball (2.3, 210.7) lie Green club Putter to pin 13.0 yd, wind 6 mph toward 40° (6 mph into)
+  aim line points 275, aim dots 0, farthest 0.0 yd = 0 % of the putt (13.0 yd)
+  HUD wind "WIND  6 mph  ↗", lie "-" "-"
+  green read Contours:15194v,Beads:1876v
+3-strong-wind: hole 12 ball (0.0, 0.0) lie Tee club Driver to pin 197.9 yd, wind 18 mph toward 90° (18 mph left to right)
+  aim line points 0, aim dots 40, farthest 233.8 yd = 97 % of the still-air carry (240.0 yd)
+  HUD wind "WIND  18 mph  →", lie "-" "-"
+  green read off
+  dots in view (x,y,depth): (0.52,0.63,12) (0.53,0.72,20) (0.53,0.76,27) (0.54,0.78,34) (0.54,0.79,41) (0.54,0.81,47) (0.54,0.81,54) (0.55,0.82,60); queue 3000
+3-strong-wind shot: Driver power 0.85 carry 199.4 yd, came down 17.8 yd right of the aim, lie Rough
+4-rough: hole 7 ball (-29.9, 250.7) lie Rough club Driver to pin 171.9 yd, wind 8 mph toward 200° (8 mph into)
+  aim line points 0, aim dots 33, farthest 187.4 yd = 102 % of the still-air carry (184.1 yd)
+  HUD wind "WIND  8 mph  ↓", lie "-" "-"
+  green read off
+  dots in view (x,y,depth): (0.51,0.67,11) (0.52,0.78,17) (0.53,0.82,23) (0.53,0.85,29) (0.53,0.86,35) (0.53,0.86,41) (0.54,0.86,46) (0.54,0.87,52); queue 3000
+5-sand: hole 7 ball (-41.6, 319.3) lie Bunker club Hybrid to pin 113.6 yd, wind 8 mph toward 200° (8 mph into)
+  aim line points 0, aim dots 16, farthest 89.3 yd = 106 % of the still-air carry (84.4 yd)
+  HUD wind "WIND  8 mph  ↓", lie "-" "-"
+  green read off
+  dots in view (x,y,depth): (0.51,0.60,8) (0.52,0.73,12) (0.52,0.79,15) (0.53,0.83,22) (0.53,0.85,29) (0.53,0.85,35) (0.53,0.83,42) (0.54,0.82,48); queue 3000

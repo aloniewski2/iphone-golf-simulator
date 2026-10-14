@@ -1,0 +1,54 @@
+  copied Assets/Resources/HeroMoves/Male/Emote_JumpJoy.fbx  sha256=b526b34c04e8670b9e4125ba2bc1cbb7ccc0e3a04c27ee6089d2f4816092bba0
+  copied Assets/Resources/HeroMoves/Male/Emote_FistPump.fbx  sha256=401ae0bcadbb4539c1b2cbd43ae703a4cf4da1b2b313c8e62670cb6827e7abb7
+  copied Assets/Resources/HeroMoves/Male/Emote_Stomp.fbx  sha256=74717d758e1cae4511bddfc37a40bfd67f3e6a9e108d5ed8248c3a85e5b9228b
+  copied Assets/Resources/HeroMoves/Male/Emote_Slump.fbx  sha256=fa153790fbb5c977f515ae3f6310b4b38f905e05aca2c081c5a6dff884e333b0
+  copied Assets/Resources/HeroMoves/Male/Emote_Shock.fbx  sha256=e3b457e2ed2d31c9cacbbd89df50828d02e626bcea621648c741df6ec121ee7b
+  copied Assets/Resources/HeroMoves/Male/Emote_Victory.fbx  sha256=e66e0c1096b33b6eda7b712395819429f4f90e666b1ca339e958bbecfad4ee6e
+  copied Assets/Resources/HeroMoves/Male/Emote_Defeat.fbx  sha256=456ebb8370e6edc3c906f165026ff5a5e997b013da7365cc80b9ed2a8962ba9d
+  copied Assets/Resources/HeroMoves/Male/Walk.fbx  sha256=72bb707b33932e4f3f192d4b3dc6962fafb9e93d7ea30deb8e44fcb4c3a9cf74
+  copied Assets/Resources/HeroMoves/Male/Run.fbx  sha256=b05873ef6aa5c89abc6559d437326658ae08f50608616f6333771ef67843d52b
+  copied Assets/Resources/HeroMoves/Female/Emote_JumpJoy.fbx  sha256=51e0039fbcaf1b58b432876282fe234ac2a8d6b41aac88cc36605346ccdbb5e8
+  copied Assets/Resources/HeroMoves/Female/Emote_FistPump.fbx  sha256=0345c0c5417b27673fb1bdf518026fb2ddac83ad4126c38a6d91be51825ace81
+  copied Assets/Resources/HeroMoves/Female/Emote_Stomp.fbx  sha256=87b47bdfa9c9d96a2d7247550f91e7c001754757b0e35dec26af5460c5c9eabc
+  copied Assets/Resources/HeroMoves/Female/Emote_Slump.fbx  sha256=65f3a475af0ac0d7d30360a7cb1983daaad9be9ab284076fb3e1d9853948ec1b
+  copied Assets/Resources/HeroMoves/Female/Emote_Shock.fbx  sha256=393845b9ea5683ca9100abd24f34b788ab25d421d7bd20a819cac9dfc65e66fa
+  copied Assets/Resources/HeroMoves/Female/Emote_Victory.fbx  sha256=6f9d50e17e58cc5ec978ac472ad9a4ed411ae6793638f0d94d9f2a597d221b4c
+  copied Assets/Resources/HeroMoves/Female/Emote_Defeat.fbx  sha256=f651f2ca19efe3ca8ce9f3ad0bfa8506764b659bfa7886cc072b7ce7bce4e9e7
+  copied Assets/Resources/HeroMoves/Female/Walk.fbx  sha256=f535bbd38f7ff3824e927dcc9e6e812326a1c98073b0666f625760886876f908
+  copied Assets/Resources/HeroMoves/Female/Run.fbx  sha256=3554ec555724060b1232d0e9717f09738fb63ba3588633972dc00013f54cb749
+  move Assets/Resources/HeroMoves/Male/Emote_JumpJoy.fbx clip=Emote_JumpJoy len=2.067 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_FistPump.fbx clip=Emote_FistPump len=1.567 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_Stomp.fbx clip=Emote_Stomp len=2.167 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_Slump.fbx clip=Emote_Slump len=2.567 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_Shock.fbx clip=Emote_Shock len=2.167 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_Victory.fbx clip=Emote_Victory len=3.167 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Emote_Defeat.fbx clip=Emote_Defeat len=3.300 loop=False curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Walk.fbx clip=Walk len=1.067 loop=True curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Male/Run.fbx clip=Run len=0.667 loop=True curves=540 root='Rig_Male'
+  move Assets/Resources/HeroMoves/Female/Emote_JumpJoy.fbx clip=Emote_JumpJoy len=2.067 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_FistPump.fbx clip=Emote_FistPump len=1.567 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_Stomp.fbx clip=Emote_Stomp len=2.167 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_Slump.fbx clip=Emote_Slump len=2.567 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_Shock.fbx clip=Emote_Shock len=2.167 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_Victory.fbx clip=Emote_Victory len=3.167 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Emote_Defeat.fbx clip=Emote_Defeat len=3.300 loop=False curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Walk.fbx clip=Walk len=1.067 loop=True curves=540 root='Rig_Female'
+  move Assets/Resources/HeroMoves/Female/Run.fbx clip=Run len=0.667 loop=True curves=540 root='Rig_Female'
+== Male Assets/Resources/Tennis/Customization/PlayerMale.prefab
+  slot EmoteJumpJoy   <- Male_Emote_JumpJoy         len=2.067 (added)
+  slot EmoteFistPump  <- Male_Emote_FistPump        len=1.567 (added)
+  slot EmoteStomp     <- Male_Emote_Stomp           len=2.167 (added)
+  slot EmoteSlump     <- Male_Emote_Slump           len=2.567 (added)
+  slot EmoteShock     <- Male_Emote_Shock           len=2.167 (added)
+  slot EmoteVictory   <- Male_Emote_Victory         len=3.167 (added)
+  slot EmoteDefeat    <- Male_Emote_Defeat          len=3.300 (added)
+
+== Female Assets/Resources/Tennis/Customization/PlayerFemale.prefab
+  slot EmoteJumpJoy   <- Female_Emote_JumpJoy       len=2.067 (added)
+  slot EmoteFistPump  <- Female_Emote_FistPump      len=1.567 (added)
+  slot EmoteStomp     <- Female_Emote_Stomp         len=2.167 (added)
+  slot EmoteSlump     <- Female_Emote_Slump         len=2.567 (added)
+  slot EmoteShock     <- Female_Emote_Shock         len=2.167 (added)
+  slot EmoteVictory   <- Female_Emote_Victory       len=3.167 (added)
+  slot EmoteDefeat    <- Female_Emote_Defeat        len=3.300 (added)
+

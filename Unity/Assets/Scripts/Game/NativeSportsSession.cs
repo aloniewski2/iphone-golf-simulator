@@ -12,11 +12,11 @@ namespace GolfArcade.Game
     /// Runs before gameplay scripts so the newest phone sample is applied in the same frame
     /// it arrives, rather than whenever Unity happened to order this after TennisGame.
     [DefaultExecutionOrder(-1000)]
-    public sealed class NativeSportsSession : MonoBehaviour
+    public sealed partial class NativeSportsSession : MonoBehaviour
     {
-        [Serializable] public class Message {
+        [Serializable] public partial class Message {
             public int version; public string session, action, sport, playerID, playerName,reason;
-            public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,value2,difficulty=-1;
+            public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60,inputHz=60; public float value,value2,difficulty=-1;
             // Tennis menu choice: "campaign" or "training", and the campaign round's opponent.
             public string mode,opponent,opponentName,round; public int ultimate;
             // The match format (sets to win, games per set) and the coach's changeover lines, "|"-separated.
@@ -97,10 +97,14 @@ namespace GolfArcade.Game
         static double SportsClock()=>Time.realtimeSinceStartupAsDouble;
         static int SportsPrepareExternalDisplay()=>1;
 #endif
+        /// True inside the iPhone app: its menus (the Plaza) are the only menus, so Unity's own stand-alone golf menu never shows,
+        /// not even at start-up before the phone's first message (golf is the first scene).
+        public static bool Embedded { get; private set; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot() {
 #if UNITY_IOS && !UNITY_EDITOR
-            var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>();
+            Embedded=true;
+            var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>(); go.AddComponent<CaptureAudioTapKeeper>();
 #endif
         }
         void Start()
@@ -152,17 +156,19 @@ namespace GolfArcade.Game
                 var m=JsonUtility.FromJson<Message>(json);
                 if(m==null || m.version!=1 || string.IsNullOrEmpty(m.session)) return;
                 if(m.action=="start") {
+                    if(m.sport=="hub") { StartHub(m); return; }
                     if(loading || (Active && m.session==session)) return;
                     if(m.sport!="golf" && m.sport!="tennis") return;
-                    StartCoroutine(Load(m)); return;
+                    LeaveHub(); StartCoroutine(Load(m)); return;
                 }
                 if(m.session!=session || !Active) return;
+                if(HubIntercept(m)) return;
                 if (SportsMultiplayer.Active && (m.action=="pause" || m.action=="resume")) SetPaused(m.action=="pause",m.reason);
                 if (SportsMultiplayer.Command(m)) return;
                 switch(m.action) {
                     case "pause": SetPaused(true,m.reason); break;
                     case "resume": SetPaused(false); break;
-                    case "end": PresentationStinger.Stop(); SportsMultiplayer.Shutdown(); SportsRecorderStop(); StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
+                    case "end": InputRate.Stop(); PresentationStinger.Stop(); SportsMultiplayer.Shutdown(); SportsRecorderStop(); StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
                     case "recordPoints": if(tennis) SportsRecorderEnable(m.value>0); break;
                     case "savePoint": if(tennis) SportsRecorderSave(); break;
                     case "ultimateSelect": break; // Ignore commands from older controllers.
@@ -184,8 +190,8 @@ namespace GolfArcade.Game
                     case "golfOverview": if(golf && !paused) golf.Overview(); break;
                     case "golfContinue": if(golf && !paused) golf.NativeContinue(); break;
                     case "club": if(golf && !paused && m.value!=0 && !float.IsNaN(m.value) && !float.IsInfinity(m.value)) golf.NativeClub(m.value<0?-1:1); break;
-                    case "sound": AudioListener.volume=m.value>0 && !Application.isBatchMode?1:0; break;
-                    case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); break;
+                    case "sound": AudioListener.volume=MuteWhenAutomated.Volume(m.value>0); break;
+                    case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); Haptics.Warm(); break;
                     case "display": if(!loading) StartCoroutine(Present(true,"displayReady")); break;
                     case "touch": Touch=true; touch=true; if(tennis) { tennis.CancelTimingCheck(); tennis.SetAimPractice(false); } if(golf) { golf.NativeReady(); } break;
                     case "motion": Touch=false; touch=false; if(golf) golf.NativeReady(); break;
@@ -215,7 +221,10 @@ namespace GolfArcade.Game
             return !float.IsNaN(length) && !float.IsInfinity(length) && length > .5f
                 ? System.Numerics.Quaternion.Normalize(q) : null;
         }
+        /// The match's requested input rate, kept for the display (re)attach that starts it.
+        int lastInputHz=60;
         IEnumerator Load(Message m) {
+            lastInputHz=m.inputHz;
             loading=true; Ready=false; Active=true; multiplayerSession=!string.IsNullOrEmpty(m.network); session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0; steeringTracked=false;
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
@@ -225,11 +234,12 @@ namespace GolfArcade.Game
                 look.Hair = GolferStyle.HexOf(GolferStyle.HairColors[Mathf.Clamp(m.hairColor, 0, GolferStyle.HairColors.Length - 1)]);
                 look.Shirt = m.shirt; look.Shorts = m.shorts; look.Shoes = m.accent;
             });
-            AudioListener.volume=m.sound && !Application.isBatchMode?1:0; Haptics.Enabled=m.haptics;   // automated runs stay silent
+            AudioListener.volume=MuteWhenAutomated.Volume(m.sound); Haptics.Enabled=m.haptics; Haptics.Warm();   // automated runs stay silent
             Time.timeScale=1;
             // 60 everywhere; 120 only when asked for and the panel can actually show it.
             // A TV runs at 60: rendering faster only adds frames AirPlay has to drop, and a
             // steady 60 is what keeps its delay steady.
+            InputRate.Stop();
             Application.targetFrameRate=m.external ? 60 : FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
             QualitySettings.vSyncCount=0;
             PresentationPolicy.HoleFlyover=m.holeFlyover;
@@ -241,9 +251,10 @@ namespace GolfArcade.Game
             // The phone's loading bar follows the scene load.
             TennisVenue.Selected=TennisVenue.Parse(m.venue);
             TennisVenue.CourtColorOverride=string.IsNullOrEmpty(m.courtHex) ? (Color?)null : HeroKit.Hex(m.courtHex);
-            var op=SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
+            var op=BeginSceneLoad(m);
             float nextProgress=0;
             while(!op.isDone) {
+                SceneLoadTick(op);
                 if(Time.realtimeSinceStartup>=nextProgress) {
                     nextProgress=Time.realtimeSinceStartup+.1f;
                     Emit("loadProgress",Mathf.Clamp01(op.progress/.9f).ToString("0.00",System.Globalization.CultureInfo.InvariantCulture));
@@ -274,7 +285,10 @@ namespace GolfArcade.Game
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) { golf.EquipResultEmotes(m.emotes); golf.SetRoundEvents(!m.noTwists,!m.noWeather,!m.noChallenges); golf.SetDailyRound(m.daily); golf.PrepareNativeAddress(m.course); }
+            if(golf) { golf.EquipResultEmotes(m.emotes); golf.SetRoundEvents(!m.noTwists,!m.noWeather,!m.noChallenges); golf.SetDailyRound(m.daily);
+                // behind the plaza the first hole builds a slice a frame (the plaza keeps drawing); otherwise at once, under the TV's cover
+                if(behindPlaza) { var steps=golf.PrepareNativeAddressSteps(m.course); while(steps.MoveNext()) { if(hub) hub.BayLoading(.6f+.4f*steps.Current); yield return null; } }
+                else golf.PrepareNativeAddress(m.course); }
             if(golf && m.bench) {
                 golf.gameObject.AddComponent<GolfVisualBenchmark>();
                 golf.gameObject.AddComponent<SportsVisualTelemetry>().GolfBenchmarkEnabled=true;
@@ -283,7 +297,7 @@ namespace GolfArcade.Game
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
             SetPaused(true);
-            yield return Present(m.external,"ready");
+            yield return behindPlaza ? HandOff(m) : Present(m.external,"ready");
             loading=false;
         }
         /// The phone controller's pause button: the app pauses and puts its pause screen up.
@@ -330,6 +344,8 @@ namespace GolfArcade.Game
             while(!frameRendered && Time.realtimeSinceStartup<deadline) yield return null;
             if(!frameRendered) { Emit("error","Gameplay camera did not render a frame. Return to the menu and retry."); yield break; }
             Ready=true; Emit(eventType,"Gameplay camera rendered");
+            // The match is up and the scene has set its own frame rate: swing input goes to 120 Hz now if asked (InputRate).
+            if(tennis || golf) InputRate.Begin(gameObject,external,lastInputHz); else InputRate.Stop();
             // A tennis phone with no TV of its own is only a controller: it needs the match state, not the picture, so once the first
             // frame has proved the scene loaded it stops drawing (the phone is also tracking motion and running the camera).
             if(SportsMultiplayer.Active && SportsMultiplayer.Instance.Configuration.sport=="tennis"
@@ -388,6 +404,7 @@ namespace GolfArcade.Game
         }
         void Update() {
             if(!Active || loading) return;
+            if(hubMode) { HubUpdate(); return; }
             // Rotation settles after scene loading; do not freeze the initial portrait aspect.
             if(gameplayCamera && outputDisplay==0 && Screen.height>0)
                 gameplayCamera.aspect=(float)Screen.width/Screen.height;
@@ -401,13 +418,13 @@ namespace GolfArcade.Game
                 // Golf integrates the gyro path; network play forwards its samples.
                 // Local tennis needs the latest position and cumulative stroke events,
                 // not an animation replay of every queued controller sample.
-                if(golf || SportsMultiplayer.Active) ApplySample(sample,now);
+                if(golf || (SportsMultiplayer.Active && !VersusTennis)) ApplySample(sample,now);
             }
-            if(haveSample && !golf && !SportsMultiplayer.Active) ApplySample(latest,now);
+            if(haveSample && !golf && (!SportsMultiplayer.Active || VersusTennis)) ApplySample(latest,now);
             if(!SportsMultiplayer.Active && !paused && SportsClock()-Math.Max(lastSample,resumedAt)>.5) {
                 SetPaused(true,"INPUT PAUSED — tap Ready on your phone"); Emit("error","Motion input stopped. Tap Ready or select touch controls.");
             }
-            if(!SportsMultiplayer.Active && !paused && tennis && tennis.Player) {
+            if((!SportsMultiplayer.Active || VersusTennis) && !paused && tennis && tennis.Player) {
                 bool tracked = tennis.PlayerUsesTrackedMovement;
                 if(tracked && !steeringTracked)
                     steeringOrigin=tennis.Player.transform.position.x-target*3.6f-tennis.AssistOffset;
@@ -426,7 +443,9 @@ namespace GolfArcade.Game
                 if(golf && Time.unscaledTime>=nextGolfController) {
                     nextGolfController=Time.unscaledTime+.25f;Emit("golfController","");
                 }
-                Emit("emoteState", !paused && tennis ? tennis.EmoteWindow : "");
+                Emit("emoteState", paused ? "" : tennis ? tennis.EmoteWindow : golf ? golf.IntroEmoteWindow : "");
+                // the intro's flyover can be skipped: who has asked ("voted|needed|1 when this phone has"; online, everyone must)
+                Emit("introSkip", paused ? "" : tennis ? tennis.IntroSkipState : golf ? golf.IntroSkipState : "");
                 if(tennis) Emit("abilities", string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.000}|{1}|{2:0.00}|{3}|{4}", tennis.PlayerUltimate, tennis.UltimateArmed?1:0, tennis.DiveCooldownLeft, !paused && tennis.CanDive?1:0, !paused && tennis.CanArmUltimate?1:0));
                 // Results are durable state, not a one-shot event that can be lost
                 // while the phone changes scenes or drains the bounded event queue.
@@ -439,6 +458,8 @@ namespace GolfArcade.Game
                 }
             }
         }
+        /// Versus tennis plays the phone exactly as single player does (TennisGame.Versus).
+        bool VersusTennis => tennis && tennis.Versus;
         void ApplySample(in Sample sample,double now) {
             TrackingWarning = sample.degraded ? DegradedWarning : "";
             if(paused || !sample.valid) {
@@ -447,7 +468,7 @@ namespace GolfArcade.Game
                 lastSwingAbort=Math.Max(lastSwingAbort,sample.swingAbort);
                 return;
             }
-            if(SportsMultiplayer.Active) {
+            if(SportsMultiplayer.Active && !VersusTennis) {
                 // Golf swings as in single player, motion or touch: the game strikes it and sends the host the shot.
                 if(golf && !touch) { if(FreshEvent(sample.time,now,resumedAt)) golf.NativeMotion(sample); }
                 else if(golf) {
@@ -490,7 +511,7 @@ namespace GolfArcade.Game
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
         void PresentationTrace(string line) => Emit("presentation",line);
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.NativePhase : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,golfSwingState=golf ? golf.NativeSwingState : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.NativeState : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,golfSwingState=golf ? golf.NativeSwingState : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&

@@ -1,0 +1,10 @@
+== 1/5 staged-state clone: /var/folders/38/dmjzs7x97qldqhndz__9gldr0000gn/T//jaw-sync-UnityClone
+  39 file(s) back to their staged version, 13 untracked file(s) left out, 3 jaw file(s) on top
+== 2/5 export (MatchHeroLockerExport: Run, RunDistance, RunGolf)
+== 3/5 install into GolfArcade/Unity/CharacterAssets
+  0 file(s) changed
+== 4/5 goldens
+  provenance: run jaw_provenance.py after staging (hashes the STAGED look sources)
+== 5/5 lobby vs game sheets
+  sheets + PARITY.md in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/hero-sync/sheets
+== done

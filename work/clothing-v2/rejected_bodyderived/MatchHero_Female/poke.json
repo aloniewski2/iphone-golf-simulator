@@ -1,0 +1,1002 @@
+{
+ "Kit_Bottom": {
+  "Female_ReadyIdle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandArmCorrected": {
+   "max_mm": 1.3,
+   "verts": 2,
+   "frame": 11,
+   "vertex": 5084
+  },
+  "Female_BackhandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Serve": {
+   "max_mm": 9.8,
+   "verts": 4,
+   "frame": 24,
+   "vertex": 5019
+  },
+  "Female_VolleyForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Overhead": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandWide": {
+   "max_mm": 0.1,
+   "verts": 1,
+   "frame": 14,
+   "vertex": 5084
+  },
+  "Female_ForehandShort": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandWide": {
+   "max_mm": 5.8,
+   "verts": 1,
+   "frame": 3,
+   "vertex": 5084
+  },
+  "Female_SliceApproach": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Return": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyBackhand": {
+   "max_mm": 0.3,
+   "verts": 1,
+   "frame": 3,
+   "vertex": 5084
+  },
+  "Female_ForehandOpen": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToBackhand": {
+   "max_mm": 0.3,
+   "verts": 1,
+   "frame": 6,
+   "vertex": 3838
+  },
+  "Female_RecoverCenter": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunForward": {
+   "max_mm": 5.6,
+   "verts": 1,
+   "frame": 2,
+   "vertex": 5873
+  },
+  "Female_RunLeft": {
+   "max_mm": 19.7,
+   "verts": 6,
+   "frame": 0,
+   "vertex": 5289
+  },
+  "Female_RunRight": {
+   "max_mm": 28.2,
+   "verts": 2,
+   "frame": 3,
+   "vertex": 5084
+  },
+  "Female_Emote_Scuba": {
+   "max_mm": 27.9,
+   "verts": 20,
+   "frame": 47,
+   "vertex": 5018
+  },
+  "Female_Emote_Thrust": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Spike": {
+   "max_mm": 21.7,
+   "verts": 1,
+   "frame": 15,
+   "vertex": 5084
+  },
+  "Female_Intro_Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Pushups": {
+   "max_mm": 28.6,
+   "verts": 77,
+   "frame": 6,
+   "vertex": 7271
+  },
+  "Female_Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_HitPerfect": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MissWhiff": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_CelebratePoint": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SadPointLost": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchWin": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchLose": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  }
+ },
+ "Kit_Shoe_R": {
+  "Female_ReadyIdle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Serve": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Overhead": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandShort": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SliceApproach": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Return": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandOpen": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RecoverCenter": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunForward": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunLeft": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunRight": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Scuba": {
+   "max_mm": 1.7,
+   "verts": 1,
+   "frame": 9,
+   "vertex": 11328
+  },
+  "Female_Emote_Thrust": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Spike": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Pushups": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_HitPerfect": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MissWhiff": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_CelebratePoint": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SadPointLost": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchWin": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchLose": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  }
+ },
+ "Kit_Sock_L": {
+  "Female_ReadyIdle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Serve": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Overhead": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandShort": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SliceApproach": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Return": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandOpen": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RecoverCenter": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunForward": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunLeft": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunRight": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Scuba": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Thrust": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Spike": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Pushups": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_HitPerfect": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MissWhiff": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_CelebratePoint": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SadPointLost": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchWin": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchLose": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  }
+ },
+ "Kit_Sock_R": {
+  "Female_ReadyIdle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandArmCorrected": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Serve": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Overhead": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandShort": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_BackhandWide": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SliceApproach": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Return": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_VolleyBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandOpen": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToForehand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SplitToBackhand": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RecoverCenter": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunForward": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunLeft": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunRight": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Scuba": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Thrust": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Emote_Spike": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Wave": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Pushups": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_HitPerfect": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MissWhiff": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_CelebratePoint": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_SadPointLost": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchWin": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_MatchLose": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  }
+ },
+ "Kit_Top": {
+  "Female_ReadyIdle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_ForehandArmCorrected": {
+   "max_mm": 28.8,
+   "verts": 9,
+   "frame": 12,
+   "vertex": 3328
+  },
+  "Female_BackhandArmCorrected": {
+   "max_mm": 27.5,
+   "verts": 5,
+   "frame": 10,
+   "vertex": 7787
+  },
+  "Female_Serve": {
+   "max_mm": 29.8,
+   "verts": 18,
+   "frame": 9,
+   "vertex": 6837
+  },
+  "Female_VolleyForehand": {
+   "max_mm": 12.5,
+   "verts": 4,
+   "frame": 4,
+   "vertex": 3070
+  },
+  "Female_Overhead": {
+   "max_mm": 29.7,
+   "verts": 13,
+   "frame": 4,
+   "vertex": 7229
+  },
+  "Female_ForehandWide": {
+   "max_mm": 21.9,
+   "verts": 11,
+   "frame": 6,
+   "vertex": 7704
+  },
+  "Female_ForehandShort": {
+   "max_mm": 9.1,
+   "verts": 23,
+   "frame": 3,
+   "vertex": 7704
+  },
+  "Female_BackhandWide": {
+   "max_mm": 7.9,
+   "verts": 6,
+   "frame": 4,
+   "vertex": 3071
+  },
+  "Female_SliceApproach": {
+   "max_mm": 25.0,
+   "verts": 13,
+   "frame": 6,
+   "vertex": 6835
+  },
+  "Female_Return": {
+   "max_mm": 27.1,
+   "verts": 22,
+   "frame": 8,
+   "vertex": 7704
+  },
+  "Female_VolleyBackhand": {
+   "max_mm": 0.5,
+   "verts": 1,
+   "frame": 2,
+   "vertex": 2694
+  },
+  "Female_ForehandOpen": {
+   "max_mm": 29.8,
+   "verts": 17,
+   "frame": 5,
+   "vertex": 7347
+  },
+  "Female_SplitToForehand": {
+   "max_mm": 16.6,
+   "verts": 6,
+   "frame": 2,
+   "vertex": 2697
+  },
+  "Female_SplitToBackhand": {
+   "max_mm": 15.2,
+   "verts": 12,
+   "frame": 6,
+   "vertex": 2694
+  },
+  "Female_RecoverCenter": {
+   "max_mm": 2.5,
+   "verts": 1,
+   "frame": 3,
+   "vertex": 2694
+  },
+  "Female_Walk": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunForward": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunLeft": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_RunRight": {
+   "max_mm": 0.1,
+   "verts": 1,
+   "frame": 0,
+   "vertex": 2694
+  },
+  "Female_Emote_Scuba": {
+   "max_mm": 7.8,
+   "verts": 4,
+   "frame": 50,
+   "vertex": 7702
+  },
+  "Female_Emote_Thrust": {
+   "max_mm": 14.5,
+   "verts": 37,
+   "frame": 19,
+   "vertex": 7704
+  },
+  "Female_Emote_Spike": {
+   "max_mm": 29.3,
+   "verts": 8,
+   "frame": 12,
+   "vertex": 3673
+  },
+  "Female_Intro_Wave": {
+   "max_mm": 3.0,
+   "verts": 3,
+   "frame": 6,
+   "vertex": 2694
+  },
+  "Female_Intro_BringIt": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_Intro_Pushups": {
+   "max_mm": 4.7,
+   "verts": 11,
+   "frame": 25,
+   "vertex": 7704
+  },
+  "Female_Idle": {
+   "max_mm": 0.0,
+   "verts": 0,
+   "frame": -1,
+   "vertex": -1
+  },
+  "Female_HitPerfect": {
+   "max_mm": 3.8,
+   "verts": 15,
+   "frame": 18,
+   "vertex": 5866
+  },
+  "Female_MissWhiff": {
+   "max_mm": 3.9,
+   "verts": 15,
+   "frame": 18,
+   "vertex": 5866
+  },
+  "Female_CelebratePoint": {
+   "max_mm": 3.6,
+   "verts": 15,
+   "frame": 18,
+   "vertex": 5866
+  },
+  "Female_SadPointLost": {
+   "max_mm": 7.0,
+   "verts": 22,
+   "frame": 17,
+   "vertex": 5866
+  },
+  "Female_MatchWin": {
+   "max_mm": 6.3,
+   "verts": 10,
+   "frame": 9,
+   "vertex": 3071
+  },
+  "Female_MatchLose": {
+   "max_mm": 4.9,
+   "verts": 18,
+   "frame": 3,
+   "vertex": 5866
+  }
+ }
+}

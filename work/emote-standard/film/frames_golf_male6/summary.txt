@@ -1,0 +1,2 @@
+remap: 540 curves bound, 10 without a golfer bone; mine first path 'Rig_Male', theirs 'Rig_Male'
+golf started=True seen=True frames=84 k=1.0189

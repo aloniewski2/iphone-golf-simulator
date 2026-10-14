@@ -1,0 +1,49 @@
+[
+{
+"kind": "hole",
+"what": "see-through Kit_Top",
+"x": 247.84375,
+"y": 243.21875,
+"r": 12.5,
+"area": 32,
+"img": "f01_back"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Glove_L",
+"x": 61.5,
+"y": 208.86666666666667,
+"r": 12.5,
+"area": 30,
+"img": "f07_left"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 229.38888888888889,
+"y": 273.94444444444446,
+"r": 10.0,
+"area": 18,
+"frac": 1.0,
+"img": "f09_back"
+},
+{
+"kind": "skin",
+"what": "skin through clothes",
+"x": 182.07142857142858,
+"y": 274.7857142857143,
+"r": 10.0,
+"area": 14,
+"frac": 1.0,
+"img": "f09_right"
+},
+{
+"kind": "hole",
+"what": "see-through Kit_Top",
+"x": 247.84375,
+"y": 243.21875,
+"r": 12.5,
+"area": 32,
+"img": "f14_back"
+}
+]

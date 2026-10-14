@@ -1,0 +1,24 @@
+1-short-putt: hole 12 ball (1.5, 200.1) lie Green club Putter to pin 2.7 yd, wind 6 mph toward 40° (6 mph into)
+  aim line points 0, aim dots 3, farthest 1.0 yd = 37 % of the putt (2.7 yd)
+  HUD wind "<size=30>6</size> MPH  <size=18>LIGHT</size>", lie "GREEN" "PUTTING SURFACE"
+  green read Grain:5496v
+2-long-breaking-putt: hole 12 ball (2.3, 210.7) lie Green club Putter to pin 13.0 yd, wind 6 mph toward 40° (6 mph into)
+  aim line points 0, aim dots 18, farthest 5.6 yd = 43 % of the putt (13.0 yd)
+  HUD wind "<size=30>6</size> MPH  <size=18>LIGHT</size>", lie "GREEN" "PUTTING SURFACE"
+  green read Grain:5496v
+3-strong-wind: hole 12 ball (0.0, 0.0) lie Tee club Driver to pin 197.9 yd, wind 18 mph toward 90° (18 mph left to right)
+  aim line points 0, aim dots 19, farthest 106.5 yd = 44 % of the still-air carry (240.0 yd)
+  HUD wind "<size=30>18</size> MPH  <size=18>STRONG</size>", lie "TEE" "CLEAN LIE"
+  green read off
+  dots in view (x,y,depth): (0.51,0.52,8) (0.52,0.63,12) (0.52,0.68,16) (0.53,0.72,20) (0.53,0.74,23) (0.53,0.77,31) (0.53,0.79,37) (0.53,0.80,44); queue 3000
+3-strong-wind shot: Driver power 0.85 carry 199.4 yd, came down 17.8 yd right of the aim, lie Rough
+4-rough: hole 7 ball (-29.9, 250.7) lie Rough club Driver to pin 171.9 yd, wind 8 mph toward 200° (8 mph into)
+  aim line points 0, aim dots 17, farthest 98.3 yd = 46 % of the still-air carry (215.9 yd)
+  HUD wind "<size=30>8</size> MPH  <size=18>LIGHT</size>", lie "ROUGH" "-10% DISTANCE / LESS ACCURATE"
+  green read off
+  dots in view (x,y,depth): (0.50,0.55,8) (0.52,0.68,11) (0.53,0.77,18) (0.53,0.82,25) (0.53,0.84,32) (0.53,0.85,38) (0.54,0.86,44) (0.54,0.86,50); queue 3000
+5-sand: hole 7 ball (-41.6, 319.3) lie Bunker club Iron to pin 113.6 yd, wind 8 mph toward 200° (8 mph into)
+  aim line points 0, aim dots 11, farthest 50.6 yd = 45 % of the still-air carry (112.6 yd)
+  HUD wind "<size=30>8</size> MPH  <size=18>LIGHT</size>", lie "SAND" "-25% DISTANCE / MUCH LESS ACCURATE"
+  green read off
+  dots in view (x,y,depth): (0.51,0.63,9) (0.52,0.76,13) (0.52,0.80,17) (0.53,0.84,21) (0.53,0.87,25) (0.53,0.88,29) (0.53,0.89,33) (0.53,0.89,36); queue 3000

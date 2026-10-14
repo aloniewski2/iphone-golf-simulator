@@ -1,0 +1,141 @@
+{
+  "name": "GolfArcadeLobbyProof",
+  "options": {
+    "bundleIdPrefix": "com.aloniewski",
+    "deploymentTarget": {
+      "iOS": "17.0"
+    },
+    "groupSortPosition": "top"
+  },
+  "settings": {
+    "base": {
+      "SWIFT_VERSION": "6.0",
+      "CODE_SIGN_STYLE": "Automatic",
+      "CURRENT_PROJECT_VERSION": 1,
+      "MARKETING_VERSION": "0.1.0"
+    }
+  },
+  "targets": {
+    "GolfArcade": {
+      "type": "application",
+      "platform": "iOS",
+      "sources": [
+        {
+          "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcade",
+          "excludes": [
+            "Unity/SportsInfo.plist",
+            "Unity/MenuVideo",
+            "Unity/CharacterAssets/Custom*",
+            "Unity/CharacterAssets/Higgs*",
+            "Unity/CharacterAssets/Hero*",
+            "Unity/CharacterAssets/Player*",
+            "Unity/SportsRuntime.mm"
+          ]
+        },
+        {
+          "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/sim-native/SportsRuntimeSimulator.mm"
+        },
+        {
+          "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Builds/LobbySimulator/Data",
+          "type": "folder",
+          "buildPhase": "resources"
+        }
+      ],
+      "settings": {
+        "base": {
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.aloniewski.GolfArcade",
+          "CODE_SIGN_ENTITLEMENTS": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcade/Multiplayer/GolfArcade.entitlements",
+          "GENERATE_INFOPLIST_FILE": true,
+          "INFOPLIST_FILE": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcade/Unity/SportsInfo.plist",
+          "SWIFT_OBJC_BRIDGING_HEADER": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcade/Unity/GolfArcade-Bridging-Header.h",
+          "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
+          "INFOPLIST_KEY_NSMotionUsageDescription": "Phone motion controls your sports swings.",
+          "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": false,
+          "INFOPLIST_KEY_NSCameraUsageDescription": "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.",
+          "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents": true,
+          "INFOPLIST_KEY_UILaunchScreen_Generation": true,
+          "INFOPLIST_KEY_UISupportedInterfaceOrientations": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
+          "TARGETED_DEVICE_FAMILY": "1",
+          "SUPPORTS_MACCATALYST": false,
+          "ENABLE_BITCODE": false,
+          "OTHER_LDFLAGS": [
+            "$(inherited)",
+            "-ObjC"
+          ]
+        }
+      },
+      "dependencies": [
+        {
+          "target": "Unity/UnityFramework",
+          "embed": true
+        }
+      ]
+    },
+    "GolfArcadeTests": {
+      "type": "bundle.unit-test",
+      "platform": "iOS",
+      "sources": [
+        {
+          "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcadeTests"
+        }
+      ],
+      "dependencies": [
+        {
+          "target": "GolfArcade"
+        }
+      ],
+      "settings": {
+        "base": {
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.aloniewski.GolfArcadeTests",
+          "GENERATE_INFOPLIST_FILE": true
+        }
+      }
+    },
+    "GolfArcadeUITests": {
+      "type": "bundle.ui-testing",
+      "platform": "iOS",
+      "sources": [
+        {
+          "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/GolfArcadeUITests"
+        }
+      ],
+      "dependencies": [
+        {
+          "target": "GolfArcade"
+        }
+      ],
+      "settings": {
+        "base": {
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.aloniewski.GolfArcadeUITests",
+          "GENERATE_INFOPLIST_FILE": true
+        }
+      }
+    }
+  },
+  "schemes": {
+    "GolfArcade": {
+      "build": {
+        "targets": {
+          "GolfArcade": "all",
+          "GolfArcadeTests": [
+            "test"
+          ],
+          "GolfArcadeUITests": [
+            "test"
+          ]
+        }
+      },
+      "test": {
+        "targets": [
+          "GolfArcadeTests",
+          "GolfArcadeUITests"
+        ]
+      }
+    }
+  },
+  "projectReferences": {
+    "Unity": {
+      "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/online-lobby/UnityClone/Builds/LobbySimulator/Unity-iPhone.xcodeproj"
+    }
+  }
+}
