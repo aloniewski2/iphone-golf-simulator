@@ -9,8 +9,14 @@ namespace GolfArcade.Tests {
         static NetworkInput Input(NetworkTennisMatch m,string action,long id=1,double age=0) => new() {action=action,eventID=id,time=m.State.time,point=m.State.point,contact=m.State.contact,power=.7f,age=age};
         static void Step(NetworkTennisMatch m,double seconds){for(int i=0;i<Math.Ceiling(seconds*120);i++)m.Step(1.0/120);}
         static void Step(NetworkGolfRound m,double seconds){for(int i=0;i<Math.Ceiling(seconds*20);i++)m.Step(.05);}
-        /// Through the shot as the phones show it, and its result.
-        static void FinishFlight(NetworkGolfRound m)=>Step(m,Math.Max(m.State.shot.duration,m.State.shot.shown)+NetworkGolfRound.ResultSeconds+(m.State.shot.holed?NetworkGolfRound.HoledExtraSeconds:0)+.2);
+        /// Through the shot as the phones show it, and its result: the shooter's phone says when it has seen the result through
+        /// (golfResultDone), as the app does once its result card closes.
+        static void FinishFlight(NetworkGolfRound m){
+            var shot=m.State.shot;
+            Step(m,Math.Max(shot.duration,shot.shown)+.1);
+            m.Input(shot.seat,new NetworkInput {action="golfResultDone",value=shot.id,eventID=1000+shot.id,time=m.State.time},m.State.time);
+            Step(m,.2);
+        }
         static NetworkInput Golf(NetworkGolfRound m,long id=1)=>new() {action="swing",eventID=id,time=m.State.time,power=.6f};
         static NetworkConfiguration Config(string sport="tennis")=>new() {lobbyID="party",matchID="contest",hostID="a",localID="a",sport=sport,venue="resort",participants=new[] {new NetworkParticipant {id="a",seat=0},new NetworkParticipant {id="b",seat=1},new NetworkParticipant {id="watch",seat=-1}}};
 
@@ -26,16 +32,22 @@ namespace GolfArcade.Tests {
         [Test] public void PauseFreezesOfficialTimeAndRejectsInput(){var m=new NetworkTennisMatch();m.State.paused=true;Step(m,1);Assert.AreEqual(0,m.State.time);Assert.False(m.Input(0,Input(m,"toss"),0));}
         [Test] public void TennisDropInterruptsWithoutAwardingWin(){var m=new NetworkTennisMatch();string result=null;m.Result=s=>result=s;m.Drop(1);Assert.True(m.State.complete);Assert.False(m.State.score.Complete);Assert.AreEqual("interrupted",result);}
         [Test] public void TennisResultIsEmittedOnceOnRealScoringCompletion(){var m=new NetworkTennisMatch(1,1);int results=0;m.Result=_=>results++;for(int p=0;p<4;p++){m.Input(0,Input(m,"toss",p*2+1),m.State.time);Step(m,1.8);m.Input(0,Input(m,"toss",p*2+2),m.State.time);Step(m,4);}Assert.True(m.State.score.Complete);Assert.False(m.State.score.PlayerWonMatch);Assert.AreEqual(1,results);Step(m,10);m.Drop(0);Assert.AreEqual(1,results);}
-        [Test] public void GolfResultGivesThreeSecondsAndFreezesWhenPaused() {
+        [Test] public void GolfResultWaitsForTheShootersPhoneAndFreezesWhenPaused() {
             var m=new NetworkGolfRound(new[]{0,1,2,3},20);
-            m.Input(0,Golf(m),0);Step(m,m.State.shot.shown+.05);
+            m.Input(0,Golf(m),0);var shot=m.State.shot;Step(m,shot.shown+.05);
             Assert.AreEqual("result",m.State.phase);Assert.AreEqual(0,m.State.turn);
-            Assert.That(m.State.resultUntil-m.State.time,Is.InRange(2.94,3.001));
+            // the result stays up until the shooter's phone has seen it through, a fallback in case it never says
+            Assert.That(m.State.resultUntil-m.State.time,Is.InRange(NetworkGolfRound.ResultFallbackSeconds-.06,NetworkGolfRound.ResultFallbackSeconds+.001));
             double until=m.State.resultUntil,time=m.State.time;m.State.paused=true;Step(m,9);
             Assert.AreEqual(time,m.State.time);Assert.AreEqual(until,m.State.resultUntil);
             m.State.paused=false;Step(m,2.8);Assert.AreEqual("result",m.State.phase);
-            Step(m,.3);Assert.AreEqual("aim",m.State.phase);Assert.AreEqual(1,m.State.turn);Assert.Null(m.State.shot);
+            Assert.False(m.Input(1,new NetworkInput {action="golfResultDone",value=shot.id,eventID=50,time=m.State.time},m.State.time),"only the shooter's phone");
+            Assert.True(m.Input(0,new NetworkInput {action="golfResultDone",value=shot.id,eventID=51,time=m.State.time},m.State.time));
+            Step(m,.1);Assert.AreEqual("aim",m.State.phase);Assert.AreEqual(1,m.State.turn);Assert.Null(m.State.shot);
             Step(m,.2);Assert.AreEqual(1,m.State.turn);
+            // and on its own once the fallback runs out
+            m.Input(1,Golf(m,2),m.State.time);Step(m,m.State.shot.shown+.05+NetworkGolfRound.ResultFallbackSeconds+.1);
+            Assert.AreEqual("aim",m.State.phase);Assert.AreEqual(2,m.State.turn);
         }
         [Test] public void GolfEveryoneCanReactButCannotStealAShotOrExtendResult() {
             var m=new NetworkGolfRound(new[]{0,1,2,3},20);
@@ -133,7 +145,7 @@ namespace GolfArcade.Tests {
         [Test] public void GolfAuthorityGeneratesBoundedPathAndCommitsOneShot(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);int calls=0;m.Shot=_=>calls++;var x=Golf(m);Assert.True(m.Input(0,x,0));Assert.False(m.Input(0,x,0));Assert.AreEqual(1,calls);Assert.AreEqual(1,m.State.shotID);Assert.That(m.State.shot.path.Length,Is.InRange(2,360));Assert.GreaterOrEqual(m.State.golfers[0].strokes,1);}
         [Test] public void GolfAllFourTeeOffBeforeSecondShot(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);for(int seat=0;seat<4;seat++){Assert.AreEqual(seat,m.State.turn);Assert.True(m.Input(seat,Golf(m),m.State.time));FinishFlight(m);}Assert.True(m.State.golfers.All(p=>p.strokes>=1));}
         [Test] public void GolfRepeatedEventAfterFlightCannotApplyAgain(){var m=new NetworkGolfRound(new[]{0,1},20);m.Input(0,Golf(m),0);FinishFlight(m);m.Input(1,Golf(m),m.State.time);FinishFlight(m);int seat=m.State.turn;Assert.False(m.Input(seat,Golf(m),m.State.time));}
-        [Test] public void GolfTimeoutAddsStrokeAndMovesTurn(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);Step(m,60.1);Assert.AreEqual(1,m.State.golfers[0].strokes);Assert.AreEqual(1,m.State.turn);Assert.Null(m.State.shot);}
+        [Test] public void GolfTimeoutAddsStrokeAndMovesTurn(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);Step(m,NetworkGolfRound.TurnLimitSeconds+.1);Assert.AreEqual(1,m.State.golfers[0].strokes);Assert.AreEqual(1,m.State.turn);Assert.Null(m.State.shot);}
         [Test] public void GolfDnfSkipsPlayerAndOnlyInterruptsWithOneRemaining(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);m.Drop(0);Assert.AreEqual(1,m.State.turn);Assert.True(m.State.golfers[0].dnf);Assert.False(m.State.complete);m.Drop(1);Assert.False(m.State.complete);m.Drop(2);Assert.True(m.State.complete);Assert.AreEqual("interrupted",m.State.phase);}
         [Test] public void GolfSameSeedAndShotsGiveIdenticalOfficialOutcome(){var a=new NetworkGolfRound(new[]{0,1,2,3},20);var b=new NetworkGolfRound(new[]{0,1,2,3},20);a.Input(0,Golf(a),0);b.Input(0,Golf(b),0);Assert.AreEqual(a.State.shot.nextX,b.State.shot.nextX);Assert.AreEqual(a.State.shot.nextD,b.State.shot.nextD);Assert.AreEqual(a.State.shot.penalty,b.State.shot.penalty);}
         [Test] public void GolfInvalidRosterRejected(){Assert.Throws<ArgumentException>(()=>new NetworkGolfRound(new[]{0,0},1));Assert.Throws<ArgumentException>(()=>new NetworkGolfRound(new[]{0,4},1));}
@@ -240,9 +252,12 @@ namespace GolfArcade.Tests {
         [Test] public void OnOneSharedPhoneATurnHasNoTimeLimit() {
             var shared=new NetworkGolfRound(new[]{0,1},20,sharedPhone:true);Step(shared,120);
             Assert.AreEqual(0,shared.State.golfers[0].strokes);Assert.AreEqual("aim",shared.State.phase);
-            var apart=new NetworkGolfRound(new[]{0,1},20);Step(apart,60.1);Assert.AreEqual(1,apart.State.golfers[0].strokes);
+            var apart=new NetworkGolfRound(new[]{0,1},20);Step(apart,NetworkGolfRound.TurnLimitSeconds+.1);Assert.AreEqual(1,apart.State.golfers[0].strokes);
         }
-        [Test] public void FourGolfersCanFinishAllHolesAndReceiveMatchingTotals(){var m=new NetworkGolfRound(new[]{0,1,2,3},1);int results=0;m.Result=_=>results++;for(int i=0;i<260000&& !m.State.complete;i++)m.Step(.1);Assert.True(m.State.complete);Assert.AreEqual("complete",m.State.phase);Assert.AreEqual(1,results);foreach(var p in m.State.golfers){Assert.True(p.card.All(score=>score>0));Assert.AreEqual(p.card.Sum(),p.total);}Assert.AreEqual(m.State.golfers[0].total,m.State.golfers[3].total);}
+        [Test] public void FourGolfersCanFinishAllHolesAndReceiveMatchingTotals(){var m=new NetworkGolfRound(new[]{0,1,2,3},1);int results=0;m.Result=_=>results++;
+            // nobody swings: every turn times out (TurnLimitSeconds) until each golfer has picked up on every hole
+            int steps=(int)(GolfArcade.Course.Course.ByKey("cliffside").Holes.Sum(h=>(h.Par+5)*4*(NetworkGolfRound.TurnLimitSeconds+1)+NetworkGolfRound.HoleCardSeconds+60)*10);
+            for(int i=0;i<steps&& !m.State.complete;i++)m.Step(.1);Assert.True(m.State.complete);Assert.AreEqual("complete",m.State.phase);Assert.AreEqual(1,results);foreach(var p in m.State.golfers){Assert.True(p.card.All(score=>score>0));Assert.AreEqual(p.card.Sum(),p.total);}Assert.AreEqual(m.State.golfers[0].total,m.State.golfers[3].total);}
         [Test] public void ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople(){var c=Config();Assert.True(c.Valid);c.participants[2].seat=1;Assert.False(c.Valid);c=Config();c.participants=new[]{c.participants[0],c.participants[1],c.participants[2],new NetworkParticipant{id="d"},new NetworkParticipant{id="e"}};Assert.False(c.Valid);}
         [Test] public void EquippedEmoteRequiresWinningPointAndCannotExtendNextServe() {
             var m=new NetworkTennisMatch(emotes:new[]{new[]{"pushups","wave","scuba"},new[]{"thrust","spike","bringIt"}});
