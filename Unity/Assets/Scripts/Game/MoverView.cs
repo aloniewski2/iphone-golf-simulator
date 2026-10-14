@@ -330,8 +330,10 @@ namespace GolfArcade.Game
             main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.32f, 0.27f, 0.2f, 0.95f), new Color(0.26f, 0.38f, 0.2f, 0.95f));
             var shape = debris.shape; shape.enabled = true; shape.shapeType = ParticleSystemShapeType.Circle; shape.radius = 3.2f; shape.rotation = new Vector3(-90, 0, 0);
             var vel = debris.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
-            vel.x = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
+            // (every axis in the same mode, a range: Unity refuses to mix a constant with a range)
+            vel.x = new ParticleSystem.MinMaxCurve(0f, 0f); vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
             vel.y = new ParticleSystem.MinMaxCurve(5f, 9f);
+            vel.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f); vel.orbitalZ = new ParticleSystem.MinMaxCurve(0f, 0f);
             vel.orbitalY = new ParticleSystem.MinMaxCurve(4f, 6f);
             vel.radial = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
             var emission = debris.emission; emission.rateOverTime = 110;
@@ -350,7 +352,8 @@ namespace GolfArcade.Game
             dm.startColor = new ParticleSystem.MinMaxGradient(new Color(0.45f, 0.39f, 0.31f, 0.38f), new Color(0.38f, 0.36f, 0.33f, 0.3f));
             var ds = dust.shape; ds.enabled = true; ds.shapeType = ParticleSystemShapeType.Circle; ds.radius = 3.5f; ds.rotation = new Vector3(-90, 0, 0);
             var dv = dust.velocityOverLifetime; dv.enabled = true; dv.space = ParticleSystemSimulationSpace.Local;
-            dv.x = new ParticleSystem.MinMaxCurve(0f); dv.z = new ParticleSystem.MinMaxCurve(0f);
+            dv.x = new ParticleSystem.MinMaxCurve(0f, 0f); dv.z = new ParticleSystem.MinMaxCurve(0f, 0f);
+            dv.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f); dv.orbitalZ = new ParticleSystem.MinMaxCurve(0f, 0f);
             dv.y = new ParticleSystem.MinMaxCurve(0.4f, 1.6f); dv.orbitalY = new ParticleSystem.MinMaxCurve(1.5f, 2.5f); dv.radial = new ParticleSystem.MinMaxCurve(1.2f, 2.4f);
             var dc = dust.colorOverLifetime; dc.enabled = true;
             var dg = new Gradient(); dg.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.25f), new GradientAlphaKey(0, 1) });
