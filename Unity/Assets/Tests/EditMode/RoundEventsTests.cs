@@ -225,7 +225,7 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void AGullTakesThePaceOutOfIt()
+        public void AGullKnocksItAside()
         {
             var clear = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), Straight());
             double t = 0; while (clear.PositionAt(t).d < 90 && t < clear.CarryTime) t += 0.01;
@@ -236,7 +236,8 @@ namespace GolfArcade.Tests
             var hole = Straight(); hole.Movers = new CourseMovers(new[] { gull });
             var hit = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), hole);
             Assert.IsTrue(hit.Knocks.Any(k => k.Kind == ObstacleKind.Gull && !k.Hard), "a birdie");
-            Assert.Less(hit.Rest.D, 120, "it drops short");
+            Assert.Less(hit.Rest.D, clear.Rest.D - 5, "it loses some of its pace");
+            Assert.Greater(hit.Rest.D, clear.Rest.D * 0.6, "but flies on: not a dead ball");
         }
 
         [Test]

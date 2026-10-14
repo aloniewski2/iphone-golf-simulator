@@ -304,7 +304,7 @@ namespace GolfArcade.Course
 
         /// The ball's velocity off a mover: off its body's face with the bounce that body has (the
         /// balloon's envelope a rubbery boing, its basket and a cart a knock), carried along by the
-        /// way the mover is going; a gull it ploughs through, losing most of its pace and dropping.
+        /// way the mover is going; a gull turns it aside and slows it; a twister swings it round and flings it on.
         /// `luck` (0–1) turns it a little, the same for the same shot.
         public (double vx, double vy, double vd) Rebound(Hit hit, double luck)
         {
@@ -315,22 +315,24 @@ namespace GolfArcade.Course
             double rx = hit.Vx - bv.x, ry = hit.Vy - bv.y, rd = hit.Vd - bv.d;   // against the mover
             if (m.Kind == MoverKind.Twister)
             {
-                // caught in the whirl: carried round most of a turn and flung out of it, up and away
-                double turn = (100 + 70 * luck) * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
-                double keep = 0.6;
-                return ((rx * c - rd * s) * keep + bv.x, 9 + 7 * luck, (rx * s + rd * c) * keep + bv.d);
+                // caught in the whirl: swung round part of a turn and flung out of it, up and on
+                double turn = (45 + 60 * luck) * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
+                double keep = 0.72;
+                return ((rx * c - rd * s) * keep + bv.x, 6 + 5 * luck, (rx * s + rd * c) * keep + bv.d);
             }
             if (m.Kind == MoverKind.Gull)
             {
-                double turn = (luck - 0.5) * 70 * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
-                double keep = 0.32;
-                return ((rx * c - rd * s) * keep + bv.x * 0.3, Math.Min(ry, 0) * 0.3 - 1.2, (rx * s + rd * c) * keep + bv.d * 0.3);
+                // a glancing knock off a bird: turned aside and slowed, still flying
+                double turn = (luck - 0.5) * 50 * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
+                double keep = 0.68;
+                return ((rx * c - rd * s) * keep + bv.x * 0.3, ry * 0.6 - 0.6, (rx * s + rd * c) * keep + bv.d * 0.3);
             }
             double nx = hit.X - body.x, ny = hit.Y - body.y, nd = hit.D - body.d;
             double nl = Math.Sqrt(nx * nx + ny * ny + nd * nd);
             if (nl < 1e-9) { nx = 0; ny = 1; nd = 0; } else { nx /= nl; ny /= nl; nd /= nl; }
             double vn = rx * nx + ry * ny + rd * nd;
-            var (e, keepT) = m.Kind == MoverKind.Balloon && hit.Body == 0 ? (0.82, 0.88) : m.Kind == MoverKind.Balloon ? (0.45, 0.8) : (0.42, 0.75);
+            // a balloon's envelope is a drum, its wicker basket and a cart's panels give back about half
+            var (e, keepT) = m.Kind == MoverKind.Balloon && hit.Body == 0 ? (0.82, 0.9) : m.Kind == MoverKind.Balloon ? (0.5, 0.85) : (0.55, 0.85);
             if (vn >= 0) return (hit.Vx, hit.Vy, hit.Vd);
             double tx = rx - vn * nx, ty = ry - vn * ny, td = rd - vn * nd;
             return (tx * keepT - e * vn * nx + bv.x, ty * keepT - e * vn * ny + bv.y, td * keepT - e * vn * nd + bv.d);

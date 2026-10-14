@@ -199,24 +199,38 @@ namespace GolfArcade.Course
         {
             if (!o.IsHard(trunk))
             {
+                // Through leaves the ball rattles on, slowed and turned, rather than dying: a glancing
+                // blow keeps most of its pace, one into the thick of a crown about a third of it, and now
+                // and then a branch kicks it back out the way it came. A bush is thicker, and low.
                 bool clip = o.Kind == ObstacleKind.Tree && o.PassDepth(x, y, d, vx, vd, BallRadius) < 0.3;
-                double keep = clip ? 0.55 + 0.2 * luck : o.Kind == ObstacleKind.Bush ? 0.08 : 0.1 + 0.2 * luck;
-                double turn = (luck - 0.5) * (clip ? 30 : 110) * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
+                bool bush = o.Kind == ObstacleKind.Bush;
+                bool kickedBack = !clip && !bush && luck > 0.78;
+                double keep = clip ? 0.65 + 0.2 * luck : bush ? 0.14 + 0.12 * luck : kickedBack ? 0.22 + 0.1 * luck : 0.22 + 0.2 * luck;
+                double turn = (luck - 0.5) * (clip ? 30 : bush ? 100 : 70) * Math.PI / 180;
+                if (kickedBack) turn = Math.PI + (luck - 0.89) * 4.2;   // back out, off to one side
                 if (kick > 1)
                 {
                     // springy leaves: out the way it came, and up
                     keep = Math.Min(0.9, keep + 0.35 * (kick - 1));
-                    turn += Math.PI * Math.Min(1, (kick - 1) * 1.2); c = Math.Cos(turn); s = Math.Sin(turn);
+                    turn += Math.PI * Math.Min(1, (kick - 1) * 1.2);
                 }
+                double c = Math.Cos(turn), s = Math.Sin(turn);
                 double hx = (vx * c - vd * s) * keep, hd = (vx * s + vd * c) * keep;
-                double hy = clip ? vy * 0.7 : kick > 1 ? Math.Abs(vy) * 0.4 + 2.5 * (kick - 1) : Math.Min(vy, 0) * 0.25 - 1.0;
+                // (one dropping through the crown keeps falling; one climbing through it is lifted a little and slowed)
+                double hy = clip ? vy * 0.8 : kick > 1 ? Math.Abs(vy) * 0.4 + 2.5 * (kick - 1) : bush ? Math.Min(vy, 0) * 0.25 - 0.5
+                          : vy < 0 ? vy * 0.6 - 0.5 : vy * 0.3 + (luck - 0.5) * 2.0;
                 return (hx, hy, hd);
             }
             var n = o.Normal(x, y, d);
+            // bark, stone and brick aren't flat: the face it meets is tilted a little, differently each time
+            double tilt = (luck - 0.5) * 0.35;
+            var nx0 = n.x + tilt * n.d; var nd0 = n.d - tilt * n.x; var ny0 = n.y + (Luck(x, d, 91) - 0.5) * 0.2;
+            double nl = Math.Sqrt(nx0 * nx0 + ny0 * ny0 + nd0 * nd0);
+            if (nl > 1e-9) n = (nx0 / nl, ny0 / nl, nd0 / nl);
             double vn = vx * n.x + vy * n.y + vd * n.d;
             if (vn >= 0) return (vx, vy, vd);
-            double e = o.Kind switch { ObstacleKind.Rock => 0.5, ObstacleKind.Wall => 0.4, _ => 0.45 };
-            double slide = 0.8;
+            double e = o.Kind switch { ObstacleKind.Rock => 0.6, ObstacleKind.Wall => 0.48, _ => 0.52 };
+            double slide = 0.86;
             if (kick != 1) { e = Math.Min(1.15, e * kick); slide = Math.Min(0.95, slide + 0.1 * (kick - 1)); }
             double tx = vx - vn * n.x, ty = vy - vn * n.y, td = vd - vn * n.d;
             return (slide * tx - e * vn * n.x, slide * ty - e * vn * n.y, slide * td - e * vn * n.d);

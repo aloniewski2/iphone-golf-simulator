@@ -185,6 +185,62 @@ namespace GolfArcade.Tests
             Assert.IsFalse(RoundEvents.Deal(5, false, false, true).World);
         }
 
+        /// A good straight tee shot down the line gets past what moves about the hole most of the
+        /// time: the movers are spread out, off to the sides, and only now and then in the way.
+        [Test]
+        public void AGoodTeeShotUsuallyGetsThrough()
+        {
+            RoundEvents.Enabled = true;
+            int shots = 0, blocked = 0;
+            var holes = new[] { Straight(4, 420), Straight(5, 520), Straight(4, 360) };
+            foreach (var weather in new[] { Weather.Clear, Weather.Gusty, Weather.Storm })
+                for (int seed = 1; seed <= 40; seed++)
+                    for (int h = 0; h < holes.Length; h++)
+                    {
+                        var hole = holes[h];
+                        var movers = RoundEvents.Deal(seed).MoversFor(h, hole, weather);
+                        if (movers == null) continue;
+                        hole.Movers = movers;
+                        var (_, heading, club, power) = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), PlayRules.Standard).Value;
+                        for (int k = 0; k < 6; k++)
+                        {
+                            movers.PhaseAtLaunch = seed * 7.3 + k * 13.1;
+                            var shot = new CourseShot(club, Full(power), heading, hole.Tee, hole);
+                            shots++;
+                            foreach (var knock in shot.Knocks)
+                                if (knock.Kind is ObstacleKind.Balloon or ObstacleKind.Gull or ObstacleKind.Twister) { blocked++; break; }
+                        }
+                        hole.Movers = null;
+                    }
+            double rate = (double)blocked / Math.Max(1, shots);
+            Assert.Less(rate, 0.08, $"a straight tee shot meets something moving {rate:P1} of the time ({blocked}/{shots})");
+        }
+
+        /// One or two things moving about a hole, never on one spot, and somewhere different from
+        /// hole to hole.
+        [Test]
+        public void MoversAreSpreadOutAndNeverPiledUp()
+        {
+            RoundEvents.Enabled = true;
+            var hole = Straight(5, 520);
+            var spots = new System.Collections.Generic.HashSet<int>();
+            for (int seed = 1; seed <= 120; seed++)
+                foreach (var weather in new[] { Weather.Clear, Weather.Storm })
+                {
+                    var movers = RoundEvents.Deal(seed).MoversFor(seed % 5, hole, weather);
+                    if (movers == null) continue;
+                    // a flock is one thing
+                    var things = movers.All.Where(m => m.Kind != MoverKind.Gull || m.Variant == 0).ToList();
+                    Assert.LessOrEqual(things.Count, 2, "never more than two");
+                    var middles = things.Select(m => { var r = m.Reach(); return ((r.x0 + r.x1) / 2, (r.d0 + r.d1) / 2); }).ToList();
+                    for (int i = 0; i < middles.Count; i++)
+                        for (int j = i + 1; j < middles.Count; j++)
+                            Assert.GreaterOrEqual(Math.Abs(middles[i].Item2 - middles[j].Item2), 32, "not piled on one spot");
+                    foreach (var m in middles) spots.Add((int)(m.Item2 / 20));
+                }
+            Assert.GreaterOrEqual(spots.Count, 8, "all along the hole, not always the same place");
+        }
+
         /// The app deals the day's forecast round itself to show it on the course screen
         /// (GolfArcade/Unity/GolfForecast.swift): these numbers are its test's too.
         [Test]

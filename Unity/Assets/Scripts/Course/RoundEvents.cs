@@ -301,11 +301,12 @@ namespace GolfArcade.Course
 
         // ----- What moves about the hole -----
 
-        /// The things moving about a hole today, placed off its shape: a hot-air balloon drifting
-        /// across the line of play over the tee shot, a cart going round its loop across the
-        /// fairway where the drives come down (par 4s and 5s, on dry, open ground), gulls wheeling
-        /// over the landing. `ground` gives the ground's height (the hole's own, read off its
-        /// model). Null when nothing moves today.
+        /// The things moving about a hole today — one or two of them, never piled on one spot (45
+        /// yards apart at least) and somewhere different on every hole: a hot-air balloon drifting
+        /// high across the line of play, a cart going round its loop across the fairway (par 4s
+        /// and 5s, on dry, open ground), gulls wheeling off to one side, a twister in a storm.
+        /// `ground` gives the ground's height (the hole's own, read off its model). Null when
+        /// nothing moves today.
         public CourseMovers MoversFor(int holeIndex, Hole hole, Weather weather, Func<CoursePoint, double> ground = null)
         {
             if (!weatherOn || hole?.Centerline == null || hole.Centerline.Length < 2) return null;
@@ -320,59 +321,100 @@ namespace GolfArcade.Course
             CoursePoint At(double along, double across) => new(tee.X + ux * along + rx * across, tee.D + ud * along + rd * across);
 
             bool magma = hole.Theme == "magma";
-            bool balloon = rng.NextDouble() < 0.5 && weather != Weather.Storm || EveryMover;
-            bool cart = hole.Par >= 4 && (rng.NextDouble() < 0.6 || EveryMover);
-            bool gulls = !magma && (weather != Weather.Storm && rng.NextDouble() < 0.6 || EveryMover);
-            // a storm over the islands can throw down a twister across the landing
-            bool twister = weather == Weather.Storm && Weathers.SkyOf(hole) == Sky.Rain && hole.Par >= 4 && (rng.NextDouble() < 0.5 || EveryMover);
-            if (!balloon && !cart && !gulls && !twister) { if (weather == Weather.Storm || magma) cart = hole.Par >= 4; if (!cart) { balloon = magma || weather != Weather.Storm; gulls = !balloon; } }
+            bool rainSky = Weathers.SkyOf(hole) == Sky.Rain;
+            // what this hole could have, and at most two of them (every kind, for reviews), so a hole
+            // is never crowded and no two holes look alike
+            var could = new List<(MoverKind kind, double chance)>();
+            // (balloons ride an eruption's updraught: over the crater they fly in any weather)
+            if (weather != Weather.Storm || magma) could.Add((MoverKind.Balloon, 0.45));
+            if (hole.Par >= 4) could.Add((MoverKind.Cart, 0.45));
+            if (!magma && weather != Weather.Storm) could.Add((MoverKind.Gull, 0.45));
+            // a storm over the islands can throw down a twister
+            if (weather == Weather.Storm && rainSky && hole.Par >= 4) could.Add((MoverKind.Twister, 0.55));
+            for (int i = could.Count - 1; i > 0; i--) { int j = rng.Next(i + 1); (could[i], could[j]) = (could[j], could[i]); }
+            var kinds = new List<MoverKind>();
+            foreach (var (kind, chance) in could)
+                if (EveryMover || kinds.Count < 2 && rng.NextDouble() < chance) kinds.Add(kind);
+            if (kinds.Count == 0 && could.Count > 0 && rng.NextDouble() < 0.8) kinds.Add(could[0].kind);
             var list = new List<Mover>();
 
-            if (cart)
+            // somewhere along the line between `lo` and `hi` of the way (and `min`–`max` yards), at
+            // least 45 yards from anything else already placed
+            var placed = new List<double>();
+            double Spot(double lo, double hi, double min, double max)
             {
-                for (int attempt = 0; attempt < 8 && list.Count == 0; attempt++)
+                double Gap(double at) { double g = double.MaxValue; foreach (var p in placed) g = Math.Min(g, Math.Abs(p - at)); return g; }
+                double along = min;
+                bool free = false;
+                for (int attempt = 0; attempt < 10 && !free; attempt++)
                 {
-                    double along = Math.Max(100, Math.Min(Math.Min(leg - 30, 245), leg * (0.5 + 0.3 * rng.NextDouble())));
-                    double half = hole.FairwayWidth / 2 + 7 + 4 * rng.NextDouble();
-                    var m = Mover.CartLoop(At(along - 2.2, -half), At(along - 2.2, half), At(along + 2.2, half), At(along + 2.2, -half),
-                        4.2 + 1.2 * rng.NextDouble(), rng.NextDouble(), ground);
-                    if (CartFits(m, hole)) list.Add(m);
+                    along = Math.Max(min, Math.Min(max, leg * (lo + (hi - lo) * rng.NextDouble())));
+                    free = Gap(along) >= 45;
                 }
+                // (a crowded hole: the roomiest spot there is)
+                if (!free) for (double at = min; at <= max; at += 5) if (Gap(at) > Gap(along)) along = at;
+                placed.Add(along);
+                return along;
             }
-            if (balloon)
+
+            foreach (var kind in kinds)
             {
-                double along = Math.Max(55, Math.Min(leg - 25, leg * (0.38 + 0.24 * rng.NextDouble())));
-                double reach = hole.FairwayWidth / 2 + 26 + 14 * rng.NextDouble();
-                bool fromLeft = rng.NextDouble() < 0.5;
-                var a = At(along, fromLeft ? -reach : reach); var b = At(along + 12 * (rng.NextDouble() - 0.5), fromLeft ? reach : -reach);
-                double top = double.MinValue;
-                for (int k = 0; k <= 10; k++) { double t = k / 10.0; top = Math.Max(top, ground(new CoursePoint(a.X + (b.X - a.X) * t, a.D + (b.D - a.D) * t))); }
-                // high over the ground and its basket clear of every tree under its drift
-                double height = Math.Max(top + 21 + 9 * rng.NextDouble(), TallestNear(hole, a, b, Mover.Envelope + 2) + Mover.BasketDrop + Mover.Basket + 2);
-                list.Add(Mover.Balloon(a, b, height, 70 + 30 * rng.NextDouble(), rng.NextDouble(), rng.Next(4)));
-            }
-            if (gulls)
-            {
-                double along = Math.Max(80, Math.Min(leg - 8, leg * (0.6 + 0.22 * rng.NextDouble())));
-                var centre = At(along, (rng.NextDouble() - 0.5) * 20);
-                double radius = 9 + 6 * rng.NextDouble();
-                // over the trees they wheel above
-                double height = Math.Max(ground(centre) + 11 + 7 * rng.NextDouble(), TallestNear(hole, centre, centre, radius + 3) + 3);
-                double speed = (0.32 + 0.16 * rng.NextDouble()) * (rng.NextDouble() < 0.5 ? -1 : 1);
-                int count = 3 + rng.Next(3);
-                double start = rng.NextDouble() * Math.PI * 2;
-                for (int i = 0; i < count; i++)
-                    list.Add(Mover.Gull(centre, radius + (rng.NextDouble() - 0.5) * 4, height + (rng.NextDouble() - 0.5) * 3, speed,
-                        start + i * 0.55 + (rng.NextDouble() - 0.5) * 0.3, i));
-            }
-            if (twister)
-            {
-                double along = Math.Max(110, Math.Min(leg - 10, leg * (0.62 + 0.2 * rng.NextDouble())));
-                double reach = hole.FairwayWidth / 2 + 8 + 6 * rng.NextDouble();
-                bool fromLeft = rng.NextDouble() < 0.5;
-                var a = At(along - 8 + 16 * rng.NextDouble(), fromLeft ? -reach : reach);
-                var b = At(along - 8 + 16 * rng.NextDouble(), fromLeft ? reach : -reach);
-                list.Add(Mover.Twister(a, b, 34 + 16 * rng.NextDouble(), rng.NextDouble(), ground));
+                switch (kind)
+                {
+                    case MoverKind.Cart:
+                    {
+                        for (int attempt = 0; attempt < 8; attempt++)
+                        {
+                            double along = Spot(0.45, 0.85, 100, Math.Min(leg - 25, 260));
+                            double half = hole.FairwayWidth / 2 + 7 + 4 * rng.NextDouble();
+                            var m = Mover.CartLoop(At(along - 2.2, -half), At(along - 2.2, half), At(along + 2.2, half), At(along + 2.2, -half),
+                                4.2 + 1.2 * rng.NextDouble(), rng.NextDouble(), ground);
+                            if (CartFits(m, hole)) { list.Add(m); break; }
+                            placed.RemoveAt(placed.Count - 1);
+                        }
+                        break;
+                    }
+                    case MoverKind.Balloon:
+                    {
+                        double along = Spot(0.25, 0.8, 55, leg - 20);
+                        double reach = hole.FairwayWidth / 2 + 26 + 14 * rng.NextDouble();
+                        bool fromLeft = rng.NextDouble() < 0.5;
+                        var a = At(along, fromLeft ? -reach : reach); var b = At(along + 16 * (rng.NextDouble() - 0.5), fromLeft ? reach : -reach);
+                        double top = double.MinValue;
+                        for (int k = 0; k <= 10; k++) { double t = k / 10.0; top = Math.Max(top, ground(new CoursePoint(a.X + (b.X - a.X) * t, a.D + (b.D - a.D) * t))); }
+                        // high over the ground (often above a tee shot's arc) and its basket clear of every tree under its drift
+                        double height = Math.Max(top + 26 + 14 * rng.NextDouble(), TallestNear(hole, a, b, Mover.Envelope + 2) + Mover.BasketDrop + Mover.Basket + 2);
+                        list.Add(Mover.Balloon(a, b, height, 70 + 30 * rng.NextDouble(), rng.NextDouble(), rng.Next(4)));
+                        break;
+                    }
+                    case MoverKind.Gull:
+                    {
+                        // wheeling off to one side of the line, crossing it only now and then
+                        double along = Spot(0.3, 0.92, 60, leg - 5);
+                        double side = rng.NextDouble() < 0.5 ? -1 : 1;
+                        var centre = At(along, side * (14 + 16 * rng.NextDouble()));
+                        double radius = 7 + 5 * rng.NextDouble();
+                        // over the trees they wheel above
+                        double height = Math.Max(ground(centre) + 14 + 10 * rng.NextDouble(), TallestNear(hole, centre, centre, radius + 3) + 3);
+                        double speed = (0.32 + 0.16 * rng.NextDouble()) * (rng.NextDouble() < 0.5 ? -1 : 1);
+                        int count = 3 + rng.Next(3);
+                        double start = rng.NextDouble() * Math.PI * 2;
+                        for (int i = 0; i < count; i++)
+                            list.Add(Mover.Gull(centre, radius + (rng.NextDouble() - 0.5) * 4, height + (rng.NextDouble() - 0.5) * 3, speed,
+                                start + i * 0.55 + (rng.NextDouble() - 0.5) * 0.3, i));
+                        break;
+                    }
+                    default:
+                    {
+                        double along = Spot(0.45, 0.9, 110, leg - 10);
+                        double reach = hole.FairwayWidth / 2 + 8 + 6 * rng.NextDouble();
+                        bool fromLeft = rng.NextDouble() < 0.5;
+                        var a = At(along - 8 + 16 * rng.NextDouble(), fromLeft ? -reach : reach);
+                        var b = At(along - 8 + 16 * rng.NextDouble(), fromLeft ? reach : -reach);
+                        list.Add(Mover.Twister(a, b, 34 + 16 * rng.NextDouble(), rng.NextDouble(), ground));
+                        break;
+                    }
+                }
             }
             return list.Count == 0 ? null : new CourseMovers(list.ToArray());
         }
