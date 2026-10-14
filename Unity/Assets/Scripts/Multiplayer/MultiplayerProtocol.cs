@@ -5,6 +5,8 @@ namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkParticipant { public string id,name,controllerID,view; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
     [Serializable] public sealed class NetworkConfiguration {
         public string lobbyID,matchID,hostID,localID,sport,venue; public int sets=1,games=3,seed;
+        /// Golf's match settings: the round twists off, the weather and things moving about the holes off (missing: on).
+        public bool twistsOff,weatherOff;
         public NetworkParticipant[] participants;
         public bool Controls(string device, int seat) => participants != null && participants.Any(p=>p.seat==seat && p.connected && (p.id==device || (sport=="golf" && device==hostID && p.controllerID==device)));
         public int Seat(string id)=>participants?.FirstOrDefault(p=>p.id==id)?.seat ?? -1;

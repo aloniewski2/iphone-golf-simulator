@@ -5,7 +5,9 @@ namespace GolfArcade.Course
     /// What something standing on the course does to a ball that meets it: a tree's crown and a
     /// bush are leaves and twigs the ball rattles into, a trunk, a rock and a wall are hard and it
     /// bounces off them.
-    public enum ObstacleKind { Tree, Bush, Rock, Wall }
+    /// (Balloon, Cart and Gull are the things moving about the hole, CourseMovers: they only
+    /// name a shot's knocks, for its effects and sounds.)
+    public enum ObstacleKind { Tree, Bush, Rock, Wall, Balloon, Cart, Gull, Twister }
 
     /// One thing standing on the course, read off the hole's model (HoleView), in course yards;
     /// heights are world heights, the same as the ground's. A tree is a trunk up the middle and a

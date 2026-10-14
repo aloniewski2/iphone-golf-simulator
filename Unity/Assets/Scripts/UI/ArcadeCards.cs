@@ -23,7 +23,8 @@ namespace GolfArcade.UI
         {
             if (cache.TryGetValue(name, out var s)) return s;
             var tex = Resources.Load<Texture2D>($"UI/Icons/{name}");
-            s = tex ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)) : null;
+            // (the events' own icons are painted in code: EventIcons)
+            s = tex ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)) : EventIcons.Paint(name);
             cache[name] = s;
             return s;
         }

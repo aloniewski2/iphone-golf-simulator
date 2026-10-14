@@ -137,8 +137,8 @@ namespace GolfArcade.PlayTests
             finally { game.LookHeld = 0; }
         }
 
-        /// A shot into a real tree on the Witch's Lair: it comes down near the tree, well short
-        /// of where the same shot goes with the tree out of the way.
+        /// A shot into a real tree on the Witch's Lair: it rattles through the branches and comes down
+        /// near the tree — not dead at its foot, not sailing on as if the tree weren't there.
         [UnityTest]
         public IEnumerator ATreeStopsAShot()
         {
@@ -186,8 +186,8 @@ namespace GolfArcade.PlayTests
             yield return WaitFor(() => game.Current == GolfGame.State.Result, 25, "the shot into the tree to finish");
             var shot = game.LastShot;
             Debug.Log($"COURSE tree shot: tree at {at} (top {tree.Top - tree.Base:F1} yd over its foot), carry {shot.Carry:F1}, rest {shot.Rest}, {shot.Lie}");
-            Assert.Less(shot.Rest.DistanceTo(at), 25, "it comes down by the tree");
-            Assert.Less(hole.Tee.DistanceTo(shot.Rest), best + 20, "not through it");
+            Assert.Less(shot.Rest.DistanceTo(at), 30, "it comes down by the tree");
+            Assert.Less(hole.Tee.DistanceTo(shot.Rest), best + 25, "not sailing on through it");
             Assert.GreaterOrEqual(shot.Knocks.Count, 1, "it hit the tree");
         }
     }

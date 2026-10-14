@@ -61,8 +61,11 @@ namespace GolfArcade.Tests
                 Assert.AreEqual("Head", socket.parent.name, "the cap socket hangs off the head bone");
                 Assert.IsNotNull(go.GetComponentsInChildren<Transform>(true).SingleOrDefault(t => t.name == HeroAccessories.SocketHair && t.parent == socket.parent), "the hair socket waits next to it");
                 Assert.IsTrue(cap.bones.Contains(socket), "the cap follows the socket");
-                // the body, the head and the clothes are exactly as they were
-                Assert.AreSame(bodyMesh, look.body.sharedMesh);
+                // the body, the head and the clothes are as they were (in golf the glove's hand is hidden under it: the same body,
+                // the gloved hand's skin left out so it never shows through in a swing)
+                if (golf) Assert.AreEqual(bodyMesh.name + " (accessory cover)", look.body.sharedMesh.name);
+                else Assert.AreSame(bodyMesh, look.body.sharedMesh);
+                var dressed = look.body.sharedMesh;
                 Assert.AreEqual(kitCount, look.kit.Length);
                 CollectionAssert.AreEqual(kitMeshes, look.kit.Select(k => k.sharedMesh).ToArray());
                 // swap, then remove: one cap at a time, the socket stays, the body is untouched
@@ -73,7 +76,7 @@ namespace GolfArcade.Tests
                 acc.Unequip(AccessorySlot.Headwear);
                 Assert.IsNull(acc.Item(AccessorySlot.Headwear));
                 Assert.AreEqual(0, go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Count(r => r.name == "Acc_Cap"));
-                Assert.AreSame(bodyMesh, look.body.sharedMesh);
+                Assert.AreSame(dressed, look.body.sharedMesh, "a cap on or off changes nothing on the body");
             }
             finally { Object.DestroyImmediate(go); }
         }

@@ -119,7 +119,7 @@ namespace GolfArcade.PlayTests
             Assert.AreEqual(RenderMode.ScreenSpaceOverlay, hudCanvas.renderMode);
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(300000)]   // eight holes, about 20 s each (the 180 s default left it under a second to spare)
         public IEnumerator TheNewHolesPlay()
         {
             Time.timeScale = 1f;

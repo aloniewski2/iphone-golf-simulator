@@ -315,6 +315,7 @@ namespace GolfArcade.Game
             if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); }
             WearGear(ProfileStore.Active);
             course = CourseFor(chosenHoles);
+            EndRoundEvents();
             ShowHole(course.Holes[0]);
             greenRead.Hide();
             aimLine.positionCount = 0;
@@ -941,6 +942,7 @@ namespace GolfArcade.Game
         {
             setup ??= GameSetup.Solo(ProfileStore.Active, ChosenCourseId);
             Match = new Match(course, setup.Players(), setup.Seed, setup.Format);
+            DealEvents(setup.Seed);
             roundRecorded = false;
             if (setup.Mode != PlayMode.Online || onlineRoom == null) return;
             foreach (var seat in onlineRoom.Players)
@@ -1043,6 +1045,9 @@ namespace GolfArcade.Game
         {
             bigMomentUsed=false; holeIndex = index;
             hole = course.Holes[index];
+            // today's weather and the rules it makes, before the hole is built (the cup is cut to them)
+            PrepareHoleEvents(index, pendingNetworkWeather);
+            pendingNetworkWeather = null;
             // Gone now, not at the end of the frame: the new hole's ground is read by raycast
             // while it is built (pin height, the green's slope grid), and the old one is in the way.
             if (holeView) DestroyImmediate(holeView.gameObject);
@@ -1053,6 +1058,8 @@ namespace GolfArcade.Game
             if (Alternating) ResetTurns();
             // everyone on a hole gets its wind, from the round's seed (the same on every phone online)
             Wind = Match != null ? Match.WindFor(index) : Wind.Random(rng);
+            Wind = events.WindFor(index, Wind, weather);   // a gusty day, a storm, a hurricane round
+            StartHoleEvents(index);
             holeView.ShowFlag(true);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
             hud.SetHole(hole.PlayNumber, hole.Par, hole.Length, hole.Picture, hole.Name);
@@ -1070,7 +1077,7 @@ namespace GolfArcade.Game
             // The showcase: HUD away, the tournament's title over the flyover; then the
             // introductions on the tee, you and the gallery behind the rope.
             hud.ShowPlayHud(false);
-            string windWords = Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}";
+            string windWords = WeatherWords(Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}");
             if (Match != null && Match.LocalCount > 1) windWords = $"{Match.Current.Name}'s turn   ·   {windWords}";
             hud.ShowHoleIntro(Tournament, hole.PlayNumber, hole.Name, hole.Par, hole.Length, windWords);
             var teeLine = TeeAim();
@@ -1100,6 +1107,7 @@ namespace GolfArcade.Game
                 hud.HideNameplate(); hud.ShowPlayHud(true);
                 holeView.ShowTeeMarkers(true);
             }
+            RollShotEvents();   // the weather may turn, the wind gust, before this stroke
             var lie = hole.LieAt(ballAt);
             bool putting = lie.IsPuttingSurface();
             // the gallery is at the tee: once you've left it, they've nothing to draw
@@ -1110,7 +1118,7 @@ namespace GolfArcade.Game
                 aimedByPlayer = false;
             }
             // the club for where this shot is going: the pin, or on a long hole the next landing
-            club = AutoClub(lie, putting ? ballAt.DistanceTo(hole.Pin) : PlaysLike(ballAt, hole.RecommendedTarget(ballAt)));
+            club = AutoClub(lie, putting ? ballAt.DistanceTo(hole.Pin) : PlaysLike(ballAt, hole.RecommendedTarget(ballAt)), hole.Rules);
             Swing.SetClub(club);
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             Swing.Armed = true;
@@ -1258,10 +1266,11 @@ namespace GolfArcade.Game
         static double PlaysLike(CoursePoint from, CoursePoint to)
             => from.DistanceTo(to) + Math.Max(0, HoleView.GroundHeight(to) - HoleView.GroundHeight(from));
 
-        static GolfClub AutoClub(CourseLie lie, double yards)
+        static GolfClub AutoClub(CourseLie lie, double yards, PlayRules rules = null)
         {
             if (lie.IsPuttingSurface()) return GolfClub.Putter;
-            return GolfClubs.ForDistance(yards, c => lie.PowerFactor(c));
+            // (under a moon's gravity a club flies farther: the rules' carry, so the pick still fits)
+            return GolfClubs.ForDistance(yards, c => lie.PowerFactor(c) * (rules ?? PlayRules.Standard).CarryFactor(c));
         }
 
         void Enter(State s)
@@ -1738,7 +1747,7 @@ namespace GolfArcade.Game
             var lie = hole.LieAt(ballAt);
             bool putting = lie.IsPuttingSurface();
             double toPin = ballAt.DistanceTo(hole.Pin);
-            double rated = club.ReferenceDistanceYards() * lie.PowerFactor(club);
+            double rated = club.ReferenceDistanceYards() * lie.PowerFactor(club) * hole.Rules.CarryFactor(club);
             var dir = AimDirection();
             var from = HoleView.ToWorld(ballAt, 0.03);
             LayAimLine(Math.Min(rated, putting ? toPin + 3 : rated));
@@ -1774,7 +1783,7 @@ namespace GolfArcade.Game
                 var yards = new string[GolfClubs.All.Length];
                 for (int i = 0; i < yards.Length; i++)
                 {
-                    double d = GolfClubs.All[i].ReferenceDistanceYards() * lie.PowerFactor(GolfClubs.All[i]);
+                    double d = GolfClubs.All[i].ReferenceDistanceYards() * lie.PowerFactor(GolfClubs.All[i]) * hole.Rules.CarryFactor(GolfClubs.All[i]);
                     yards[i] = GolfClubs.All[i] == GolfClub.Putter ? $"{d * 3:F0} ft" : $"{d:F0} yd";
                 }
                 hud.Controller.SetClubs(Array.IndexOf(GolfClubs.All, club), yards);
@@ -1867,6 +1876,8 @@ namespace GolfArcade.Game
         public void SetWind(Wind wind)
         {
             Wind = wind;
+            weatherView?.SetWind(wind);
+            GolfWindSway.SetWind(wind);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
             double downTheHole = hole.Tee.HeadingTo(hole.Pin);
             hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm, Wind.SpeedMPH);
@@ -1922,7 +1933,7 @@ namespace GolfArcade.Game
             else
             {
                 // the meter says how far this stroke rolls on the flat
-                double feet = GolfClub.Putter.DistanceYards(load) * 3;
+                double feet = GolfClub.Putter.DistanceYards(load) * 3 * hole.Rules.CarryFactor(GolfClub.Putter);
                 hud.SetMeter((float)load, null, $"{feet:F0} ft");
             }
             golfer.ShowLoad((float)load);
@@ -1980,9 +1991,11 @@ namespace GolfArcade.Game
             // sails will have turned on by then
             float toBall = golfer.Strike(atImpact: networkConfigured ? networkWoundUp : NativeControlled && !NativeSportsSession.Touch);
             if (hole.Windmill is SpinningSails turning) turning.AngleAtLaunch = turning.CurrentAngle() + turning.DegreesPerSecond * toBall;
+            PrimeMovers(toBall);
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
             landingGround = HoleView.GroundHeight(LastShot.Landing);
+            PlanRingPasses();
             landingSpot = HoleView.ToWorld(LastShot.Landing);
             shotLine = landingSpot - HoleView.ToWorld(ballAt); shotLine.y = 0;
             if (shotLine.sqrMagnitude < 1f) shotLine = AimDirection();
@@ -2130,7 +2143,8 @@ namespace GolfArcade.Game
             hud.DrawMinimap(minimapCamera);
             bool hudShowsCourse = hud.Controller == null || hud.OnTv || NativeControlled;   // (not under the controller in a preview)
             // the pin: on the maps, and on the picture — over it, or at the edge pointing the way
-            bool pinWanted = aimingShot && club != GolfClub.Putter && hudShowsCourse && Current != State.Menu;
+            // (not while a badge is stamped over the picture: the marker draws over everything)
+            bool pinWanted = aimingShot && club != GolfClub.Putter && hudShowsCourse && Current != State.Menu && !hud.BadgeShowing;
             hud.SetPinMarker(pinWanted ? rig.Camera : null, plan.Pin + Vector3.up * 3.2f, $"PIN  {ballAt.DistanceTo(hole.Pin):F0} YD");
             hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hudShowsCourse);
             // the yardage riding the ball, counting through the flight and the run
@@ -2196,6 +2210,7 @@ namespace GolfArcade.Game
                 case State.Flight:
                     flightTime += Time.deltaTime;
                     hole.Windmill?.Drive(hole.Windmill.AngleAt(flightTime));   // the blades keep the flight's time
+                    hole.Movers?.Hold(flightTime);   // and so does everything moving about the hole
                     if (flightTime < 0) break;
                     if (!strikePlayed)
                     {
@@ -2294,11 +2309,13 @@ namespace GolfArcade.Game
             {
                 var k = knocks[knocksShown++];
                 var kAt = new Vector3((float)k.X, (float)(double.IsNaN(k.Y) ? HoleView.GroundHeight(new CoursePoint(k.X, k.D)) + 0.1 : k.Y), (float)k.D);
+                if (k.Kind is ObstacleKind.Balloon or ObstacleKind.Cart or ObstacleKind.Gull or ObstacleKind.Twister) { MoverKnock(k, kAt); continue; }
                 bool stone = k.Kind is ObstacleKind.Rock or ObstacleKind.Wall;
                 effects.Knock(kAt, !k.Hard, stone);
                 if (k.Hard) sounds.PlayKnock(stone); else sounds.PlayLeaves();
                 Haptics.Tick();
             }
+            ShowRingPasses();
             lastHeight = p.h;
             var velocity = (pos - lastBallPos) / dt;
             lastBallPos = pos;
@@ -2410,8 +2427,12 @@ namespace GolfArcade.Game
                     new RoundCard.Highlight { Icon = "grass", Title = "Fairways", Value = fairwayChances > 0 ? $"{fairwaysHit}/{fairwayChances}" : "—" },
                     new RoundCard.Highlight { Icon = "target", Title = "Greens in reg.", Value = greensPlayed > 0 ? $"{greensHit}/{greensPlayed}" : "—" },
                     new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
-                    new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
-                    new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
+                    // with rings and bounties out, what they paid takes the strike and speed tiles' places
+                    CountsCoins ? new RoundCard.Highlight { Icon = "coin", Title = "Coins", Value = roundCoins.ToString("N0") }
+                                      : new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
+                    events.Challenges ? new RoundCard.Highlight { Icon = bounty?.State == BountyState.Done ? "tick" : "flag", Title = round ? "Bounties" : bounty?.State == BountyState.Done ? "Bounty done" : "Bounties",
+                                                                  Value = round || bounty == null ? $"{roundBounties}/{roundBountyHoles}" : bounty.State == BountyState.Done ? $"+{bounty.Coins}" : $"{roundBounties}/{roundBountyHoles}" }
+                                      : new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
                 }, more);
             hud.PlayAgain.Pressed = PlayAgain;
             hud.RoundMenu.Pressed = ShowMenu;
@@ -2507,6 +2528,7 @@ namespace GolfArcade.Game
             ProfileStore.Save();
             if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Save();
             if (news.Count > 0) { hud.ShowUnlocks(news); sounds.PlayFanfare(); }
+            SummariseRound();
         }
 
         /// From the card straight into the same holes again (online: back to the lobby for a
@@ -2718,6 +2740,7 @@ namespace GolfArcade.Game
             Time.timeScale = replayClock > -0.3f && replayClock < 0.35f ? 0.4f : 1f;
             replayClock += Time.deltaTime;
             hole.Windmill?.Drive(hole.Windmill.AngleAt(replayClock));
+            hole.Movers?.Hold(replayClock);
             if (!replayStruck && replayClock >= -0.4f) { replayStruck = true; replayClock = -golfer.Strike(); }
             if (replayStruck && !replayLaunched && replayClock >= 0)
             {
@@ -2852,6 +2875,7 @@ namespace GolfArcade.Game
         void EndReplay()
         {
             hole.Windmill?.Drive(null);
+            hole.Movers?.Hold(null);
             Time.timeScale = 1f;
             hud.ShowReplay(false);
             rig.ResetZoom(); rig.RestoreFov();
@@ -2865,6 +2889,7 @@ namespace GolfArcade.Game
         void FinishShot()
         {
             hole.Windmill?.Drive(null);
+            hole.Movers?.Hold(null);
             var shot = LastShot;
             effects.EndFlight();
             aimLine.positionCount = 0;
@@ -2885,6 +2910,7 @@ namespace GolfArcade.Game
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             if (!shot.IsHoled) React(shot);
             holeStrokes += shot.PenaltyStrokes;
+            ChallengeShot(shot);
             CountWhereItFinished(shot);
             StampLanding(shot);
             LastResult = result;
@@ -2979,6 +3005,7 @@ namespace GolfArcade.Game
                 hud.ShowLanding(shot.IsHoled ? LandingBadge.Kind.Holed : measure > 0 && measure < Match.MissedGreen ? LandingBadge.Kind.Fairway : LandingBadge.Kind.Rough,
                                 words, $"{Match.Current.Name}  ·  {Match.FormatName(Match.Format)}",
                                 Match.Format == MatchFormat.LongestDrive && measure == 0 ? "Off the fairway" : null, 3f);
+                CloseHoleChallenges();
                 Enter(State.HoleDone);
                 return;
             }
@@ -2991,6 +3018,7 @@ namespace GolfArcade.Game
                 if (!holeOutShown)   // (the hole-out card has already said it)
                 hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,
                                 $"Hole {hole.PlayNumber}  ·  par {hole.Par}", $"{holeStrokes} stroke{(holeStrokes == 1 ? "" : "s")}", 3f);
+                CloseHoleChallenges();
                 Enter(State.HoleDone);
                 return;
             }

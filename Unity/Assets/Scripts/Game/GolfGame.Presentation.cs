@@ -45,6 +45,7 @@ namespace GolfArcade.Game {
             }
             StartIntroGraphics();
             BeginGolfBeat();
+            RevealTwists();   // the round's first hole: its twists dealt over the opening
         }
         void StartIntroGraphics() {
             hud.HideHoleIntro();   // (the opening's graphics are IntroGraphics' now)
@@ -105,7 +106,8 @@ namespace GolfArcade.Game {
             if(shot!=introShot) {
                 introShot=shot; introGraphics.HideTag(introTag,introClock); introTag=null;
                 if(shot==0) {
-                    string wind=Wind.IsCalm?"CALM":Wind.Describe(heading).ToUpperInvariant();
+                    // (the hole's weather before its wind, when the round has weather: "THUNDERSTORM · 18 MPH ↗")
+                    string wind=WeatherWords(Wind.IsCalm?"Calm":Wind.Describe(heading)).ToUpperInvariant();
                     introPlate=introGraphics.ShowPlate($"HOLE {hole.PlayNumber}",hole.Name.ToUpperInvariant(),$"PAR {hole.Par}   ·   {hole.Length:F0} YD   ·   {wind}",IntroGraphics.Sky,false,introClock);
                 } else {
                     introGraphics.HidePlate(introPlate,introClock);

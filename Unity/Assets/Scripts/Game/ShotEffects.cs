@@ -275,6 +275,24 @@ namespace GolfArcade.Game
             }
         }
 
+        /// A puff of `count` soft bits flying out of `at`, coloured between `a` and `b`: feathers off a
+        /// gull, a pop of air off a balloon, dust off a cart.
+        public void Burst(Vector3 at, Color a, Color b, int count, float speed, float size, float life = 0.8f, float lift = 0.6f)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var dir = Random.insideUnitSphere;
+                puffs.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + dir * 0.15f,
+                    velocity = dir * speed + Vector3.up * lift,
+                    startColor = Color.Lerp(a, b, Random.value),
+                    startSize = Random.Range(size * 0.6f, size),
+                    startLifetime = Random.Range(life * 0.6f, life),
+                }, 1);
+            }
+        }
+
         public static Material ParticleMaterial()
         {
             if (particleMaterial) return particleMaterial;
