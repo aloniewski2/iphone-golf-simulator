@@ -94,6 +94,21 @@ final class SportsSession {
     var golfCourse = MultiplayerLobby.currentGolfVenue(UserDefaults.standard.string(forKey: "sports.golfCourse") ?? "cliffside") {
         didSet { UserDefaults.standard.set(golfCourse, forKey: "sports.golfCourse") }
     }
+    /// Golf's match settings, set before the round (the course screen, a lobby's Match Settings) and remembered:
+    /// round twists (two random modifiers dealt each round), and weather with things moving about the holes
+    /// (rain, storms, gusts; balloons, carts, gulls). Both on unless turned off.
+    // (off until the player turns them on: Settings → Gameplay, or the course screen. New keys, so
+    // an earlier build's saved "on" doesn't carry over.)
+    var golfTwists = (UserDefaults.standard.object(forKey: "sports.golfTwists.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfTwists, forKey: "sports.golfTwists.v2") }
+    }
+    var golfWeather = (UserDefaults.standard.object(forKey: "sports.golfWeather.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfWeather, forKey: "sports.golfWeather.v2") }
+    }
+    /// A bounty on every hole, paying coins (and XP at the round's end); the rings are Point Frenzy's, a twist.
+    var golfChallenges = (UserDefaults.standard.object(forKey: "sports.golfChallenges.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfChallenges, forKey: "sports.golfChallenges.v2") }
+    }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
     static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis") || ProcessInfo.processInfo.arguments.contains("-benchGolf")
     var haptics = (UserDefaults.standard.object(forKey:"arcade.hapticsEnabled") as? Bool) ?? true {
@@ -357,9 +372,14 @@ final class SportsSession {
         launchExtras = [:]
     }
     /// Start a golf round; legacy tutorial requests use the same playable round.
-    func startGolf(tutorial: Bool, preview: Bool) {
-        sport = "golf"; opponentName = ""
-        launchExtras = ["mode": "round", "course": GolfCourseChoice(rawValue: golfCourse)?.rawValue ?? "cliffside"]
+    func startGolf(tutorial: Bool, preview: Bool, daily: Int? = nil) {
+        sport = "golf"; opponentName = ""; lastGolfRound = nil
+        // the day's forecast round has everything on, whatever the match settings say
+        let daily = tutorial ? 0 : daily ?? 0
+        launchExtras = ["mode": "round", "course": GolfCourseChoice(rawValue: golfCourse)?.rawValue ?? "cliffside",
+                        // (the lesson is plain golf, whatever the match settings say)
+                        "noTwists": tutorial || (daily == 0 && !golfTwists), "noWeather": tutorial || (daily == 0 && !golfWeather),
+                        "noChallenges": tutorial || (daily == 0 && !golfChallenges), "daily": daily]
         start(preview: preview)
         launchExtras = [:]
     }
@@ -847,8 +867,12 @@ final class SportsSession {
     func continueGolfRound() {
         guard active, sport == "golf", golfPhase == "RoundDone", multiplayerMatchID == nil else { return }
         if golfHasNextHole { command("golfContinue") }
+        // the round's over: its XP (banked when Unity reported the round) on the rewards screen
+        else if TennisMenu.shared.postMatch?.golf != nil { TennisMenu.shared.beginPostMatch() }
         else { TennisMenu.shared.finishMatch(.replay) }
     }
+    /// The last golf round's tally, as Unity reported it.
+    var lastGolfRound: GolfRoundStats?
 
     func showMatchRewards() {
         guard active, finishedMatch != nil else { return }
@@ -1049,6 +1073,9 @@ final class SportsSession {
                 if parts.count == 2 { Analytics.track("golf_hole_done", ["strokes": parts[0], "capped": parts[1]]) }
             case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n); SportsDiagnostics.write("rally persisted \(n)") }
             case "matchStats": lastMatchStats = MatchStats(line: event["message"] as? String ?? "")
+            case "golfRound":
+                let stats = GolfRoundStats(line: event["message"] as? String ?? "")
+                if lastGolfRound == nil { lastGolfRound = stats; TennisMenu.shared.golfRoundFinished(stats) }
             case "presentation":
                 recordPresentationEvent(event)
             case "matchOver":

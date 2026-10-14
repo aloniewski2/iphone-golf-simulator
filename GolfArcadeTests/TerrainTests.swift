@@ -25,11 +25,11 @@ final class TerrainTests: XCTestCase {
     func testEveryAuthoredGreenIsPuttableButNotFlat() {
         for course in Course.all {
             for hole in course.holes {
-                let steepest = stride(from: -hole.greenRadius, through: hole.greenRadius, by: 2).flatMap { x in
-                    stride(from: -hole.greenRadius, through: hole.greenRadius, by: 2).map { d in
-                        hole.terrain.slope(at: CoursePoint(x: hole.pin.x + x, d: hole.pin.d + d))
-                    }
-                }.max() ?? 0
+                // (with its types spelt out: slow for the type checker otherwise)
+                let across: [Double] = Array(stride(from: -hole.greenRadius, through: hole.greenRadius, by: 2))
+                var slopes: [Double] = []
+                for x in across { for d in across { slopes.append(hole.terrain.slope(at: CoursePoint(x: hole.pin.x + x, d: hole.pin.d + d))) } }
+                let steepest: Double = slopes.max() ?? 0
                 XCTAssertGreaterThan(steepest, 0.008, "\(course.name) \(hole.number): a green with nothing to read")
                 XCTAssertLessThan(steepest, 0.06, "\(course.name) \(hole.number): a putt could never stop on that")
                 XCTAssertLessThan(hole.terrain.slope(at: hole.pin), 0.035, "\(course.name) \(hole.number): the cup sits on a manageable slope")

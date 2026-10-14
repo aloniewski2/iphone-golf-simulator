@@ -104,5 +104,5 @@ namespace UnityEngine {
 
 namespace GolfArcade.Tennis {
     // Only the clip NAMES that TennisEmotes refers to.
-    public class HeroTennisDriver { public enum Clip { EmoteScuba, EmoteThrust, EmoteSpike, IntroWave, IntroBringIt, IntroPushups } }
+    public class HeroTennisDriver { public enum Clip { EmoteScuba, EmoteThrust, EmoteSpike, IntroWave, IntroBringIt, IntroPushups, EmoteJumpJoy, EmoteFistPump, EmoteStomp, EmoteSlump, EmoteShock, EmoteVictory, EmoteDefeat } }
 }

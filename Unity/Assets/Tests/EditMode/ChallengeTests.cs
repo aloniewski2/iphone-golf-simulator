@@ -1,0 +1,263 @@
+using System;
+using System.Linq;
+using GolfArcade.Course;
+using GolfArcade.Shot;
+using GolfArcade.Swing;
+using NUnit.Framework;
+
+namespace GolfArcade.Tests
+{
+    /// What there is to chase on a round: golden rings laid along each tee shot's flight that a
+    /// good shot threads (a glide ring only when it is there), a bounty on every hole drawn from
+    /// what the hole has, done or missed by what the strokes do; and the dice the app shares to
+    /// show the day's forecast round before it is played.
+    public class ChallengeTests
+    {
+        bool wasEnabled;
+        [SetUp] public void On() { wasEnabled = RoundEvents.Enabled; RoundEvents.Enabled = true; }
+        [TearDown] public void Back() => RoundEvents.Enabled = wasEnabled;
+
+        static Hole Straight(int par = 4, double length = 400) => new()
+        {
+            Number = 99, Par = par,
+            Centerline = new[] { new CoursePoint(0, 0), new CoursePoint(0, length) },
+            FairwayWidth = 60, GreenRadius = 12, RoughWidth = 30,
+            Obstacles = Array.Empty<Obstacle>(),
+        };
+
+        static SwingImpact Full(double power = 1, double curve = 0) => new() { Power = power, CurveDegrees = curve };
+
+        [Test]
+        public void RingsStandAlongTheTeeShotsFlight()
+        {
+            RoundEvents.Enabled = true;
+            try
+            {
+                var hole = Straight();
+                // (rings stand only in a round that dealt Point Frenzy)
+                var e = RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}");
+                Assert.IsTrue(e.Has(Twist.PointFrenzy));
+                var rings = e.RingsFor(0, hole, PlayRules.Standard);
+                Assert.AreEqual(3, rings.Length);
+                CollectionAssert.AreEqual(new[] { RingKind.Gold, RingKind.Gold, RingKind.Glide }, rings.Select(r => r.Kind).ToArray());
+                foreach (var r in rings)
+                {
+                    Assert.Greater(r.Y, r.Radius + 1, "up off the ground");
+                    Assert.AreEqual(1, r.NormalD, 1e-6, "facing down the hole");
+                }
+                Assert.IsTrue(rings[0].D < rings[1].D && rings[1].D < rings[2].D, "one after another down the line");
+                Assert.AreEqual(rings.Select(r => r.Y).ToArray(), RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard).Select(r => r.Y).ToArray(), "the same every time from the seed");
+                // (lighter gravity: a higher flight, higher rings)
+                var moon = new PlayRules { Gravity = 0.45 };
+                Assert.Greater(e.RingsFor(0, hole, moon)[0].Y, rings[0].Y + 3, "a floatier flight's rings stand higher");
+                var moonShot = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), moon).Value;
+                Assert.IsTrue(e.RingsFor(0, hole, moon).All(r => r.Y <= moonShot.flight.Apex + 2), "on the arc of the club the game would pick, not above it");
+                Assert.AreEqual(0, RoundEvents.FromCode(11, "wc:0,4").RingsFor(0, hole, PlayRules.Standard).Length, "none without Point Frenzy");
+                Assert.AreEqual(3, RoundEvents.FromCode(11, $"s:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard).Length, "with it, whatever else is on");
+                Assert.IsFalse(Enumerable.Range(1, 300).Any(s => RoundEvents.Deal(s, frenzy: false).Has(Twist.PointFrenzy)), "a multiplayer round never deals it");
+                Assert.IsTrue(Enumerable.Range(1, 300).Any(s => RoundEvents.Deal(s).Has(Twist.PointFrenzy)), "a single player's round does, now and then");
+                Assert.AreEqual(0, e.RingsFor(0, Straight(3, 60), PlayRules.Standard).Length, "none on a pitch");
+            }
+            finally { RoundEvents.Enabled = wasEnabled; }
+        }
+
+        [Test]
+        public void AGoodStraightShotThreadsTheFirstRing()
+        {
+            RoundEvents.Enabled = true;
+            try
+            {
+                var hole = Straight();
+                var rings = RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard);
+                var (_, heading, club, power) = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), PlayRules.Standard).Value;
+                var shot = new CourseShot(club, Full(power), heading, hole.Tee, hole);
+                var through = CourseRings.Through(shot, rings, 0, _ => 0);
+                Assert.IsTrue(through.Any(p => p.Ring == 0), "the one on its line");
+                Assert.IsTrue(through.All(p => p.Time > 0 && p.Time < shot.LandingTime), "in the air");
+                Assert.IsFalse(CourseRings.Through(shot, rings, 0, _ => 0, new[] { true, false, false }).Any(p => p.Ring == 0), "a ring taken is gone");
+                var wild = new CourseShot(club, Full(power), heading + 25, hole.Tee, hole);
+                Assert.AreEqual(0, CourseRings.Through(wild, rings, 0, _ => 0).Count, "a wild one misses them all");
+                var putt = new CourseShot(GolfClub.Putter, Full(1), 0, hole.Tee, hole);
+                Assert.AreEqual(0, CourseRings.Through(putt, rings, 0, _ => 0).Count);
+
+                // the glide ring slides across the line: only when it's there
+                var glide = rings[2];
+                bool met = false, missed = false;
+                for (double phase = 0; phase < glide.Period; phase += glide.Period / 24)
+                {
+                    bool hit = CourseRings.Through(shot, new[] { glide }, phase, _ => 0).Count > 0;
+                    met |= hit; missed |= !hit;
+                }
+                Assert.IsTrue(met && missed, "timed right it's threaded, timed wrong it's not");
+            }
+            finally { RoundEvents.Enabled = wasEnabled; }
+        }
+
+        [Test]
+        public void TheBountyIsDrawnFromWhatTheHoleHas()
+        {
+            RoundEvents.Enabled = true;
+            try
+            {
+                var four = Straight(); var three = Straight(3, 160);
+                var balloon = new CourseMovers(new[] { Mover.Balloon(new CoursePoint(-40, 120), new CoursePoint(40, 120), 30, 60, 0, 0) });
+                var rings = new[] { new Ring(RingKind.Gold, 0, 20, 100, 0, 1, 3.6) };
+                var onFour = Enumerable.Range(1, 300).Select(s => RoundEvents.Deal(s).BountyFor(0, four, Weather.Storm, balloon, rings).Kind).ToList();
+                var onThree = Enumerable.Range(1, 300).Select(s => RoundEvents.Deal(s).BountyFor(0, three, Weather.Clear, null, null).Kind).ToList();
+                CollectionAssert.IsSubsetOf(new[] { BountyKind.Ring, BountyKind.Balloon, BountyKind.Fairway, BountyKind.ParInWeather, BountyKind.Birdie }, onFour.Distinct().ToArray());
+                CollectionAssert.DoesNotContain(onFour, BountyKind.Close);
+                CollectionAssert.Contains(onThree, BountyKind.Close);
+                foreach (var k in new[] { BountyKind.Fairway, BountyKind.Ring, BountyKind.Balloon, BountyKind.ParInWeather, BountyKind.Drive })
+                    CollectionAssert.DoesNotContain(onThree, k, "only what the hole has");
+                Assert.IsNull(RoundEvents.Deal(1, challenges: false).BountyFor(0, four, Weather.Clear, null, null));
+                StringAssert.Contains("thunderstorm", new Bounty(BountyKind.ParInWeather, Weather.Storm.Title(Sky.Rain)).Title);
+            }
+            finally { RoundEvents.Enabled = wasEnabled; }
+        }
+
+        static BountyShot S(int stroke, CourseLie rest, bool holed = false, bool putt = false, double toPin = 30, double fromPin = 100, double total = 200, int rings = 0, bool fromGreen = false) =>
+            new() { Stroke = stroke, Par = 4, Rest = rest, Holed = holed, Putt = putt, RestPinYards = toPin, FromPinYards = fromPin, Total = total, Rings = rings, FromPuttingSurface = fromGreen };
+
+        [Test]
+        public void ABountyIsDoneOrMissedByTheStrokes()
+        {
+            var fairway = new Bounty(BountyKind.Fairway);
+            Assert.IsTrue(fairway.Shot(S(1, CourseLie.Fairway)));
+            Assert.AreEqual(BountyState.Done, fairway.State);
+            Assert.IsFalse(fairway.Shot(S(2, CourseLie.Green)), "paid once");
+            var rough = new Bounty(BountyKind.Fairway);
+            Assert.IsFalse(rough.Shot(S(1, CourseLie.Rough)));
+            Assert.AreEqual(BountyState.Missed, rough.State, "the tee shot found the rough");
+
+            var birdie = new Bounty(BountyKind.Birdie);
+            birdie.Shot(S(1, CourseLie.Fairway)); birdie.Shot(S(2, CourseLie.Green));
+            Assert.IsTrue(birdie.Shot(S(3, CourseLie.Green, holed: true, putt: true)));
+            var par = new Bounty(BountyKind.Birdie);
+            par.Shot(S(1, CourseLie.Fairway)); par.Shot(S(2, CourseLie.Green));
+            par.Shot(S(3, CourseLie.Green, putt: true));
+            Assert.AreEqual(BountyState.Missed, par.State, "it can't be a birdie now");
+
+            var onePutt = new Bounty(BountyKind.OnePutt);
+            onePutt.Shot(S(1, CourseLie.Fairway)); onePutt.Shot(S(2, CourseLie.Green));
+            onePutt.Shot(S(3, CourseLie.Green, putt: true));
+            Assert.AreEqual(BountyState.Missed, onePutt.State, "a putt that stayed out");
+            var chipIn = new Bounty(BountyKind.OnePutt);
+            Assert.IsTrue(chipIn.Shot(S(2, CourseLie.Green, holed: true)), "holed without a putt is fine");
+
+            var ring = new Bounty(BountyKind.Ring);
+            Assert.IsFalse(ring.Shot(S(1, CourseLie.Fairway)));
+            Assert.IsTrue(ring.Shot(S(2, CourseLie.Green, rings: 1)), "any shot of the hole will do");
+            var two = new Bounty(BountyKind.TwoRings);
+            Assert.IsFalse(two.Shot(S(1, CourseLie.Fairway, rings: 1)));
+            Assert.IsTrue(two.Shot(S(2, CourseLie.Fairway, rings: 2)));
+
+            var longPutt = new Bounty(BountyKind.LongPutt);
+            Assert.IsFalse(longPutt.Shot(S(3, CourseLie.Green, holed: false, putt: true, fromPin: 9)));
+            Assert.IsTrue(longPutt.Shot(S(4, CourseLie.Green, holed: true, putt: true, fromPin: 7.5)), "22 ft");
+            var chip = new Bounty(BountyKind.ChipIn);
+            Assert.IsFalse(chip.Shot(S(3, CourseLie.Green, holed: true, putt: true, fromGreen: true)));
+            Assert.AreEqual(BountyState.Missed, chip.State, "a putt isn't a chip-in");
+
+            var close = new Bounty(BountyKind.Close);
+            Assert.IsTrue(close.Shot(S(1, CourseLie.Green, toPin: 4)));
+            var drive = new Bounty(BountyKind.Drive);
+            drive.Shot(S(1, CourseLie.Water, total: 290));
+            Assert.AreEqual(BountyState.Missed, drive.State, "not into the water");
+
+            var open = new Bounty(BountyKind.LongPutt);
+            open.Close();
+            Assert.AreEqual(BountyState.Missed, open.State, "the hole's over");
+        }
+
+        [Test]
+        public void TheCodeCarriesTheChallengesSwitch()
+        {
+            RoundEvents.Enabled = true;
+            var on = RoundEvents.Deal(5);
+            Assert.IsTrue(on.Challenges);
+            StringAssert.StartsWith("wc:", on.Code);
+            Assert.IsTrue(RoundEvents.FromCode(5, on.Code).Challenges);
+            Assert.IsTrue(RoundEvents.FromCode(5, on.Code).World);
+            var off = RoundEvents.Deal(5, challenges: false);
+            StringAssert.StartsWith("w:", off.Code);
+            Assert.IsFalse(RoundEvents.FromCode(5, off.Code).Challenges, "a multiplayer round's (the host deals none)");
+            Assert.IsTrue(RoundEvents.Deal(5, false, false, true).Challenges, "rings and bounties on their own");
+            Assert.IsFalse(RoundEvents.Deal(5, false, false, true).World);
+        }
+
+        /// A good straight tee shot down the line gets past what moves about the hole most of the
+        /// time: the movers are spread out, off to the sides, and only now and then in the way.
+        [Test]
+        public void AGoodTeeShotUsuallyGetsThrough()
+        {
+            RoundEvents.Enabled = true;
+            int shots = 0, blocked = 0;
+            var holes = new[] { Straight(4, 420), Straight(5, 520), Straight(4, 360) };
+            foreach (var weather in new[] { Weather.Clear, Weather.Gusty, Weather.Storm })
+                for (int seed = 1; seed <= 40; seed++)
+                    for (int h = 0; h < holes.Length; h++)
+                    {
+                        var hole = holes[h];
+                        var movers = RoundEvents.Deal(seed).MoversFor(h, hole, weather);
+                        if (movers == null) continue;
+                        hole.Movers = movers;
+                        var (_, heading, club, power) = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), PlayRules.Standard).Value;
+                        for (int k = 0; k < 6; k++)
+                        {
+                            movers.PhaseAtLaunch = seed * 7.3 + k * 13.1;
+                            var shot = new CourseShot(club, Full(power), heading, hole.Tee, hole);
+                            shots++;
+                            foreach (var knock in shot.Knocks)
+                                if (knock.Kind is ObstacleKind.Balloon or ObstacleKind.Gull or ObstacleKind.Twister) { blocked++; break; }
+                        }
+                        hole.Movers = null;
+                    }
+            double rate = (double)blocked / Math.Max(1, shots);
+            Assert.Less(rate, 0.08, $"a straight tee shot meets something moving {rate:P1} of the time ({blocked}/{shots})");
+        }
+
+        /// One or two things moving about a hole, never on one spot, and somewhere different from
+        /// hole to hole.
+        [Test]
+        public void MoversAreSpreadOutAndNeverPiledUp()
+        {
+            RoundEvents.Enabled = true;
+            var hole = Straight(5, 520);
+            var spots = new System.Collections.Generic.HashSet<int>();
+            for (int seed = 1; seed <= 120; seed++)
+                foreach (var weather in new[] { Weather.Clear, Weather.Storm })
+                {
+                    var movers = RoundEvents.Deal(seed).MoversFor(seed % 5, hole, weather);
+                    if (movers == null) continue;
+                    // a flock is one thing
+                    var things = movers.All.Where(m => m.Kind != MoverKind.Gull || m.Variant == 0).ToList();
+                    Assert.LessOrEqual(things.Count, 2, "never more than two");
+                    var middles = things.Select(m => { var r = m.Reach(); return ((r.x0 + r.x1) / 2, (r.d0 + r.d1) / 2); }).ToList();
+                    for (int i = 0; i < middles.Count; i++)
+                        for (int j = i + 1; j < middles.Count; j++)
+                            Assert.GreaterOrEqual(Math.Abs(middles[i].Item2 - middles[j].Item2), 32, "not piled on one spot");
+                    foreach (var m in middles) spots.Add((int)(m.Item2 / 20));
+                }
+            Assert.GreaterOrEqual(spots.Count, 8, "all along the hole, not always the same place");
+        }
+
+        /// The app deals the day's forecast round itself to show it on the course screen
+        /// (GolfArcade/Unity/GolfForecast.swift): these numbers are its test's too.
+        [Test]
+        public void TheDiceAreTheAppsDice()
+        {
+            RoundEvents.Enabled = true;
+            var d = new Dice(20261013);
+            Assert.AreEqual(0.4590061925890735, d.NextDouble(), 0);
+            Assert.AreEqual(0.4882282494219624, d.NextDouble(), 0);
+            Assert.AreEqual(0.3800729629255928, d.NextDouble(), 0);
+            Assert.AreEqual(1878393768, RoundEvents.Mix(20261013, 0, 0x7157));
+            CollectionAssert.AreEqual(new[] { Twist.BananaBall, Twist.PointFrenzy }, RoundEvents.Deal(20261013).Dealt);
+            CollectionAssert.AreEqual(new[] { Twist.StickyGreens, Twist.BounceHouse }, RoundEvents.Deal(20261014).Dealt);
+            var day = RoundEvents.Deal(20261013);
+            CollectionAssert.AreEqual(new[] { Weather.Storm, Weather.Storm, Weather.Rain, Weather.Gusty, Weather.Clear, Weather.Storm }, Enumerable.Range(0, 6).Select(day.WeatherFor).ToArray());
+            var seven = RoundEvents.Deal(7);
+            CollectionAssert.AreEqual(new[] { Weather.Gusty, Weather.Clear, Weather.Rain, Weather.Fog, Weather.Fog, Weather.Storm }, Enumerable.Range(0, 6).Select(seven.WeatherFor).ToArray());
+        }
+    }
+}

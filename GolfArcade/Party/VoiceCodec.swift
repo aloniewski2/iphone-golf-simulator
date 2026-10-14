@@ -99,8 +99,11 @@ struct VoiceHalfBand {
         let n = 31, fc = 3400.0 / 16000.0
         var h = (0..<n).map { i -> Double in
             let m = Double(i - n / 2)
-            let sinc = m == 0 ? 2 * fc : sin(2 * Double.pi * fc * m) / (Double.pi * m)
-            return sinc * (0.54 - 0.46 * cos(2 * Double.pi * Double(i) / Double(n - 1)))
+            // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+            let sinc: Double = m == 0 ? 2 * fc : sin(2 * Double.pi * fc * m) / (Double.pi * m)
+            let phase: Double = 2 * Double.pi * Double(i) / Double(n - 1)
+            let window: Double = 0.54 - 0.46 * cos(phase)
+            return sinc * window
         }
         let sum = h.reduce(0, +); h = h.map { $0 / sum }
         return h.map { Float($0) }
@@ -703,7 +706,9 @@ enum VoiceTestSignal {
         var state = seed &* 6364136223846793005 &+ 1442695040888963407
         return (0..<Int(seconds * Double(VoiceFormat.sampleRate))).map { _ in
             state = state &* 6364136223846793005 &+ 1442695040888963407
-            return (Float(state >> 40) / Float(1 << 24) * 2 - 1) * rms * 1.732
+            // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+            let unit: Float = Float(state >> 40) / Float(1 << 24)
+            return (unit * 2 - 1) * rms * 1.732
         }
     }
 }

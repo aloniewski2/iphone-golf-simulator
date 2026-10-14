@@ -33,6 +33,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      # The app icon is stored in LFS, which checkout leaves as pointer files: the asset catalog
+      # build fails on a pointer ("AppIcon did not have any applicable content"). Just these images.
+      - name: App icon from LFS
+        run: git lfs pull --include="GolfArcade/Assets.xcassets/**"
       - name: Select Xcode 26
         run: |
           xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)

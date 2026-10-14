@@ -47,6 +47,10 @@ namespace GolfArcade.Shot
             /// 0–1: how little the ground lets the spin grip — ice (1) takes none of the run out
             /// of a spinning ball, so even a wedge skids on.
             public double LandingSlide;
+            /// The round's rules (Course.PlayRules): × gravity, and × how high it hops off the
+            /// turf. 0 is plain golf's, the same as 1.
+            public double Gravity;
+            public double Bounce;
         }
 
         public const double SampleInterval = 1.0 / 60;
@@ -102,7 +106,11 @@ namespace GolfArcade.Shot
             const double radius = 0.02135;
             double area = Math.PI * radius * radius;
             const double airDensity = 1.225;
-            const double gravity = 9.81;
+            double heavy = double.IsFinite(launch.Gravity) && launch.Gravity > 0 ? Math.Min(3, launch.Gravity) : 1;
+            double gravity = 9.81 * heavy;
+            double springy = double.IsFinite(launch.Bounce) && launch.Bounce > 0 ? Math.Min(4, launch.Bounce) : 1;
+            // (a hop is one that leaves the turf for a moment; under a lighter pull a slower one still does)
+            double hopSpeed = 1.2 * Math.Sqrt(heavy);
             const double dt = 1.0 / 240;
             const double bounceFriction = 0.6;
             const double rollingDeceleration = 3.2;
@@ -176,8 +184,8 @@ namespace GolfArcade.Shot
                         if (carryMeters is null) { carryMeters = Math.Sqrt(px * px + pz * pz); carryX = px; carryZ = pz; carryTime = time + dt; }
                         double soft = double.IsFinite(launch.LandingSoftness) ? Math.Max(0, Math.Min(1, launch.LandingSoftness)) : 0;
                         double grab = double.IsFinite(launch.LandingGrab) ? Math.Max(0, Math.Min(1, launch.LandingGrab)) : 0;
-                        vy = -vy * TurfRestitution(-vy) * (1 - soft);
-                        bool hops = vy >= 1.2;
+                        vy = -vy * Math.Min(0.85, TurfRestitution(-vy) * springy) * (1 - soft);
+                        bool hops = vy >= hopSpeed;
                         // Backspin grips the turf on the first bounce: a driver keeps rolling, a
                         // spinning iron hops and stops, a wedge checks up almost where it lands.
                         double grip = Math.Max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * Math.PI)) / 10_000);
@@ -189,7 +197,7 @@ namespace GolfArcade.Shot
                         if (hops) grip = Math.Min(0.92, grip * HopKeep);
                         vx *= grip; vz *= grip;
                         spin = 0;
-                        if (vy < 1.2) { vy = 0; airborne = false; rolling = true; rollStartTime = time; rollVx = vx; rollVz = vz; }
+                        if (vy < hopSpeed) { vy = 0; airborne = false; rolling = true; rollStartTime = time; rollVx = vx; rollVz = vz; }
                     }
                 }
                 else if (rolling)

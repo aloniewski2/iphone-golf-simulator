@@ -441,14 +441,18 @@ final class LockerMirrorTests: XCTestCase {
                             let w = skin.w[i * 4 + k]; if w <= 0 { continue }
                             let b = Int(skin.idx[i * 4 + k])
                             let m = pose[skin.bones[b]].matrix * skin.inv[b]
-                            sum += w * (m * SIMD4(skin.pos[i * 3], skin.pos[i * 3 + 1], skin.pos[i * 3 + 2], 1))
+                            // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+                            let rest = SIMD4<Float>(skin.pos[i * 3], skin.pos[i * 3 + 1], skin.pos[i * 3 + 2], 1)
+                            let moved: SIMD4<Float> = m * rest
+                            sum += w * moved
                         }
                         got = SIMD3(sum.x, sum.y, sum.z)
                     } else {
                         // a rigid part: its base-pose vertex moved by the part's track
                         let pi = try XCTUnwrap(asset.partIndex(g.part)), track = try XCTUnwrap(rig.info.parts.first { $0.part == g.part }?.track)
                         let base = try floats(asset.geometry[pi].sources(for: .vertex)[0].data)
-                        let r = pose[track].matrix * SIMD4(base[i * 3], base[i * 3 + 1], base[i * 3 + 2], 1)
+                        let rest = SIMD4<Float>(base[i * 3], base[i * 3 + 1], base[i * 3 + 2], 1)
+                        let r: SIMD4<Float> = pose[track].matrix * rest
                         got = SIMD3(r.x, r.y, r.z)
                     }
                     let d = simd_distance(got, want); worst = max(worst, d); checked += 1

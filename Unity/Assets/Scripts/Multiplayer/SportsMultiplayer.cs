@@ -81,7 +81,7 @@ namespace GolfArcade.Multiplayer {
                 else {
                     // pass the phone: every golfer is on this phone, so no hole intros and turns just pass
                     bool shared=c.participants.Where(p=>p.seat>=0).All(p=>c.Controls(c.localID,p.seat));
-                    golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:!shared,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null,waitForLoad:true,sharedPhone:shared);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};
+                    golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:!shared,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null,waitForLoad:true,sharedPhone:shared,twists:!c.twistsOff,world:!c.weatherOff);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};
                     golf.SamePhone=seat=>{var phone=PhoneOf(c,seat);return c.participants.Where(p=>p.seat>=0&&PhoneOf(c,p.seat)==phone).Select(p=>p.seat).ToArray();};
                     if(golfView&&!shared) golf.ConfigureIntro(golfView.NetworkIntroFull,golfView.NetworkVenueSeconds,golfView.NetworkStartSeconds,
                         PresentationDirector.GolfOverShoulder+PresentationDirector.IntroWindow,PresentationDirector.GolfOverShoulder,golfView.NetworkEmoteSeconds);}

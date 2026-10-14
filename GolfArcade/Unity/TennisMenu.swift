@@ -27,6 +27,8 @@ struct MenuLaunch: Equatable {
     var difficulty: Double?
     var sets: Int?
     var games: Int?
+    /// Golf's daily forecast round (yyyymmdd), played again by Play Again; nil an ordinary round.
+    var daily: Int?
     init(sport: Sport = .tennis, mode: Mode, round: Int? = nil) { self.sport = sport; self.mode = mode; self.round = round }
     /// A campaign round (non-nil) or tennis training.
     init(round: Int?) { self.init(mode: round == nil ? .training : .campaign, round: round) }
@@ -158,7 +160,7 @@ final class TennisMenu {
     }
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
-        case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "resetProgress"]
+        case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "golfTwists", "golfWeather", "golfBounties", "resetProgress"]
         case .controls: ["controls", "swingPrediction", "fastInput", "range", "hand", "relock", "timing"]
         case .guide: GuideDeck.allCases.map(\.rowID)
         case .display: ["fps", "overscan"]
@@ -191,7 +193,7 @@ final class TennisMenu {
             return [(0..<5).map { "round\($0)" }, (5..<10).map { "round\($0)" }, ["campaignPlay", "campaignMore"], ["back"]]
         case .exhibition: return [["quickOpponent"], ["quickDifficulty"], ["quickLength"], ["quickStart"], ["back"]]
         case .story: return [["next", "skip"]]
-        case .map: return [mapChoices.map { "map-\($0.id)" }, ["back"]]
+        case .map: return [mapChoices.map { "map-\($0.id)" }] + (mapSport == .golf ? [["golf-daily"], ["golf-twists", "golf-weather", "golf-challenges"]] : []) + [["back"]]
         case .postMatch: return postMatchDone ? postMatchChoices.map { [$0] } : [["pm-skip"]]
         case .training: return [["level"], ["start"], ["back"]]
         case .character: return lockerRows()
@@ -414,7 +416,17 @@ final class TennisMenu {
                 do { try online.startPassThePhone(players, menu: self) } catch { show(.localPlayers); notice = error.localizedDescription }
                 return
             }
-            if let pick = pendingPick { pendingPick = nil; begin(pick.launch, onPhone: pick.onPhone, skipMap: true) }
+            // (a course picked is an ordinary round, even after the day's forecast round)
+            if let pick = pendingPick { pendingPick = nil; var launch = pick.launch; launch.daily = nil; begin(launch, onPhone: pick.onPhone, skipMap: true) }
+        // golf's daily forecast round: the day's course, twists and weather, the same for everyone
+        case "golf-daily" where screen == .map:
+            let day = GolfForecast.today()
+            session.golfCourse = GolfForecast.course(for: day).rawValue
+            if let pick = pendingPick { pendingPick = nil; var launch = pick.launch; launch.daily = day; begin(launch, onPhone: pick.onPhone, skipMap: true) }
+        // golf's match settings on the course screen, before the round
+        case "golf-twists": session.golfTwists.toggle()
+        case "golf-weather": session.golfWeather.toggle()
+        case "golf-challenges": session.golfChallenges.toggle()
         case "continue":
             if let result, !campaign.champion, result.won { play(round: campaign.nextRound) } else { show(.campaign) }
         case "retry": if let launch { begin(launch, skipMap: true) }
@@ -493,6 +505,10 @@ final class TennisMenu {
             let values = ["full", "short", "off"]
             s.presentationIntros = values[cycle(values.firstIndex(of: s.presentationIntros) ?? 0, values.count)]
         case "holeFlyover": s.holeFlyover.toggle()
+        // golf's round settings (the course screen has the same three)
+        case "golfTwists": s.golfTwists.toggle()
+        case "golfWeather": s.golfWeather.toggle()
+        case "golfBounties": s.golfChallenges.toggle()
         case "presentationBigMoments": s.presentationBigMoments.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()
@@ -623,7 +639,7 @@ final class TennisMenu {
         guard session.displayConnected else { show(.connect); return }
         show(.loading)
         if launch.sport == .golf {
-            session.startGolf(tutorial: false, preview: onPhone)
+            session.startGolf(tutorial: false, preview: onPhone, daily: launch.daily)
         } else {
             let opponent = launch.round.map { TennisCampaign.draw[$0] }
             let difficulty = launch.mode == .training ? Self.trainingLevels[trainingLevel].difficulty
@@ -668,6 +684,16 @@ final class TennisMenu {
                                                  practice: launch.mode == .training, difficulty: difficulty)
         }
         // Keep the TV result visible until the player taps Next on the phone.
+    }
+
+    /// A golf round is over (Unity's "golfRound"): bank its XP now, the daily forecast's bonus and
+    /// streak with it; the rewards screen shows it once the phone's Finish is tapped.
+    func golfRoundFinished(_ stats: GolfRoundStats) {
+        guard session.active, let launch, launch.sport == .golf, launch.mode != .tutorial,
+              session.players.indices.contains(session.playerIndex) else { return }
+        var dailyFirst = false, streak = 0
+        if stats.daily > 0 { (dailyFirst, streak) = DailyGolf.shared.record(day: stats.daily, toPar: stats.toPar) }
+        postMatch = Progression.shared.awardGolf(player: session.players[session.playerIndex].id, stats: stats, dailyFirst: dailyFirst, streak: streak)
     }
 
     /// Explicit device-launch recovery, used only when requested by the player.
@@ -1108,7 +1134,7 @@ struct OnlineAppleSheet: Identifiable {
             let sport = service.lobby?.sport ?? .tennis
             let venues = sport == .tennis ? ["resort","skyscraper","volcano"] : GolfCourseChoice.allCases.map(\.rawValue)
             return [["net-sport-tennis","net-sport-golf"],venues.map { "net-venue-\($0)" }]
-                + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
+                + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [["net-twists-on","net-twists-off"],["net-weather-on","net-weather-off"]])
                 + [["net-settings-seats"],["back"]]
         case .loading: return service.loadingNeedsDecision ? [["net-wait", "net-leave"]] : [["net-leave"]]
         case .match: return (service.isOwner && service.linkNeedsDecision ? [["net-play-anyway"]] : []) + [["net-leave"]]
@@ -1171,6 +1197,10 @@ struct OnlineAppleSheet: Identifiable {
             case let id where id.hasPrefix("net-sets-") || id.hasPrefix("net-games-"):
                 guard let l = service.lobby else { return }
                 try service.configure(l.sport,venue:l.venue,sets:id.hasPrefix("net-sets-") ? Int(id.dropFirst(9)) ?? 1 : l.sets,games:id.hasPrefix("net-games-") ? Int(id.dropFirst(10)) ?? 3 : l.games)
+            case let id where id.hasPrefix("net-twists-") || id.hasPrefix("net-weather-"):
+                guard let l = service.lobby else { return }
+                try service.setGolfEvents(twists: id.hasPrefix("net-twists-") ? id.hasSuffix("-on") : l.twistsOff != true,
+                                          weather: id.hasPrefix("net-weather-") ? id.hasSuffix("-on") : l.weatherOff != true)
             case let id where id.hasPrefix("net-seat-"):
                 guard let l = service.lobby, let p = l.participants.first(where: { $0.id == String(id.dropFirst(9)) }) else { return }
                 if p.seat >= 0 { try service.assignSeat(p.id,seat:-1) }

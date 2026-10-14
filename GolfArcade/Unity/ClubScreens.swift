@@ -260,7 +260,7 @@ struct IslandResultsScreen: View {
     var body: some View {
         let won = postMatch ? menu.postMatch?.won ?? false : menu.result?.won ?? false
         let score = postMatch ? menu.postMatch?.score ?? "" : menu.result?.score ?? ""
-        IslandShell(title: "Centre Court · Results", compact: compact) {
+        IslandShell(title: menu.postMatch?.golf != nil && postMatch ? "Golf · Round results" : "Centre Court · Results", compact: compact) {
             let layout = compact ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 40))
             layout {
                 VStack(alignment: .leading, spacing: 20) {

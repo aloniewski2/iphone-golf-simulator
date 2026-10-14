@@ -574,7 +574,10 @@ struct CharacterModelPreview: UIViewRepresentable {
         root.enumerateChildNodes { node, _ in
             guard let morph = node.morpher else { return }
             for i in 0 ..< morph.targets.count {
-                morph.setWeight(CGFloat((i == lo ? (1 - mix) * active : 0) + (i == hi ? (lo == hi ? 1 : mix) * active : 0)), forTargetAt: i)
+                // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+                let fromLo: Double = i == lo ? (1 - mix) * active : 0
+                let fromHi: Double = i == hi ? (lo == hi ? 1 : mix) * active : 0
+                morph.setWeight(CGFloat(fromLo + fromHi), forTargetAt: i)
             }
         }
         SCNTransaction.commit()
