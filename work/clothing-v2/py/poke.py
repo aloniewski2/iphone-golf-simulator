@@ -14,6 +14,7 @@ udir = os.path.join(cv2io.ROOT, 'out', hero_id, 'unity')
 bpos = body.pos; bn = body.nrm
 report = {}
 pieces = sorted(glob.glob(os.path.join(udir, 'Kit_*_final.npz')))
+if os.environ.get('CV2_PIECES'): pieces = [f for f in pieces if os.path.basename(f)[:-10] in os.environ['CV2_PIECES'].split(',')]
 data = {}
 cv = np.load(os.path.join(udir, 'cover.npz')) if os.path.exists(os.path.join(udir, 'cover.npz')) else {}
 hidden = np.zeros(len(bpos), bool)

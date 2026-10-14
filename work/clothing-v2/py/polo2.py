@@ -20,24 +20,53 @@ def design_male():
         yc=-.040,                       # torso centre line (front/back), measured
         n=2.6,                          # cross-section squareness
         rings=[                         # name, z (front), z (back), half width a, half depth b
-            ("H", .860, .852, .197, .148),
-            ('L', .980, .980, .196, .148),
+            ("H", .860, .852, .192, .148),
+            ('L', .980, .980, .192, .148),
             ('W', 1.100, 1.100, .199, .153),
             ('A', 1.190, 1.190, .211, .156),
         ],
         M=dict(z=1.292, a=.214, b=.150),
         S=dict(z_front=1.338, z_side=1.382, z_back=1.366, a=.240, b_front=.128, b_back=.112),
         N=dict(z_front=1.372, z_side=1.420, z_back=1.424, a=.094, b_front=.086, b_back=.072, yc=-.010),
-        sleeve=dict(t=(.045, .095, .140), r=(.088, .079, .073)),
+        sleeve=dict(t=(.050, .112, .178), r=(.086, .076, .068)),
         arm_joint=np.array([.198, -.041, 1.325]),
         shoulder_pt=np.array([.240, -.040, 1.382]),
         arm_dir=np.array([.634, .013, -.773]),
         thickness=.0025,
-        collar=dict(stand=.020, fall=.060, point=.046, gap=.014, thick=.0028, splay=.55),
-        placket=dict(len=.125, w=.030, buttons=2),
+        collar=dict(stand=.026, fall=.050, point=.040, gap=.012, thick=.0028, splay=.30),
+        placket=dict(len=.092, w=.030, buttons=2),
         cuff=dict(w=.024), hem=dict(w=.026), vent=dict(h=.040, w=.006),
     )
     return D
+
+
+def design_golf_male():
+    """GolfKitHero_Male: royal-blue golf polo (plain collar, no tipping, 3 buttons, plain sleeve hems), hem at the belt (worn tucked)."""
+    D = design_male()
+    D.update(rings=[("H", 1.005, .997, .192, .148), ('L', 1.060, 1.060, .195, .150), ('W', 1.130, 1.130, .201, .154), ('A', 1.195, 1.195, .211, .156)],
+             sleeve=dict(t=(.050, .115, .182), r=(.088, .080, .073)), collar=dict(stand=.026, fall=.054, point=.044, gap=.012, thick=.0028, splay=.32),
+             placket=dict(len=.118, w=.030, buttons=3), cuff=dict(w=.020), vent=dict(h=.001, w=.001), waist_z=1.08, plain=True)
+    return D
+
+
+def design_golf_female():
+    """GolfKitHero_Female: royal-blue fitted golf polo, 3 buttons, short plain sleeves, hem at the skort waist."""
+    D = dict(
+        yc=-.0215, n=2.5,
+        rings=[("H", .986, .984, .131, .106), ('L', 1.040, 1.040, .122, .104), ('W', 1.115, 1.115, .123, .106), ('A', 1.190, 1.190, .142, .113)],
+        M=dict(z=1.272, a=.147, b=.112),
+        S=dict(z_front=1.318, z_side=1.352, z_back=1.338, a=.160, b_front=.094, b_back=.096),
+        N=dict(z_front=1.372, z_side=1.408, z_back=1.414, a=.072, b_front=.068, b_back=.062, yc=.001),
+        sleeve=dict(t=(.034, .074, .108), r=(.062, .056, .051)),
+        arm_joint=np.array([.147, -.008, 1.309]), shoulder_pt=np.array([.168, -.008, 1.352]), arm_dir=np.array([.165, .094, -.98]),
+        thickness=.0023, collar=dict(stand=.020, fall=.044, point=.036, gap=.010, thick=.0026, splay=.30),
+        placket=dict(len=.098, w=.026, buttons=3), cuff=dict(w=.018), hem=dict(w=.024), vent=dict(h=.001, w=.001),
+        armpit_x=.14, armpit_z=1.20, waist_z=1.08, plain=True, gap=.0045, tube_sleeves=True, lofted_sleeves=True, fit_no_arms=True, fit_no_arms_thr=.9, sleeve_len=.106, sleeve_r=(.052, .047), sleeve_off=(.014, .010, .0), sleeve_bend=.03, cut_armholes=True, armhole=dict(c=(.150, .004, 1.286), s=(.046, .052, .060)),
+    )
+    return D
+
+
+DESIGNS = {'tennis_male': design_male, 'golf_male': design_golf_male, 'golf_female': design_golf_female}
 
 
 def ring_points(a, b, yc, z, n, k=16, z_back=None):
@@ -56,7 +85,7 @@ def build_cage(D):
     for name, zf, zb, a, b in D['rings']:
         R[name] = [add(p) for p in ring_points(a, b, D['yc'], zf, D['n'], z_back=zb)]
     m = D['M']; Mp = ring_points(m['a'], m['b'], D['yc'], m['z'], D['n'])
-    R['M'] = [add(p) if k not in (4, 12) else None for k, p in enumerate(Mp)]
+    R['M'] = [add(p) if (k not in (4, 12) or D.get('tube_sleeves')) else None for k, p in enumerate(Mp)]
     s = D['S']; th = np.radians(22.5 * np.arange(16)); sn, cs = np.sin(th), np.cos(th)
     zS = np.where(cs >= 0, s['z_front'] + (s['z_side'] - s['z_front']) * np.abs(sn) ** 1.5, s['z_back'] + (s['z_side'] - s['z_back']) * np.abs(sn) ** 1.5)
     bS = np.where(cs >= 0, s['b_front'], s['b_back'])
@@ -71,7 +100,7 @@ def build_cage(D):
         tc = math.radians(22.5 * k + 11.25)
         return FRONT if math.cos(tc) > 0 else BACK
     order = ['H', 'L', 'W', 'A', 'M', 'S', 'N']
-    hole = {('A', 3), ('A', 4), ('M', 3), ('M', 4), ('A', 11), ('A', 12), ('M', 11), ('M', 12)}
+    hole = set() if D.get('cut_armholes') else {('A', 3), ('A', 4), ('M', 3), ('M', 4), ('A', 11), ('A', 12), ('M', 11), ('M', 12)}
     for lo, hi in zip(order[:-1], order[1:]):
         for k in range(16):
             if (lo, k) in hole: continue
@@ -80,7 +109,7 @@ def build_cage(D):
             if None in (a_, b_, c_, d_): continue
             F.append((a_, b_, c_, d_)); P.append(panel_of(k))
     # sleeves: armhole loop (A3 A4 A5 M5 S5 S4 S3 M3) -> 3 rings along the arm
-    for side, ks, pan in ((1, (3, 4, 5), SLEEVE_R), (-1, (13, 12, 11), SLEEVE_L)):
+    for side, ks, pan in (() if D.get('tube_sleeves') else ((1, (3, 4, 5), SLEEVE_R), (-1, (13, 12, 11), SLEEVE_L))):
         k3, k4, k5 = ks
         loop = [R['A'][k3], R['A'][k4], R['A'][k5], R['M'][k5], R['S'][k5], R['S'][k4], R['S'][k3], R['M'][k3]]
         sp = D['shoulder_pt'] * np.array([side, 1, 1]); ad = D['arm_dir'] * np.array([side, 1, 1]); ad = ad / np.linalg.norm(ad)
@@ -100,6 +129,143 @@ def build_cage(D):
                 F.append((prev[i], prev[i2], ring[i2], ring[i])); P.append(pan)
             prev = ring
     return np.array(V), F, np.array(P)
+
+
+def make_sleeves(D, fit, body):
+    """short sleeves as tubes along the REAL arm axis (arms that hang nearly vertical cannot be lofted from the torso's armhole loop): a closed dome at the shoulder
+    (hidden under the torso yoke), rings down the arm, the open hem. Layered over the torso shell; the seam is drawn by the maps."""
+    objs = []
+    for side in (1, -1):
+        sg = np.array([side, 1, 1])
+        j = (D['arm_joint'] + np.array(D.get('sleeve_shift', (0, 0, 0)))) * sg; ad = D['arm_dir'] * sg; ad = ad / np.linalg.norm(ad)
+        L = D['sleeve_len']; r0, r1 = D['sleeve_r']; t0 = D.get('sleeve_start', 0.0)
+        zv = np.array([0, 0, 1.0]); uu = zv - ad * (zv @ ad); uu /= np.linalg.norm(uu); vv = np.cross(ad, uu)
+        N = 20
+        dome = [(-.021, .30), (-.016, .62), (-.009, .86), (-.003, .97)]
+        ts = [t0 + d[0] for d in dome] + list(np.linspace(t0, L, 12)); ms = [d[1] for d in dome] + [1.0] * 12
+        rings = []; tval = []
+        off = np.array(D.get('sleeve_off', (0, 0, 0))) * sg
+        for t, m in zip(ts, ms):
+            c = j + ad * t + off * float(smoothstep(0, .06, t))
+            r = (r0 + (r1 - r0) * max(t - t0, 0) / (L - t0)) * m
+            ph = 2 * math.pi * np.arange(N) / N + math.pi                     # i = 0 is the underside: the seam
+            rings.append(np.stack([c + r * (np.cos(p_) * uu + np.sin(p_) * vv * .95) for p_ in ph]))
+            tval.append(t)
+        R = np.array(rings)                                                    # (nr, N, 3)
+        nr = len(ts)
+        tri = [t_ for jj in range(nr - 1) for i in range(N) for t_ in (((jj * N + i), (jj * N + (i + 1) % N), ((jj + 1) * N + (i + 1) % N)), ((jj * N + i), ((jj + 1) * N + (i + 1) % N), ((jj + 1) * N + i)))]
+        xv, _ = fit.push_clear(body, R.reshape(-1, 3), np.array(tri), gap=D.get('gap', .0045) + .0015, passes=4, cap=.02)
+        R = xv.reshape(R.shape)
+        F = []; corners = []
+        circ = np.array([np.linalg.norm(np.diff(np.vstack([R[jj], R[jj][:1]]), axis=0), axis=1).sum() for jj in range(nr)])
+        cap_face = tuple(range(N))[::-1]
+        vcoord = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(R.mean(1), axis=0), axis=1))])
+        for jj in range(nr - 1):
+            for i in range(N):
+                i2 = (i + 1) % N
+                F.append((jj * N + i, jj * N + i2, (jj + 1) * N + i2, (jj + 1) * N + i))
+                corners.append([(circ[jj] * i / N, vcoord[jj]), (circ[jj] * (i + 1) / N, vcoord[jj]), (circ[jj + 1] * (i + 1) / N, vcoord[jj + 1]), (circ[jj + 1] * i / N, vcoord[jj + 1])])
+        rc = circ[0] / (2 * math.pi)
+        corners.append([(rc * math.cos(-2 * math.pi * i / N) + .5, rc * math.sin(-2 * math.pi * i / N) - .3) for i in range(N)])
+        F.append(cap_face)
+        me = bpy.data.meshes.new('Sleeve%d' % side)
+        me.from_pydata([tuple(v) for v in R.reshape(-1, 3)], [], F); me.update()
+        lay = me.uv_layers.new(name='UVMap'); lay.data.foreach_set('uv', np.array([c for f in corners for c in f], np.float32).ravel())
+        a = me.attributes.new('panel', 'INT', 'FACE'); a.data.foreach_set('value', np.full(len(me.polygons), SLEEVE_R if side > 0 else SLEEVE_L, np.int32))
+        d_hem = np.repeat(L - np.array(tval), N)
+        ang_i = np.tile(np.minimum(np.arange(N), N - np.arange(N)), nr) * (2 * math.pi / N) * (r0 * .9)
+        for k_, v_ in (('d_seam', ang_i), ('d_hem', np.full(nr * N, 1.0)), ('d_neck', np.full(nr * N, 1.0)), ('d_cuff', d_hem), ('d_arm', np.full(nr * N, 1.0))):
+            at = me.attributes.new(k_, 'FLOAT', 'POINT'); at.data.foreach_set('value', np.asarray(v_, np.float32))
+        ob = bpy.data.objects.new('Sleeve%d' % side, me); bpy.context.scene.collection.objects.link(ob)
+        bm = bmesh.new(); bm.from_mesh(me); bm.faces.ensure_lookup_table()
+        f0 = bm.faces[len(bm.faces) // 2]; c0 = f0.calc_center_median(); cen = Vector(j + ad * (L / 2))
+        axis_pt = cen - Vector(ad) * (Vector(ad).dot(cen - Vector(c0)))
+        if f0.normal.dot(c0 - Vector(j + ad * ((c0 - Vector(j)).dot(Vector(ad))))) < 0: bmesh.ops.reverse_faces(bm, faces=bm.faces)
+        bm.to_mesh(me); bm.free(); me.update()
+        objs.append(ob)
+    return objs
+
+
+def make_sleeves_lofted(D, fit, body, shirt):
+    """sleeves lofted FROM the torso's real armhole edge (the loop of boundary vertices, shared exactly with the torso), bending from the armhole's outward normal
+    onto the arm axis; the ring shape morphs from the armhole oval into a round sleeve. A watertight join: no fin, no gap, whatever the arm does."""
+    from mathutils import Quaternion
+    pos, faces = polys(shirt)
+    loops = boundary_loops_poly(faces)
+    hem = min(loops, key=lambda l: pos[l, 2].mean()); neck = max(loops, key=lambda l: pos[l, 2].mean())
+    holes = [l for l in loops if l is not hem and l is not neck and len(l) > 8]
+    objs = []
+    for side in (1, -1):
+        cand = [l for l in holes if np.sign(pos[l, 0].mean()) == side]
+        if not cand: continue
+        loop = max(cand, key=len)
+        P0 = pos[loop].copy()
+        k0 = int(np.argmin(P0[:, 2])); loop = np.roll(loop, -k0); P0 = pos[loop].copy()          # index 0 = the underarm point
+        M = len(loop)
+        c0 = P0.mean(0)
+        _, _, vt = np.linalg.svd(P0 - c0); d0 = vt[2]
+        if d0[0] * side < 0: d0 = -d0
+        u0 = np.cross(d0, [0, 0, 1.0]); u0 /= np.linalg.norm(u0); v0 = np.cross(d0, u0)
+        sg = np.array([side, 1, 1])
+        j = (D['arm_joint'] + np.array(D.get('sleeve_shift', (0, 0, 0)))) * sg; ad = D['arm_dir'] * sg; ad = ad / np.linalg.norm(ad)
+        L = D['sleeve_len']; E = j + ad * L + np.array(D.get('sleeve_off', (0, 0, 0))) * sg
+        # bend: leave the armhole along d0, arrive along the arm axis
+        h0 = D.get('sleeve_bend', .035)
+        B = np.array([c0, c0 + d0 * h0, E - ad * .04, E])
+        ts = np.linspace(0, 1, int(D.get('sleeve_rings', 11)))
+        def bez(t): return ((1 - t) ** 3) * B[0] + 3 * ((1 - t) ** 2) * t * B[1] + 3 * (1 - t) * t * t * B[2] + t ** 3 * B[3]
+        C = np.array([bez(t) for t in ts]); T = np.gradient(C, axis=0); T /= np.linalg.norm(T, axis=1, keepdims=True)
+        rel = P0 - c0; l2 = np.stack([rel @ u0, rel @ v0], 1); lz = rel @ d0
+        th = np.arctan2(l2[:, 1], l2[:, 0])
+        r0, r1 = D['sleeve_r']
+        R = np.zeros((len(ts), M, 3)); dist = np.zeros(len(ts))
+        for k, t in enumerate(ts):
+            q = Quaternion(np.cross(d0, T[k]).tolist() if np.linalg.norm(np.cross(d0, T[k])) > 1e-9 else (1, 0, 0), math.acos(float(np.clip(d0 @ T[k], -1, 1))))
+            uk = np.array(q @ Vector(u0)); vk = np.array(q @ Vector(v0))
+            w = float(smoothstep(0, D.get('sleeve_morph', .45), t))
+            rr = r0 + (r1 - r0) * t
+            sh = (1 - w) * l2 + w * rr * np.stack([np.cos(th), np.sin(th)], 1)
+            R[k] = C[k] + sh[:, :1] * uk + sh[:, 1:] * vk + ((1 - w) * lz)[:, None] * T[k]
+            dist[k] = 0 if k == 0 else dist[k - 1] + np.linalg.norm(C[k] - C[k - 1])
+        R[0] = P0                                                                          # ring 0 IS the armhole edge
+        tri = [t_ for jj in range(len(ts) - 1) for i in range(M) for t_ in (((jj * M + i), (jj * M + (i + 1) % M), ((jj + 1) * M + (i + 1) % M)), ((jj * M + i), ((jj + 1) * M + (i + 1) % M), ((jj + 1) * M + i)))]
+        flat = R.reshape(-1, 3); keep = np.ones(len(flat), bool); keep[:M] = False
+        xv, _ = fit.push_clear(body, flat, np.array(tri), gap=D.get('gap', .0045) + .0015, passes=4, cap=.02)
+        flat = np.where(keep[:, None], xv, flat); R = flat.reshape(R.shape)
+        for rep in range(2):                                   # the push-out is noisy: smooth every free ring along itself and along the sleeve, then push again
+            for _ in range(6):
+                R[1:] = R[1:] + .5 * ((np.roll(R[1:], -1, 1) + np.roll(R[1:], 1, 1)) / 2 - R[1:])
+                R[1:-1] = R[1:-1] + .35 * ((R[:-2] + R[2:]) / 2 - R[1:-1])
+            flat = R.reshape(-1, 3)
+            xv, _ = fit.push_clear(body, flat, np.array(tri), gap=D.get('gap', .0045) + .0015, passes=3, cap=.01)
+            flat = np.where(keep[:, None], xv, flat); R = flat.reshape(R.shape)
+        F = []; corners = []
+        circ = np.array([np.linalg.norm(np.diff(np.vstack([R[jj], R[jj][:1]]), axis=0), axis=1).sum() for jj in range(len(ts))])
+        arcs = np.array([np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(np.vstack([R[jj], R[jj][:1]]), axis=0), axis=1))]) for jj in range(len(ts))])
+        for jj in range(len(ts) - 1):
+            for i in range(M):
+                i2 = (i + 1) % M
+                F.append((jj * M + i, jj * M + i2, (jj + 1) * M + i2, (jj + 1) * M + i))
+                corners.append([(arcs[jj, i], dist[jj]), (arcs[jj, i + 1], dist[jj]), (arcs[jj + 1, i + 1], dist[jj + 1]), (arcs[jj + 1, i], dist[jj + 1])])
+        me = bpy.data.meshes.new('Sleeve%d' % side)
+        me.from_pydata([tuple(v) for v in R.reshape(-1, 3)], [], F); me.update()
+        lay = me.uv_layers.new(name='UVMap'); lay.data.foreach_set('uv', np.array([c for f in corners for c in f], np.float32).ravel())
+        a = me.attributes.new('panel', 'INT', 'FACE'); a.data.foreach_set('value', np.full(len(me.polygons), SLEEVE_R if side > 0 else SLEEVE_L, np.int32))
+        d_end = np.repeat(dist[-1] - dist, M)
+        seam = np.tile(np.minimum(np.arange(M), M - np.arange(M)).astype(float), len(ts)) * (circ.mean() / M)
+        for k_, v_ in (('d_seam', seam), ('d_hem', np.full(len(ts) * M, 1.0)), ('d_neck', np.full(len(ts) * M, 1.0)), ('d_cuff', d_end), ('d_arm', np.full(len(ts) * M, 1.0))):
+            at = me.attributes.new(k_, 'FLOAT', 'POINT'); at.data.foreach_set('value', np.asarray(v_, np.float32))
+        ob = bpy.data.objects.new('Sleeve%d' % side, me); bpy.context.scene.collection.objects.link(ob)
+        bm = bmesh.new(); bm.from_mesh(me); bm.faces.ensure_lookup_table()
+        f0 = bm.faces[len(bm.faces) // 2]; c0f = f0.calc_center_median()
+        ax_pt = Vector(C[len(ts) // 2])
+        # outward = away from the path
+        kk = len(ts) // 2
+        if f0.normal.dot(c0f - Vector(C[min(len(ts) - 1, 1 + (len(bm.faces) // 2) // M)])) < 0: bmesh.ops.reverse_faces(bm, faces=bm.faces)
+        bm.to_mesh(me); bm.free(); me.update()
+        print('SLEEVE side %d: loop verts %d, ring0 z %.3f..%.3f x %.3f..%.3f, end %s, bbox z %.3f..%.3f' % (side, M, P0[:, 2].min(), P0[:, 2].max(), P0[:, 0].min(), P0[:, 0].max(), np.round(R[-1].mean(0), 3), R[..., 2].min(), R[..., 2].max()))
+        objs.append(ob)
+    return objs
 
 
 def make_object(name, V, F, panel):
@@ -350,7 +516,7 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     import cv2io, glib as G, fit
     from mathutils.bvhtree import BVHTree
-    D = design_male()
+    D = DESIGNS[argv[2] if len(argv) > 2 else 'tennis_male']()
     V, F, P = build_cage(D)
     cage = make_object('Polo_cage', V, F, P)
     orient_outward(cage, lambda c: np.array([0, D['yc'], c[2]]))
@@ -387,26 +553,88 @@ def main():
     apply_modifier(shirt, shirt.modifiers['sub'])
     hero = cv2io.Hero(hero_id); body = G.Body(hero)
     pos, faces = polys(shirt)
+    if D.get('cut_armholes'):
+        # armholes cut by smooth ellipsoids (a bit smaller than the sleeve tubes that cover their edge): kill faces, snap the boundary onto the curve
+        def arm_f(P):
+            out = np.full(len(P), 9.0); c = D['armhole']['c']; sa = D['armhole']['s']
+            for sd in (1, -1):
+                d_ = (P - np.array([sd * c[0], c[1], c[2]])) / np.array(sa)
+                on = (np.sign(P[:, 0]) == sd) | (np.abs(P[:, 0]) < .02)
+                out = np.minimum(out, np.where(on, (np.sqrt((d_ * d_).sum(1)) - 1.0) * min(sa) * .85, 9.0))
+            return out
+        f_ = arm_f(pos)
+        bm = bmesh.new(); bm.from_mesh(shirt.data); bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
+        kill = [fc for fc in bm.faces if np.mean([f_[v.index] for v in fc.verts]) < 0]
+        bmesh.ops.delete(bm, geom=kill, context='FACES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        bm.to_mesh(shirt.data); bm.free()
+        pos, faces = polys(shirt)
+        lps = boundary_loops_poly(faces)
+        hem0 = min(lps, key=lambda l: pos[l, 2].mean()); neck0 = max(lps, key=lambda l: pos[l, 2].mean())
+        oth = [l for l in lps if l is not hem0 and l is not neck0]
+        if oth:
+            bnd = np.unique(np.concatenate(oth)); nrm0 = vnormals(pos, faces)
+            for it in range(5):
+                fb = arm_f(pos[bnd]); eps = 1e-4; g = np.zeros((len(bnd), 3))
+                for a_ in range(3):
+                    dp = np.zeros(3); dp[a_] = eps; g[:, a_] = (arm_f(pos[bnd] + dp) - fb) / eps
+                nb_ = nrm0[bnd]; g = g - (g * nb_).sum(1, keepdims=True) * nb_
+                step = np.clip((fb / ((g * g).sum(1) + 1e-7))[:, None] * g, -.004, .004); pos[bnd] = pos[bnd] - step
+        shirt.data.vertices.foreach_set('co', pos.astype(np.float32).ravel()); shirt.data.update()
+        print('ARMHOLES cut: %d faces removed' % len(kill))
     tri = np.array([t for f in faces for t in ([f[0], f[1], f[2]], [f[0], f[2], f[3]])])
-    # worn over whatever bottom the hero has on (the shorts in the dump): the hem must clear it too
+    # worn over whatever bottom the hero has on: the hem must clear it too (the V2 shorts when they are built, else the shorts in the dump)
     others = []
-    if 'Kit_Bottom' in hero.kit:
-        kb = hero.kit['Kit_Bottom']
+    kbp = os.path.join(cv2io.ROOT, 'out', hero_id, 'unity', 'Kit_Bottom_final.npz')
+    kpos = ktri = None
+    if os.path.exists(kbp) and 'v2' in np.load(kbp).files:
+        kg = np.load(kbp); kpos = kg['pos']; ktri = kg['tri'][kg['part'] == 0]
+        fc_ = kpos[ktri].mean(1); outer_ = ktri[fc_[:, 2] > .80]
+        print('POLO obstacle: V2 shorts, %d outer faces' % len(outer_))
+    elif 'Kit_Bottom' in hero.kit:
+        kb = hero.kit['Kit_Bottom']; kpos = kb.pos
         fn_ = G.face_normals(kb.pos, kb.tri); fc_ = kb.pos[kb.tri].mean(1)
         radial = fc_ - np.stack([np.zeros(len(fc_)), np.full(len(fc_), D['yc']), fc_[:, 2]], 1)
         outer_ = kb.tri[(np.einsum('ij,ij->i', fn_, radial) > 0) & (fc_[:, 2] > .80)]      # its outer wall round the hips
-        others.append((fit.MeshSurface(kb.pos, outer_), .004, (pos[:, 2] < 1.02).astype(float)))
+    if kpos is not None:
+        others.append((fit.MeshSurface(kpos, outer_), .004, (pos[:, 2] < 1.02).astype(float)))
         # the drawcord hangs in front of the shorts: the polo front stands a little further off there
         fc_mask = ((pos[:, 2] < 1.0) & (np.abs(pos[:, 0]) < .07) & (pos[:, 1] < D['yc'])).astype(float)
-        others.append((fit.MeshSurface(kb.pos, outer_), .013, fc_mask))
-    x, d = fit.push_clear_multi(body, pos, tri, gap=D.get('gap', .006), others=others)
+        others.append((fit.MeshSurface(kpos, outer_), .013, fc_mask))
+    fit_body = G.body_no_arms(body, D.get('fit_no_arms_thr', .5)) if D.get('fit_no_arms') else body
+    x, d = fit.push_clear_multi(fit_body, pos, tri, gap=D.get('gap', .006), others=others)
     mv_ = np.linalg.norm(x - pos, axis=1); im_ = int(np.argmax(mv_)); print('FIT worst move at', pos[im_].round(3), '->', x[im_].round(3))
     print('FIT moved %d verts, max %.1f mm, min clearance %.1f mm' % (int((np.linalg.norm(x - pos, axis=1) > 1e-4).sum()), np.linalg.norm(x - pos, axis=1).max() * 1000, d.min() * 1000))
     pos = x
+    # a degenerate polygon (two pairs of coincident verts) left by the cage joins once reached from the front hem to the armhole: drop every face with a stretched edge
+    shirt.data.vertices.foreach_set('co', pos.astype(np.float32).ravel()); shirt.data.update()
+    bm = bmesh.new(); bm.from_mesh(shirt.data); bm.faces.ensure_lookup_table()
+    longf = [fc for fc in bm.faces if max(e.calc_length() for e in fc.edges) > .06]
+    if longf:
+        bmesh.ops.delete(bm, geom=longf, context='FACES'); bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        bm.to_mesh(shirt.data); bm.free(); pos, faces = polys(shirt); print('LONG faces removed:', len(longf))
+    else: bm.free()
+    if D.get('cut_armholes'):
+        # the fit stretches a few faces at the armpit: drop those fins, then smooth each armhole edge along itself so the sleeve loft starts from a clean loop
+        shirt.data.vertices.foreach_set('co', pos.astype(np.float32).ravel()); shirt.data.update()
+        bm = bmesh.new(); bm.from_mesh(shirt.data); bm.faces.ensure_lookup_table()
+        fins = [fc for fc in bm.faces if max(e.calc_length() for e in fc.edges) > .028]
+        bmesh.ops.delete(bm, geom=fins, context='FACES'); bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        bm.to_mesh(shirt.data); bm.free()
+        pos, faces = polys(shirt)
+        lps = boundary_loops_poly(faces); h0 = min(lps, key=lambda l: pos[l, 2].mean()); n0 = max(lps, key=lambda l: pos[l, 2].mean())
+        for l in [l for l in lps if l is not h0 and l is not n0 and len(l) > 8]:
+            for it in range(12):
+                for lam in (.5, -.53):
+                    P_ = pos[l]; pos[l] = P_ + lam * ((np.roll(P_, -1, 0) + np.roll(P_, 1, 0)) / 2 - P_)
+        shirt.data.vertices.foreach_set('co', pos.astype(np.float32).ravel()); shirt.data.update()
+        print('FINS removed after fit:', len(fins))
     panel = np.zeros(len(faces), np.int32); shirt.data.attributes['panel'].data.foreach_get('value', panel)
     loops = boundary_loops_poly(faces)
     hem = min(loops, key=lambda l: pos[l, 2].mean()); neck = max(loops, key=lambda l: pos[l, 2].mean())
     cuffs = [l for l in loops if l is not hem and l is not neck]
+    armholes = []
+    if D.get('tube_sleeves'): armholes, cuffs = cuffs, []
     # seam distance (any panel boundary), hem / cuff / neck distances
     # seam lines = edges shared by two different panels (side, shoulder and armhole seams); distance to those segments
     ef = {}
@@ -416,7 +644,8 @@ def main():
     segs = np.array([k for k, v in ef.items() if len(v) == 2 and v[0] != v[1]])
     d_seam = dist_to_segments(pos, pos[segs[:, 0]], pos[segs[:, 1]]) if len(segs) else np.full(len(pos), 1.0)
     d_hem = dist_to_polyline(pos, pos[hem]); d_neck = dist_to_polyline(pos, pos[neck])
-    d_cuff = np.minimum(*[dist_to_polyline(pos, pos[c]) for c in cuffs])
+    d_cuff = np.minimum(*[dist_to_polyline(pos, pos[c]) for c in cuffs]) if len(cuffs) > 1 else (dist_to_polyline(pos, pos[cuffs[0]]) if cuffs else np.full(len(pos), 1.0))
+    d_arm = np.minimum.reduce([dist_to_polyline(pos, pos[l]) for l in armholes]) if armholes else np.full(len(pos), 1.0)
     # ---- folds: soft drape at the waist sides and under the arms, very subtle vertical drape lower down
     n = vnormals(pos, faces)
     disp = np.zeros(len(pos))
@@ -426,12 +655,12 @@ def main():
     # waist: a few soft diagonal folds gathered toward each side seam (where a straight shirt meets the narrower waist)
     for sd in (1, -1):
         sideness = np.clip(np.sin(thv) * sd, 0, 1) ** 4
-        env = torso * sideness * np.exp(-((z - 1.03) / .06) ** 2)
+        env = torso * sideness * np.exp(-((z - D.get('waist_z', 1.03)) / .06) ** 2)
         phase = (z - .95) / .045 * 2 * np.pi + (np.cos(thv) * 3.0) * sd
         disp += .0022 * env * np.sin(phase)
     # underarms: drag folds radiating from each armpit into the chest and back
     for sd in (1, -1):
-        ap = np.array([sd * .20, yc, 1.19])
+        ap = np.array([sd * D.get('armpit_x', .20), yc, D.get('armpit_z', 1.19)])
         dd = pos - ap; r_ = np.linalg.norm(dd, axis=1)
         env = np.exp(-(r_ / .065) ** 2) * torso * smoothstep(.0, .015, r_)
         ang = np.arctan2(dd[:, 2], np.abs(dd[:, 1]) + 1e-6)
@@ -443,7 +672,7 @@ def main():
     disp += .0009 * (1 - smoothstep(D['hem']['w'] - .0015, D['hem']['w'] + .0005, d_hem)) * torso
     pos = pos + n * disp[:, None]
     shirt.data.vertices.foreach_set('co', pos.astype(np.float32).ravel()); shirt.data.update()
-    for k, v in (('d_seam', d_seam), ('d_hem', d_hem), ('d_neck', d_neck), ('d_cuff', d_cuff)):
+    for k, v in (('d_seam', d_seam), ('d_hem', d_hem), ('d_neck', d_neck), ('d_cuff', d_cuff), ('d_arm', d_arm)):
         set_vattr(shirt, k, v)
     # ---- side vents: a narrow open slit up each side seam from the hem
     # (handled as a cut on the shell: remove faces inside the slit)
@@ -463,6 +692,7 @@ def main():
     neck_pts = pos2[[v for v in neck if v < len(pos2)]]
     ncen = np.array([0, D['N']['yc'], 0])
     cV, cF, cuv, cedge = collar(D, shell_tree, body, neck_pts, ncen)
+    print('COLLAR bounds', cV.min(0).round(3), cV.max(0).round(3), 'neck pts', len(neck_pts), neck_pts.min(0).round(3), neck_pts.max(0).round(3))
     col = new_object('Collar', cV, cF, uv=cuv * 3, fattr={'panel': np.full(len(cF), COLLAR)}, vattr={'collar_edge': cedge})
     # ---- placket + buttons
     ztop = pos2[neck][:, 2][np.argmin(np.abs(pos2[neck][:, 0]) + (pos2[neck][:, 1] > yc) * 9)]
@@ -508,10 +738,10 @@ def main():
     dcv = np.array([cut[0].verts[0][dc]]) if False else None
     bmesh.ops.delete(bm, geom=cut, context='FACES'); bm.to_mesh(shirt.data); bm.free()
     # cuff fields: distance from the sleeve end (rebuilt from positions)
-    set_vattr(cuffs_ob, 'd_cuff', dist_to_polyline(cp_, pos2[np.concatenate(cuffs)], closed=False))
+    if cuffs: set_vattr(cuffs_ob, 'd_cuff', dist_to_polyline(cp_, pos2[np.concatenate(cuffs)], closed=False))
     # ---- one garment object (Kit_Top), smooth, real thickness with rounded edges
-    parts = [shirt, col, pk, cuffs_ob] + bts
-    thick = {shirt.name: D['thickness'], col.name: D['collar']['thick'], pk.name: .002, cuffs_ob.name: .003}
+    parts = [shirt, col, pk, cuffs_ob] + bts + ((make_sleeves_lofted(D, fit, body, shirt) if D.get('lofted_sleeves') else make_sleeves(D, fit, body)) if D.get('tube_sleeves') else [])
+    thick = {shirt.name: D['thickness'], col.name: D['collar']['thick'], pk.name: .002, cuffs_ob.name: .003, 'Sleeve1': D['thickness'], 'Sleeve-1': D['thickness']}
     for o in parts:
         o.data.shade_smooth()
         if o.name.startswith('Button'):
@@ -520,12 +750,13 @@ def main():
         for nm in ('outer', 'inner', 'rim'): o.data.materials.append(bpy.data.materials.get(nm) or bpy.data.materials.new(nm))
         sm = o.modifiers.new('solid', 'SOLIDIFY'); sm.thickness = thick.get(o.name, .0025); sm.offset = -1; sm.use_even_offset = True
         sm.use_quality_normals = True; sm.use_rim = True; sm.material_offset = 1; sm.material_offset_rim = 2
+        if o.name.startswith('Sleeve'): sm.use_even_offset = False; sm.nonmanifold_thickness_mode = 'CONSTRAINTS'
         apply_modifier(o, sm)
         if o is shirt:
             # the inside of the shirt is only ever seen through its openings: keep the inner wall 6 cm in from the hem, neck, sleeves and vents
             me_ = o.data
-            fl = {k: get_vattr(o, k) for k in ('d_hem', 'd_neck', 'd_cuff')}
-            farv = np.minimum(np.minimum(fl['d_hem'], fl['d_neck']), fl['d_cuff'] - D['cuff']['w']) > .06
+            fl = {k: get_vattr(o, k) for k in ('d_hem', 'd_neck', 'd_cuff', 'd_arm')}
+            farv = np.minimum(np.minimum(np.minimum(fl['d_hem'], fl['d_neck']), fl['d_cuff'] - D['cuff']['w']), fl['d_arm']) > .06
             bm = bmesh.new(); bm.from_mesh(me_); bm.verts.ensure_lookup_table()
             drop = [f for f in bm.faces if f.material_index == 1 and all(farv[v.index] for v in f.verts)]
             bmesh.ops.delete(bm, geom=drop, context='FACES'); bm.to_mesh(me_); bm.free()

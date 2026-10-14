@@ -87,13 +87,20 @@ for f in sorted(glob.glob(os.path.join(udir, 'Kit_*_final.npz'))):
         foot = (body.footL if name.endswith('_L') else body.footR) if False else None
         side = 'Left' if name.endswith('_L') else 'Right'
         fw = Wb_foot(body, side)
-        import shoes, designs
-        P = designs.design(hero_id)['shoes']
-        GB = G.Body(hero)
-        heel, fwd, lat, L = shoes.foot_frame(GB, -1 if name.endswith('_L') else 1)
-        q = shoes.to_frame(body.pos, heel, fwd, lat)
-        zc = np.interp(q[:, 1], np.array(P['collar_prof_y']) * L, P['collar_prof_z'])
-        hid |= (fw > .3) & ((q[:, 2] < zc - .022) | (q[:, 1] > .36 * L))
+        if 'collar_prof' in g.files:
+            import shoe2
+            fr2 = shoe2.Frame(G.Body(hero), 'L' if name.endswith('_L') else 'R')
+            q = fr2.to(body.pos); L = fr2.L; cp = g['collar_prof']
+            zc = np.interp(q[:, 1], cp[:, 0] * L, cp[:, 1])
+            hid |= (fw > .3) & ((q[:, 2] < zc - .022) | (q[:, 1] > .42 * L))
+        else:
+            import shoes, designs
+            P = designs.design(hero_id)['shoes']
+            GB = G.Body(hero)
+            heel, fwd, lat, L = shoes.foot_frame(GB, -1 if name.endswith('_L') else 1)
+            q = shoes.to_frame(body.pos, heel, fwd, lat)
+            zc = np.interp(q[:, 1], np.array(P['collar_prof_y']) * L, P['collar_prof_z'])
+            hid |= (fw > .3) & ((q[:, 2] < zc - .022) | (q[:, 1] > .36 * L))
     tri = body.tri[hid[body.tri].all(1)]
     tri.astype(np.int32).tofile(os.path.join(udir, name + '_hide.bin'))
     masks[name] = hid

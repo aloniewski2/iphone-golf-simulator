@@ -5,9 +5,9 @@ from pathlib import Path
 import subprocess, sys
 R = Path(__file__).resolve().parents[3]
 A = R / 'GolfArcade/Unity/CharacterAssets'
-U = R / 'Unity/Assets/Resources/Tennis/KitsV2'
+U = [R / 'Unity/Assets/Resources/Tennis/KitsV2', R / 'Unity/Assets/Resources/Golf/KitsV2']
 conv = '/Applications/Xcode.app/Contents/Developer/usr/bin/TextureConverter'
-src = {p.name.replace('.png', ''): p for p in U.rglob('KitV2_*.png')}
+src = {p.name.replace('.png', ''): p for d in U if d.exists() for p in d.rglob('KitV2_*.png')}
 for name, p in sorted(src.items()):
     out = A / ('MatchHero_' + name + '.ktx')
     fmt = 'ASTC4x4' if 'Atlas' in name else 'ASTC8x8'

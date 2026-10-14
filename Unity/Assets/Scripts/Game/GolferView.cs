@@ -575,7 +575,6 @@ namespace GolfArcade.Game
         public bool IsHero => heroFigure != null;
         /// The Hero's parts (for the tests), or null.
         public HeroGolfer Hero => heroFigure;
-
         /// The clubhead in world space (the point of the held club farthest from its grip), for the tests.
         public Vector3? ClubHeadWorld()
         {

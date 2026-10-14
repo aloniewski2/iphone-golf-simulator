@@ -107,10 +107,11 @@ def details_polo2(cv, D):
     cf = (k == 20).astype(float)
     cv.groove(dcu, D.get('cuff_w', .024), cf + shell * (dcu < .03), width=.0008, depth=.0005, dark=.25)
     trim = np.zeros(cv.n)
-    for lo, hi in TIP2: trim = np.maximum(trim, band(dcu, lo, hi, aa) * cf)
+    plain = bool(D.get('plain'))
+    for lo, hi in ([] if plain else TIP2): trim = np.maximum(trim, band(dcu, lo, hi, aa) * cf)
     # collar: tipping near the fall's free edge, a soft ridge at the roll line
     co = (k == 1).astype(float); ce = cv.A('collar_edge', 1.0)
-    for lo, hi in TIP2: trim = np.maximum(trim, band(ce, lo, hi, aa) * co)
+    for lo, hi in ([] if plain else TIP2): trim = np.maximum(trim, band(ce, lo, hi, aa) * co)
     # placket: box stitch, the overlap edge, buttonholes
     pk = (k == 2).astype(float)
     if pk.any():
@@ -123,6 +124,232 @@ def details_polo2(cv, D):
         # two holes per button (texel position relative to the button's own centre is unknown here: dark speckle at the dome centre)
         cv.C *= 1 - .25 * bt
     return np.clip(trim, 0, 1)
+
+
+def details_shorts2(cv, D):
+    """construction marks of the panel-built shorts (pants2.py): side / inseam / centre seams, turned hem with twin needle, waistband topstitching and
+    elastic gather, slanted front pockets, back pocket welts, eyelets and cord."""
+    k = cv.kind; p = cv.pos; aa = cv.texel * .7
+    shell = (k == 0).astype(float); band = (k == 12).astype(float); along = cv.um + cv.vm * .37
+    ds = cv.A('d_seam', 1.0); dh = cv.A('d_hem', 1.0); dt = cv.A('d_top', 1.0)
+    cv.groove(ds, 0.0, shell, width=.0008, depth=.0005, dark=.30)
+    for at in (.0035, .0075): cv.stitch(ds, at, along, shell * (ds < .012))
+    hw = D.get('hem_w', .026)
+    cv.groove(dh, hw, shell, width=.0008, depth=.0004, dark=.22)
+    for at in (.0185, .0215): cv.stitch(dh, at, along, shell * (dh < .03))
+    # waistband: topstitch rows, the join to the body of the shorts, elastic gather
+    bw_ = D.get('band_h', .044)
+    for at in (.0045, bw_ - .0045): cv.stitch(dt, at, along, band, pitch=.003)
+    cv.groove(dt, bw_ - .0005, band + shell * (dt < bw_ + .004), width=.0008, depth=.0006, dark=.30)
+    cv.folds(along, .011, .00016, band, 5)
+    # slanted front pockets: the mouth (dark opening) with a stitched edge
+    for nm in ('r', 'l'):
+        f = cv.A('d_pocket_' + nm)
+        if f is None: continue
+        m = shell * (dt > bw_ - .002)
+        cv.groove(f, 0.0, m, width=.0016, depth=.0012, dark=.55)
+        cv.stitch(f, .0065, along, m * (f < .012))
+        cv.stitch(f, .0105, along, m * (f < .014), pitch=.0035)
+    # back pocket: two welts
+    f = cv.A('d_bpocket')
+    if f is not None:
+        m = shell * (dt > bw_)
+        cv.groove(f, 0.0, m, width=.0011, depth=.0009, dark=.50)
+        cv.stitch(f, .0045, along, m * (f < .009))
+    eye = (k == 14).astype(float)
+    if eye.any(): cv.C *= 1 - .20 * eye
+    return np.zeros(cv.n)
+
+
+DETAILS = {'polo2': lambda cv: details_polo2(cv, dict(hem_w=.026, cuff_w=.024, placket_w=.030, plain='plain' in cv.g.files and int(cv.g['plain']) == 1)),
+           'shorts2': lambda cv: details_shorts2(cv, dict(hem_w=.026, band_h=.044)),
+           'shoe2': lambda cv: details_shoe2(cv, {}),
+           'sock2': lambda cv: details_sock2(cv, {}),
+           'tank2': lambda cv: details_tank2(cv, dict(hem_band=.030, trim_w=.0075)),
+           'skirt2': lambda cv: details_skirt2(cv, dict(z_stitch=.905)),
+           'trousers2': lambda cv: details_trousers2(cv, dict(band_h=.036)),
+           'belt2': lambda cv: details_belt2(cv, {}),
+           'glove2': lambda cv: details_glove2(cv, {})}
+
+
+def details_shoe2(cv, D):
+    """construction marks of the parametric sneaker (shoe2.py): panel zones (mesh vs overlay leather) decided PER TEXEL from smooth fields, stitched seams,
+    side stripe trim, sole joint groove, outsole lugs / tread, lace weave, tongue + collar stitching."""
+    k = cv.kind; p = cv.pos; aa = cv.texel * .7; along = cv.um + cv.vm * .37
+    up = (k == 19).astype(float); tg = (k == 6).astype(float); lace = (k == 7).astype(float); roll = (k == 12).astype(float); sole = (k == 9).astype(float); tab = (k == 17).astype(float)
+    d_rim = cv.A('d_rim', 1.0); f_toe = cv.A('f_toe', 1.0); f_counter = cv.A('f_counter', 1.0); f_eye = cv.A('f_eye', .05); f_stripe = cv.A('f_stripe', .05)
+    for f in (f_toe, f_counter):
+        m = up * (np.abs(f) < .012)
+        cv.groove(f, 0.0, m, width=.0007, depth=.0005, dark=.32)
+        cv.stitch(f, .0035, along, m); cv.stitch(f, -.0035, along, m)
+    f_bump = cv.A('f_bump', .05)
+    mb = up * (np.abs(f_bump) < .012)
+    cv.groove(f_bump, 0.0, mb, width=.0008, depth=.0006, dark=.34); cv.stitch(f_bump, .0036, along, mb); cv.stitch(f_bump, -.0036, along, mb)
+    m = up * (np.abs(f_eye) < .012) * (f_eye < .05)
+    cv.groove(f_eye, 0.0, m, width=.0007, depth=.0005, dark=.30); cv.stitch(f_eye, -.0035, along, m)
+    # collar roll / tongue / tab edge stitching
+    cv.stitch(d_rim, .0035, along, up * (d_rim < .007)); cv.groove(d_rim, .0, up * (d_rim < .003), width=.0006, depth=.0003, dark=.2)
+    tgy = cv.A('tg_edge', 1.0)
+    cv.stitch(tgy, .09, along, tg * (tgy < .2), pitch=.0035)
+    cv.folds(along, .012, .00045, roll + tg * .6, 3)                                    # padding
+    # sole: the midsole / outsole joint, outsole lugs on the rim, herringbone tread on the bottom
+    zos = cv.A('sole_zos', 0.0); pz = p[:, 2]; nz = cv.I(cv.g['nrm'])[:, 2]
+    cv.groove(pz - zos, 0.0, sole, width=.0006, depth=.0007, dark=.42)
+    rim_o = sole * (pz < zos - .0006) * (nz > -.55)
+    tri_ = np.abs(((cv.um / .0095) % 1.0) * 2 - 1)
+    h = ((pz - zos) / .0034 + tri_ * 1.1) % 1.0
+    cv.H -= .00045 * smoothstep(.25, .0, h) * rim_o; cv.C *= 1 - .22 * smoothstep(.25, .0, h) * rim_o
+    bot = sole * (nz < -.55)
+    if cv.A('tr_sole', 0.0).max() < .5 or True:             # the outsole has real tread geometry (tennis) or cleats (golf): only a soft pattern on the bare sole bottom
+        hb = ((p[:, 1] / .0075) + np.abs((p[:, 0] * 100 % 1.4) - .7) * 1.4) % 1.0
+        cv.H -= .00020 * smoothstep(.3, .0, hb) * bot; cv.C *= 1 - .12 * smoothstep(.3, .0, hb) * bot
+    # laces: a weave line
+    cv.stitch(cv.vm + cv.um * 0, 0.0, cv.um, lace, pitch=.0016, width=.0004)
+    # ---- trim colour (follows the picked shoe colour): two side stripes, heel chevron
+    trim = np.zeros(cv.n)
+    f_str = cv.A('f_stripe', .05); f_chv = cv.A('f_chev', .05); t_str = cv.A('tr_stripe', 0.0); t_chv = cv.A('tr_chev', 0.0)
+    trim = np.maximum(trim, band(f_str, -1.0, .0070, aa) * up * (t_str > .5))
+    trim = np.maximum(trim, band(f_chv, -1.0, .0034, aa) * up * (t_chv > .5))
+    # perforations (golf): a hex dot field on the side panels between the heel counter, the toe cap and the eyestay
+    if cv.A('perf', 0.0).max() > .5:
+        L_ = cv.A('shoeL', .3); qy = cv.A('qy', 0.0); qz = cv.A('qz', 0.0); qx = cv.A('qx', 0.0)
+        pitch = .0050
+        u_ = qy * L_ / pitch; v_ = qz / (pitch * .87)
+        u_ = u_ + .5 * (np.floor(v_) % 2)
+        gx = (u_ % 1.0) - .5; gy = (v_ % 1.0 - .5) * .87
+        dot = smoothstep(.34, .20, np.hypot(gx, gy * 1.15))
+        pm = up * smoothstep(.20, .26, qy) * (1 - smoothstep(.60, .66, qy)) * smoothstep(.020, .030, qz) * (1 - smoothstep(.062, .074, qz)) * smoothstep(.025, .035, np.abs(qx)) \
+            * smoothstep(.014, .020, d_rim) * smoothstep(.002, .008, f_eye if f_eye is not None else .05)
+        cv.H -= .00060 * dot * pm; cv.C *= 1 - .55 * dot * pm
+    if cv.A('tr_sole', 0.0).max() > .5:
+        trim = np.maximum(trim, sole * (pz < zos - .0006) * (cv.A('tr_sole', 0.0) > .5))
+        trim = np.maximum(trim, (k == 10).astype(float))
+    return np.clip(trim, 0, 1)
+
+
+def details_sock2(cv, D):
+    """knit sock: rib cuff with a stitched join, soft ankle wrinkles, a pom."""
+    k = cv.kind; along = cv.um + cv.vm * .37
+    sk = (k == 0).astype(float); band = (k == 12).astype(float); pom = (k == 16).astype(float)
+    f_top = cv.A('f_top', 1.0); f_cuff = cv.A('f_cuff', 1.0); qz = cv.A('q_z', 0.0)
+    cv.groove(f_cuff, 0.0, band + sk * (np.abs(f_cuff) < .01), width=.0008, depth=.0006, dark=.28)
+    cv.stitch(f_cuff, .004, along, sk * (f_cuff > -.01) * (f_cuff < .01))
+    cv.groove(f_top, 0.0, band, width=.0007, depth=.0005, dark=.2)
+    cv.folds(qz, .018, .00055, sk * smoothstep(.20, .12, qz), 4)
+    cv.C *= 1 - .15 * pom
+    return np.zeros(cv.n)
+
+
+def details_tank2(cv, D):
+    """racerback V-neck tank: seams, rib hem band, navy binding (trim channel) at the neck + armholes with topstitching."""
+    k = cv.kind; aa = cv.texel * .7; along = cv.um + cv.vm * .37
+    shell = (k == 0).astype(float); band = (k == 12).astype(float)
+    ds = cv.A('d_seam', 1.0); dh = cv.A('d_hem', 1.0); db = cv.A('d_bind', 1.0)
+    cv.groove(ds, 0.0, shell, width=.0008, depth=.0005, dark=.28)
+    cv.stitch(ds, .0035, along, shell * (ds < .008))
+    hw = D.get('hem_band', .030)
+    cv.groove(dh, hw - .0005, band + shell * (dh < hw + .004), width=.0008, depth=.0006, dark=.28)
+    cv.stitch(dh, hw + .0035, along, shell * (dh < hw + .008))
+    bw = D.get('trim_w', .0075)
+    trim = np.maximum(band_fn(db, -1.0, bw, aa) * shell, (k == 15).astype(float))
+    cv.groove(db, bw, shell * (db < bw + .004), width=.0006, depth=.0004, dark=.25)
+    cv.stitch(db, bw * .5, along, shell * (db < bw), pitch=.003)
+    cv.folds(along, .012, .0003, band, 6)
+    return np.clip(trim, 0, 1)
+
+
+def details_skirt2(cv, D):
+    """pleated skirt + rib waistband + the tight under-shorts (kind 18): pleat folds (cavity), stitched yoke, hem stitching, waistband rows, seams."""
+    k = cv.kind; p = cv.pos; aa = cv.texel * .7; along = cv.um + cv.vm * .37
+    sk = (k == 11).astype(float); wb = (k == 12).astype(float); un = (k == 18).astype(float)
+    pu = cv.A('pl_u', 0.0); pd = cv.A('pl_depth', 0.0); dh = cv.A('d_hem', 1.0); dt = cv.A('d_top', 1.0)
+    # the recessed underfold of every pleat is darker (cavity) and its edges are crisp
+    fold = smoothstep(.76, .80, pu) * (1 - smoothstep(.93, .99, pu))
+    cv.C *= 1 - .42 * fold * sk * smoothstep(.0, .35, pd)
+    cv.groove(pu, .80, sk * smoothstep(.0, .2, pd), width=.012, depth=.0004, dark=.18)
+    # yoke: pleats stitched flat down to the hip line, a topstitch row there
+    yz = p[:, 2] - D.get('z_stitch', .905)
+    cv.stitch(yz, 0.0, along, sk, pitch=.003)
+    cv.groove(dh, .0, sk, width=.0007, depth=.0004, dark=.2)
+    cv.stitch(dh, .016, along, sk * (dh < .03), pitch=.0032)
+    # waistband: rib with two stitch rows and a join line
+    cv.stitch(dt, .006, along, wb, pitch=.003); cv.stitch(dt, .028, along, wb, pitch=.003)
+    cv.groove(dt, .0368, wb + sk * (dt < .045) * 0, width=.0007, depth=.0005, dark=.25)
+    cv.folds(along, .010, .00028, wb, 4)
+    # under-shorts: hem rib edge + seams
+    uds = cv.A('d_seam', 1.0)
+    cv.groove(uds, 0.0, un, width=.0007, depth=.0004, dark=.25); cv.stitch(uds, .0035, along, un * (uds < .007))
+    cv.groove(dh, .016, un * (dh > 0) * (dh < .04), width=.0007, depth=.0004, dark=.22)
+    return np.zeros(cv.n)
+
+
+def details_trousers2(cv, D):
+    """tailored flat-front trousers: seams, hem, waistband + belt loops, slant pockets, welt back pockets, pressed crease."""
+    k = cv.kind; aa = cv.texel * .7; along = cv.um + cv.vm * .37
+    shell = (k == 0).astype(float); band = (k == 12).astype(float); loop = (k == 5).astype(float)
+    ds = cv.A('d_seam', 1.0); dh = cv.A('d_hem', 1.0); dt = cv.A('d_top', 1.0); dcr = cv.A('d_crease', 1.0)
+    cv.groove(ds, 0.0, shell, width=.0008, depth=.0005, dark=.30)
+    for at in (.0035,): cv.stitch(ds, at, along, shell * (ds < .008))
+    cv.groove(dh, .028, shell, width=.0008, depth=.0004, dark=.22)
+    cv.stitch(dh, .026, along, shell * (dh < .04), pitch=.0035)
+    bw_ = D.get('band_h', .036)
+    for at in (.0045, bw_ - .0045): cv.stitch(dt, at, along, band, pitch=.003)
+    cv.groove(dt, bw_ - .0005, band + shell * (dt < bw_ + .004), width=.0008, depth=.0006, dark=.30)
+    cv.stitch(cv.vm * 0 + cv.um, 0.0, cv.vm, loop, pitch=.003, width=.0004)
+    for nm in ('r', 'l'):
+        f = cv.A('d_pocket_' + nm)
+        if f is None: continue
+        m = shell * (dt > bw_ - .002)
+        cv.groove(f, 0.0, m, width=.0016, depth=.0012, dark=.55); cv.stitch(f, .0065, along, m * (f < .012))
+    f = cv.A('d_bpocket')
+    if f is not None:
+        m = shell * (dt > bw_); cv.groove(f, 0.0, m, width=.0011, depth=.0009, dark=.50); cv.stitch(f, .0045, along, m * (f < .009))
+    # pressed crease: a crisp line, light on one side, soft shadow on the other
+    cr = shell * (dcr < .02) * (dt > bw_ + .01)
+    cv.groove(dcr, 0.0, cr, width=.0010, depth=.0004, dark=.14)
+    cv.C *= 1 - .06 * gauss(dcr - .004, .004) * cr
+    return np.zeros(cv.n)
+
+
+def details_belt2(cv, D):
+    """leather belt: edge stitching on both sides, belt holes on the tail, a soft crease where it passes the keeper; the buckle (kind 14) stays clean."""
+    k = cv.kind; p = cv.pos; along = cv.um + cv.vm * .37
+    lea = ((k == 13) | (k == 5)).astype(float)
+    qz = p[:, 2]
+    # distance to the strap edges: the loft's v coordinate is z; use the face's own extent per part
+    zc = np.median(qz[lea > 0]) if lea.any() else 0
+    hw = (qz[lea > 0].max() - qz[lea > 0].min()) / 2 if lea.any() else .015
+    de = hw - np.abs(qz - zc)
+    cv.groove(de, 0.0, lea * (de < .006), width=.0007, depth=.0004, dark=.28)
+    cv.stitch(de, .0042, along, lea * (de < .008), pitch=.0032)
+    tl = cv.A('tl_u', -1.0)
+    hole = np.zeros(cv.n)
+    for i in range(5):
+        u0 = .030 + i * .018
+        hole = np.maximum(hole, gauss(np.hypot(tl - u0, qz - zc), .0030))
+    hole *= (tl >= 0)
+    cv.H -= .0008 * hole; cv.C *= 1 - .55 * hole
+    return np.zeros(cv.n)
+
+
+def details_glove2(cv, D):
+    """leather golf glove: perforations on the back of the hand, finger-side seams, wrist strap with a join line + stitching, fine leather folds."""
+    k = cv.kind; p = cv.pos; aa = cv.texel * .7; along = cv.um + cv.vm * .37
+    sh = (k == 0).astype(float); sp = (k == 12).astype(float)
+    dors = cv.A('dorsal', 0.0); fid = cv.A('fid', -1.0); fs = cv.A('f_strap', 1.0); tw = cv.A('t_wrist', 0.0)
+    # perforations: a dot grid in texture space on the dorsal side, past the strap, fading before the finger tips
+    pitch = .0032
+    gx = (cv.um / pitch) % 1.0 - .5; gy = (cv.vm / pitch) % 1.0 - .5
+    dot = smoothstep(.30, .16, np.hypot(gx, gy))
+    pmask = sh * smoothstep(.45, .8, dors) * smoothstep(.0, .012, fs) * (fid < 0)
+    cv.H -= .0005 * dot * pmask; cv.C *= 1 - .5 * dot * pmask
+    # the strap
+    cv.groove(fs, 0.0, sh * (np.abs(fs) < .006) + sp * (np.abs(fs) < .006), width=.0009, depth=.0007, dark=.35)
+    cv.stitch(fs, .006, along, sh * (fs < .012) * (fs > 0), pitch=.0032)
+    cv.stitch(fs, -.0045, along, sp * (fs > -.012), pitch=.0032)
+    # soft leather folds at the knuckles / palm creases
+    cv.folds(cv.um + cv.vm * 1.7, .010, .00035, sh, 3)
+    return np.zeros(cv.n)
 
 
 def details(cv, piece, hero, body, D):
@@ -334,6 +561,10 @@ def details(cv, piece, hero, body, D):
         cv.C *= 1 - .1 * tb
 
 
+def band_fn(d, lo, hi, aa):
+    return smoothstep(lo - aa, lo + aa, d) * (1 - smoothstep(hi - aa, hi + aa, d))
+
+
 def band(d, lo, hi, aa):
     """1 inside [lo, hi] of a distance field, anti-aliased over aa metres."""
     return smoothstep(lo - aa, lo + aa, d) * (1 - smoothstep(hi - aa, hi + aa, d))
@@ -384,7 +615,7 @@ def trims(cv, piece, D, vertex_trim):
     return np.clip(T, 0, 1)
 
 
-def ambient_occlusion(hero_id, body, pieces, rays=20, dist=.05):
+def ambient_occlusion(hero_id, body, pieces, rays=20, dist=.05, only=None):
     """per-vertex AO of every piece against the body + every other piece (rest pose)."""
     allp = [body.pos]; allt = [body.tri]; off = len(body.pos)
     cf = os.path.join(ROOT, 'out', hero_id, 'unity', 'cover.npz')
@@ -403,6 +634,7 @@ def ambient_occlusion(hero_id, body, pieces, rays=20, dist=.05):
     dirs = np.stack([np.sqrt(u1) * np.cos(2 * math.pi * u2), np.sqrt(u1) * np.sin(2 * math.pi * u2), np.sqrt(1 - u1)], 1)
     out = {}
     for name, g in pieces.items():
+        if only and name not in only: continue
         pos = g['pos']; nrm = g['nrm']
         ao = np.ones(len(pos))
         for i in range(len(pos)):
@@ -415,7 +647,14 @@ def ambient_occlusion(hero_id, body, pieces, rays=20, dist=.05):
                 r = tree.ray_cast(Vector(o), Vector(w), dist)
                 if r[0] is not None: hit += 1 - (r[3] / dist) ** .5
             ao[i] = 1 - hit / rays
-        out[name] = ao
+        # 20 rays per vertex are noisy and the garments' coarse triangles show it as blotches: smooth over the cloth (positions are split at UV seams, so weld by position first)
+        key = {}; wid = np.zeros(len(pos), np.int64)
+        for i, q in enumerate(np.round(pos * 20000).astype(np.int64)): wid[i] = key.setdefault((q[0], q[1], q[2]), len(key))
+        nw = len(key); wt = np.array([wid[t] for t in g['tri']]).reshape(-1, 3)
+        acc = np.zeros(nw); cnt = np.zeros(nw); np.add.at(acc, wid, ao); np.add.at(cnt, wid, 1); aw = acc / np.maximum(cnt, 1)
+        nbw = G.neighbours(nw, wt)
+        for _ in range(int(os.environ.get('CV2_AO_SMOOTH', '4'))): aw = aw + .5 * G.umbrella(aw[:, None], nbw)[:, 0]
+        out[name] = aw[wid]
     return out
 
 
@@ -425,17 +664,20 @@ def bake(hero_id):
     D = designs.design(hero_id)
     udir = os.path.join(ROOT, 'out', hero_id, 'unity')
     pieces = {os.path.basename(f)[:-10]: dict(np.load(f)) for f in sorted(glob.glob(os.path.join(udir, 'Kit_*_final.npz')))}
-    aos = ambient_occlusion(hero_id, body, {k: v for k, v in pieces.items() if k != 'Kit_Glove_R'})
+    only = set(os.environ['CV2_PIECES'].split(',')) if os.environ.get('CV2_PIECES') else None
+    aos = ambient_occlusion(hero_id, body, pieces, only=only)
     from PIL_free import write_png
     report = {}
     for name, g0 in pieces.items():
+        if only and name not in only: continue
         g = np.load(os.path.join(udir, name + '_final.npz'))
         res = int(g['res'])
         cv = Canvas(g, res)
         polo2_trim = None
-        if 'polo2' in g.files: polo2_trim = details_polo2(cv, dict(hem_w=.026, cuff_w=.024, placket_w=.030))
+        dname = str(g['detail']) if 'detail' in g.files else 'polo2' if 'polo2' in g.files else None
+        if dname: polo2_trim = DETAILS[dname](cv)
         else: details(cv, name, hero, body, D)
-        ao = cv.I(aos.get(name, aos.get('Kit_Glove_L'))) if name in aos or name == 'Kit_Glove_R' else np.ones(cv.n)
+        ao = cv.I(aos[name]) if name in aos else np.ones(cv.n)
         trim = polo2_trim if polo2_trim is not None else trims(cv, name, D, np.clip(cv.A('trim', 0.0), 0, 1))
         cav = np.clip(cv.C * np.clip(cv.A('cavity', 1.0), 0, 1), .45, 1)
         fab = cv.fabric.astype(np.float64)

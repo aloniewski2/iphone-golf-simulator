@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class MatchHeroLockerTests: XCTestCase {
     private static let kitNodes: Set<String> = ["Kit_Top", "Kit_Bottom", "Kit_Sock_L", "Kit_Sock_R", "Kit_Shoe_L", "Kit_Shoe_R"]
-    private static let allowedNodes: Set<String> = Set(["matchHero", "racket", "Body", "Face", "Racket_Racket_Classic", "Racket_ButtCap", "Racket_Grip", "Racket_StringBed"]).union(kitNodes)   // DRESS_MATCH_HEROES: the White tennis kit is part of the hero
+    private static let allowedNodes: Set<String> = Set(["matchHero", "racket", "Body", "Face", "Racket_Racket_Classic", "Racket_ButtCap", "Racket_Grip", "Racket_StringBed", "Acc_Cap", "Acc_GloveL", "Acc_GloveR", "Acc_Bag"]).union(kitNodes)   // ACCESSORIES: cap / glove / bag are their own pieces   // DRESS_MATCH_HEROES: the White tennis kit is part of the hero
     private var repo: URL { URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent() }
     private var proof: URL {
         let url = repo.appendingPathComponent("work/hero-mainstay/proof/swift_locker")

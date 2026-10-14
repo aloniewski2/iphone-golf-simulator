@@ -41,8 +41,8 @@ if MAPS:
         bsdf = nt.nodes['Principled BSDF']; bsdf.inputs['Roughness'].default_value = .85
         try: bsdf.inputs['Sheen Weight'].default_value = .4
         except KeyError: pass
-        imN = bpy.data.images.load(os.path.join(MAPS, 'Top_N.png')); imN.colorspace_settings.name = 'Non-Color'
-        imM = bpy.data.images.load(os.path.join(MAPS, 'Top_M.png')); imM.colorspace_settings.name = 'Non-Color'
+        imN = bpy.data.images.load(os.path.join(MAPS, os.environ.get('CV2_TAG', 'Top') + '_N.png')); imN.colorspace_settings.name = 'Non-Color'
+        imM = bpy.data.images.load(os.path.join(MAPS, os.environ.get('CV2_TAG', 'Top') + '_M.png')); imM.colorspace_settings.name = 'Non-Color'
         tN = nt.nodes.new('ShaderNodeTexImage'); tN.image = imN
         tM = nt.nodes.new('ShaderNodeTexImage'); tM.image = imM
         nmap = nt.nodes.new('ShaderNodeNormalMap'); nt.links.new(tN.outputs['Color'], nmap.inputs['Color']); nt.links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
@@ -67,6 +67,11 @@ for v in views:
     if crop == 'collar': tgt, dist, el = (0, -.06, 1.35), .62, 14
     elif crop == 'hem': tgt, dist, el = (.08, -.06, .90), .62, 6
     elif crop == 'cuff': tgt, dist, el = (.30, -.05, 1.20), .75, 5
+    elif crop == 'waist': tgt, dist, el = (0, -.12, .84), .75, 8
+    elif crop == 'leg': tgt, dist, el = (.12, -.05, .68), 1.0, 6
+    elif crop == 'crotch': tgt, dist, el = (0, -.05, .70), .9, -18
+    elif crop == 'shoe': tgt, dist, el = (.17, -.06, .06), .9, 12
+    elif os.environ.get('CV2_TGT'): tgt = tuple(float(v) for v in os.environ['CV2_TGT'].split(',')); dist = float(os.environ.get('CV2_DIST', '2.6')); el = 4
     elif with_body: tgt, dist, el = (0, -.02, .9), 4.6, 4
     else: tgt, dist, el = (0, -.04, 1.15), 2.6, 4
     bl.camera(tgt, H[name], el, dist, 70)

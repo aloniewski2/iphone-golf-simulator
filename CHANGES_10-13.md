@@ -38,3 +38,11 @@ Base: `2fe849f0` (Party chat, voice, TV recording). `build-10/11`, `build-10/12`
 3. Large generated work output (tens of GB under `work/`: serve-walk-arm, golf-look, cloth-overhaul, …) was not committed; only scripts, docs and small proof images were.
 4. Other worktrees untouched: `main-build` (old uncommitted blend/meta churn), `integrate-main` (clean), `emote-fluid-staging` (10-05, detached).
 5. Old stashes on `final-build` / `newmapsandmenus` still exist.
+
+## Second pass (10-13): Clothing V2 for all heroes, emote clipping audit
+
+- Clothing V2 rebuilt for all 4 heroes: tennis polo/tank/skirt/shorts, golf kit, designed shoe last, tank straps + sewn binding, golf polo/trousers fixes (`Unity/Assets/Characters/KitsV2`, `work/clothing-v2`, `MatchHero_KitV2_*` lobby maps, lobby exports + goldens regenerated).
+- Emote clipping audit (`work/emote-standard/CLIPPING_AUDIT.md`, 309 problems found, audit only).
+- **Hero accessories (caps, glove, golf bag) are NOT in this branch**: the Unity code (`HeroAccessories*`, installers, resources, tests) and the five small hooks in `GolfGame`, `GolferView`, `HubPlayer`, `HubRemotes`, `MatchHeroLook` stay in the working tree only.
+- Caveat: the Swift lobby exports (`CharacterAssets/*.json|lzfse`, `VisualGolden/*`) were exported with the accessories included and cannot be split without a re-export, so the lobby data carries cap/glove entries (plus their textures) that the Unity side of this branch does not draw.
+- Frame-by-frame iteration dumps (`after_*`, `shoes_*`, audit images) were not committed.

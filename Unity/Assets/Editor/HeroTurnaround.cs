@@ -342,7 +342,7 @@ namespace GolfArcade.EditorTools
                     mesh.RecalculateBounds(); Object.DestroyImmediate(baked);
                     var boneFlags = smr.bones.Select(Flag).ToArray(); var w = smr.sharedMesh.boneWeights;
                     flags = new byte[mesh.vertexCount];
-                    if (w.Length == flags.Length) for (int i = 0; i < flags.Length; i++) flags[i] = boneFlags.Length > 0 ? boneFlags[w[i].boneIndex0] : (byte)0;
+                    if (w.Length == flags.Length) { int worst = 0; for (int i = 0; i < flags.Length; i++) { int bi0 = w[i].boneIndex0; if (bi0 >= boneFlags.Length) { worst = Mathf.Max(worst, bi0); flags[i] = 0; } else flags[i] = boneFlags.Length > 0 ? boneFlags[bi0] : (byte)0; } if (worst > 0) Debug.LogWarning($"[HeroTurnaround] {r.name}: mesh '{smr.sharedMesh.name}' references bone index {worst} but the renderer has {boneFlags.Length} bones"); }
                     place = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
                 }
                 else if (r is MeshRenderer && r.TryGetComponent<MeshFilter>(out var mf) && mf.sharedMesh)

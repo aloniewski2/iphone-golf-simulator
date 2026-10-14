@@ -8,6 +8,7 @@ import cv2io, glib as G, finalize
 
 FRONT, BACK, SLEEVE_R, SLEEVE_L, COLLAR, PLACKET, CUFF, BUTTON = range(8)
 FABRIC = {FRONT: 7, BACK: 7, SLEEVE_R: 7, SLEEVE_L: 7, COLLAR: 9, PLACKET: 7, CUFF: 9, BUTTON: 4}
+if os.environ.get('CV2_PLAIN'): FABRIC[CUFF] = 7; FABRIC[COLLAR] = 7
 KIND = {FRONT: 0, BACK: 0, SLEEVE_R: 0, SLEEVE_L: 0, COLLAR: 1, PLACKET: 2, BUTTON: 3, CUFF: 20}
 
 hero_id = sys.argv[sys.argv.index('--') + 1]
@@ -58,6 +59,12 @@ for pan, left in ((SLEEVE_L, True), (SLEEVE_R, False)):
     Ws[ok] /= Ws[ok].sum(1, keepdims=True)
     Wm = W[m]; Wm[ok] = Ws[ok]; W[m] = Wm
 W = finalize.smooth_weights(W, tri, int(os.environ.get('CV2_WSMOOTH', '4')))
+# the armpit: cloth bridging the arm and the chest must blend the two over a wide area (a hard split tears when the arm lifts)
+zone = np.zeros(n)
+for sd in (1, -1):
+    for ap in (np.array([sd * .20, -.040, 1.19]),):
+        zone = np.maximum(zone, np.exp(-(np.linalg.norm(pos - ap, axis=1) / float(os.environ.get('CV2_ARMPIT_R', '.11'))) ** 2))
+W = finalize.smooth_weights(W, tri, int(os.environ.get('CV2_ARMPIT_ITERS', '60')), mask=(zone > .15).astype(float) * zone)
 bi, bw = G.prune(W, 4)
 used = np.unique(bi[bw > 0]); remap = -np.ones(len(body.bones), np.int64); remap[used] = np.arange(len(used))
 bi2 = np.where(bw > 0, remap[bi], 0)
@@ -70,12 +77,16 @@ udir = os.path.join(cv2io.ROOT, 'out', hero_id, 'unity'); os.makedirs(udir, exis
 res = 2048
 np.savez(os.path.join(udir, 'Kit_Top_final.npz'), pos=P, nrm=N, uv=uvm, tri=nt.astype(np.int32), mat=np.zeros(len(nt), np.int32),
          fabric=np.array([FABRIC[p] for p in panel], np.int32), part=fpart, kind=np.array([KIND[p] for p in panel], np.int32), panel=panel,
-         src=src, S=S, res=res, bi=bi[src], bw=bw[src], polo2=1, **{'a_' + k: v[src] for k, v in fields.items()})
+         src=src, S=S, res=res, bi=bi[src], bw=bw[src], polo2=1, plain=int(bool(os.environ.get('CV2_PLAIN'))), **{'a_' + k: v[src] for k, v in fields.items()})
 with open(os.path.join(udir, 'Kit_Top.bin'), 'wb') as fh:
     fh.write(P.astype(np.float32).tobytes()); fh.write(N.astype(np.float32).tobytes()); fh.write(uvm.astype(np.float32).tobytes())
     fh.write(bi2[src].astype(np.int32).tobytes()); fh.write(bw[src].astype(np.float32).tobytes()); fh.write(nt.astype(np.int32).tobytes())
 man = {'hero': hero_id, 'pieces': [{'name': 'Kit_Top', 'vertexCount': int(len(P)), 'triangleCount': int(len(nt)), 'submeshes': [{'role': 'Kit_Shirt', 'start': 0, 'count': int(len(nt))}],
        'bones': [body.bones[i] for i in used], 'bindposes': [float(v) for i in used for v in hero.body.bind[i].T.reshape(-1)], 'metresPerUv': S, 'texture': res}]}
-json.dump(man, open(os.path.join(udir, 'manifest.json'), 'w'))
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(cv2io.ROOT, 'polo', 'polo_v2_final.blend'))
+mf = os.path.join(udir, 'manifest.json')
+old_man = json.load(open(mf)) if os.path.exists(mf) else {'hero': hero_id, 'pieces': []}
+man['pieces'] = [p for p in old_man['pieces'] if p['name'] != 'Kit_Top'] + man['pieces']          # merge: only Kit_Top is replaced
+json.dump(man, open(mf, 'w'))
+os.makedirs(os.path.join(cv2io.ROOT, 'polo', hero_id), exist_ok=True)
+bpy.ops.wm.save_as_mainfile(filepath=os.path.join(cv2io.ROOT, 'polo', 'polo_v2_final.blend' if hero_id == 'MatchHero_Male' else os.path.join(hero_id, 'polo_v2_final.blend')))
 print('POLO2 export: verts %d tris %d bones %d metres/uv %.3f (%.1f px/cm at %d)' % (len(P), len(nt), len(used), S, res / S / 100, res))

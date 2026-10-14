@@ -914,7 +914,8 @@ namespace GolfArcade.EditorTools
             if (!faceMesh) throw new InvalidOperationException("Active match face mesh missing");
             list.Add(new PartSource { name = "Face", kind = "face", mesh = faceMesh, renderer = face, skinned = skinnedFace, materials = face.sharedMaterials });
             // the worn kit: skinned to the same bones, posed by the same CPU skinning as the body (checked against BakeMesh below)
-            foreach (var k in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Kit_") && (r.enabled||r.name=="Kit_Glove_R")).OrderBy(r => r.name, StringComparer.Ordinal))
+            // ACCESSORIES (HeroAccessories): the worn cap / glove / bag are Acc_* pieces on their own sockets, exported like kit parts (hidden ones are disabled, not listed)
+            foreach (var k in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => (r.name.StartsWith("Kit_") && (r.enabled||r.name=="Kit_Glove_R")) || (r.name.StartsWith("Acc_") && r.enabled)).OrderBy(r => r.name, StringComparer.Ordinal))
                 list.Add(new PartSource { name = k.name, kind = "kit", mesh = k.sharedMesh, renderer = k, skinned = k, materials = k.sharedMaterials });
             var hair = root.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.name == "Hair_F");
             if (hair && hair.enabled) list.Add(new PartSource { name=hair.name,kind="hair",mesh=hair.sharedMesh,renderer=hair,skinned=hair,materials=hair.sharedMaterials });

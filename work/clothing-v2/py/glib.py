@@ -695,3 +695,14 @@ def fill_tiny_holes(pos, tri, extent=.035, *attrs):
     pos = np.concatenate([pos, np.array(newp)]); tri = np.concatenate([tri, np.array(newt, np.int64)])
     attrs = tuple(np.concatenate([a, np.array(na)]) for a, na in zip(attrs, newa))
     return (pos, tri) + attrs
+
+
+def body_no_arms(body, thresh=.5):
+    """a copy of the Body whose nearest-surface queries ignore the arms and hands (a hand hanging beside a skirt must not push it)."""
+    import copy
+    b2 = copy.copy(body)
+    arm = (body.armL + body.armR)
+    keep = (arm[body.tri] < thresh).all(1)
+    b2.tri = body.tri[keep]; b2.fnorm = body.fnorm[keep]
+    b2.bvh = BVHTree.FromPolygons([tuple(p) for p in body.pos], [tuple(t) for t in b2.tri], all_triangles=True)
+    return b2

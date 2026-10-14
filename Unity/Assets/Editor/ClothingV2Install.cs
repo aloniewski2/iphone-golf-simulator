@@ -149,7 +149,8 @@ namespace GolfArcade.EditorTools
                     mesh.AddBlendShapeFrame(name, 100, dp, dn, null);
                 }
             }
-            if (created) AssetDatabase.CreateAsset(mesh, assetPath); else EditorUtility.SetDirty(mesh);
+            if (created) { AssetDatabase.CreateAsset(mesh, assetPath); mesh.name = "KitV2 " + Path.GetFileNameWithoutExtension(assetPath); }   // CreateAsset renames the mesh to the file name: put the KitV2 prefix back
+            EditorUtility.SetDirty(mesh);
             return mesh;
         }
 

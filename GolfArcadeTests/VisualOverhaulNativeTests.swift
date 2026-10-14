@@ -19,8 +19,10 @@ import CryptoKit
         }
     }
     private func integers(_ source: SCNGeometrySource) throws -> [Int] {
+        // a part skinned to ONE bone (an accessory on its socket) has all-zero indices: SceneKit's live skinner then reports an empty index source (every vertex = bone 0)
+        if source.vectorCount == 0 { return [] }
         guard !source.usesFloatComponents, [1,2,4].contains(source.bytesPerComponent) else {
-            throw NSError(domain:"VisualGolden",code:1,userInfo:[NSLocalizedDescriptionKey:"Unsupported live SceneKit bone index format"])
+            throw NSError(domain:"VisualGolden",code:1,userInfo:[NSLocalizedDescriptionKey:"Unsupported live SceneKit bone index format (float \(source.usesFloatComponents), bytes \(source.bytesPerComponent), components \(source.componentsPerVector), vectors \(source.vectorCount))"])
         }
         return source.data.withUnsafeBytes { raw in
             (0..<source.vectorCount*source.componentsPerVector).map { k in
@@ -41,7 +43,7 @@ import CryptoKit
         for golf in [false, true] { for female in [false, true] { for distance in golf ? [false] : [false, true] {
             let asset = try XCTUnwrap(MatchHero.asset(female: female, golf: golf, distance: distance))
             let rig = try XCTUnwrap(asset.rig())
-            XCTAssertEqual(rig.info.bones.count, golf ? 54 : (female ? 158 : 144), "current Unity rig: the tennis heroes carry the authored finger / face bones")
+            XCTAssertEqual(rig.info.bones.count, golf ? 55 : (female ? 159 : 145), "current Unity rig: the tennis heroes carry the authored finger / face bones (+ the cap's Headwear socket, ACCESSORIES)")
             if golf { XCTAssertEqual(rig.info.bones.last, "Club") }
             for role in ["Body", "Face"] {
                 let index = try XCTUnwrap(asset.manifest.parts.firstIndex { $0.name == role })
@@ -117,7 +119,7 @@ import CryptoKit
             let root = MatchHeroData.buildHero(asset,picks:MatchHeroData.Picks(colour:{ _ in nil }))
             let live = try XCTUnwrap(HeroRig(root:root,asset:asset)); live.attach()
             defer { live.detach() }
-            XCTAssertEqual(live.data.boneCount,golf ? 54 : (female ? 158 : 144),name)
+            XCTAssertEqual(live.data.boneCount,golf ? 55 : (female ? 159 : 145),name)   // + the Headwear socket of the cap (ACCESSORIES)
             let fixture = try XCTUnwrap(folder?.appendingPathComponent(name+"_golden.json")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"lzfse")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"json"),"Independent Unity fixture for "+name)
@@ -167,7 +169,7 @@ import CryptoKit
                     if node.skinner != nil {
                         var sum=SIMD4<Float>(repeating:0)
                         for k in 0..<4 where weights[i*4+k]>0 {
-                            let b=Int(indices[i*4+k])
+                            let b=indices.isEmpty ? 0 : Int(indices[i*4+k])
                             let matrix=matrices[b]
                             sum += weights[i*4+k]*(matrix*SIMD4(p,1))
                         }

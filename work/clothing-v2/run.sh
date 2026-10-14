@@ -2,6 +2,7 @@
 # CLOTHING V2 pipeline: garments for the four heroes -> Unity (in the APFS clone) -> turnaround.
 #   work/clothing-v2/run.sh [heroes] [turnaround-out]      e.g. run.sh all after_5 ; run.sh MatchHero_Male - (no Unity)
 set -e
+echo 'REJECTED pipeline (body surface pushed out, Adnan 2026-10-12). Use polo/run_polo.sh style per-garment builds; see HANDOFF_ClothingV2_next.md'; exit 1
 HERE=${0:A:h}; cd $HERE
 B=/Applications/Blender.app/Contents/MacOS/Blender
 HEROES=${1:-all}; [[ $HEROES == all ]] && HEROES=MatchHero_Male,MatchHero_Female,GolfKitHero_Male,GolfKitHero_Female
